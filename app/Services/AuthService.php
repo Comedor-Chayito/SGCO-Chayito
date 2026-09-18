@@ -40,4 +40,21 @@ class AuthService
             'token' => $token,
         ];
     }
+
+    /**
+     * Cierra la sesión activa revocando únicamente el token de acceso con el
+     * que se autenticó la petición actual. Las demás sesiones del usuario en
+     * otros dispositivos, si existen, no se ven afectadas.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-09-18
+     * @módulo Administración y Seguridad – CC-92 / US-ADM-02
+     *
+     * @param  User $usuario Usuario autenticado en la petición actual.
+     * @return void
+     */
+    public function cerrarSesion(User $usuario): void
+    {
+        $usuario->currentAccessToken()->delete();
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoginRequest;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -34,5 +35,27 @@ class AuthController extends Controller
                 'token' => $resultado['token'],
             ],
         ], 201);
+    }
+
+    /**
+     * Cierra la sesión actual revocando el token de acceso con el que se
+     * autenticó la petición.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-09-18
+     * @módulo Administración y Seguridad – CC-92 / US-ADM-02
+     *
+     * @param  Request $request Petición autenticada vía Sanctum.
+     * @return JsonResponse
+     */
+    public function destroy(Request $request): JsonResponse
+    {
+        $this->authService->cerrarSesion($request->user());
+
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'Sesión cerrada correctamente.',
+            'data' => null,
+        ], 200);
     }
 }
