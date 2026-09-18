@@ -32,7 +32,7 @@ class ComandaService
                 'subtotal' => 0,
             ]);
 
-            $subtotal = 0;
+            $renglones = [];
 
             foreach ($datos['detalles'] as $detalle) {
                 $platillo = Platillo::findOrFail($detalle['platillo_id']);
@@ -44,12 +44,37 @@ class ComandaService
                     'observaciones' => $detalle['observaciones'] ?? null,
                 ]);
 
-                $subtotal += $platillo->precio_unitario * $detalle['cantidad'];
+                $renglones[] = [
+                    'cantidad' => $detalle['cantidad'],
+                    'precio_unitario' => $platillo->precio_unitario,
+                ];
             }
 
-            $comanda->update(['subtotal' => round($subtotal, 2)]);
+            $comanda->update(['subtotal' => $this->calcularSubtotal($renglones)]);
 
             return $comanda->load('detalles.platillo', 'mesa', 'usuario');
         });
+    }
+
+    /**
+     * Calcula el subtotal de una comanda como la suma de cantidad × precio unitario
+     * de cada renglón. No accede a base de datos: recibe los valores ya resueltos.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-09-18
+     * @módulo POS – RF-POS-001
+     *
+     * @param  array $renglones Lista de renglones, cada uno con 'cantidad' y 'precio_unitario'.
+     * @return float Subtotal redondeado a 2 decimales.
+     */
+    public function calcularSubtotal(array $renglones): float
+    {
+        $subtotal = 0;
+
+        foreach ($renglones as $renglon) {
+            $subtotal += $renglon['cantidad'] * $renglon['precio_unitario'];
+        }
+
+        return round($subtotal, 2);
     }
 }
