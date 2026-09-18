@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Platillo;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreComandaRequest extends FormRequest
@@ -37,7 +38,16 @@ class StoreComandaRequest extends FormRequest
             'canal' => ['required', 'in:mesa,para_llevar,whatsapp'],
             'observaciones' => ['nullable', 'string'],
             'detalles' => ['required', 'array', 'min:1'],
-            'detalles.*.platillo_id' => ['required', 'integer', 'exists:platillos,id'],
+            'detalles.*.platillo_id' => [
+                'required',
+                'integer',
+                'exists:platillos,id',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (Platillo::whereKey($value)->where('disponible', false)->exists()) {
+                        $fail('El platillo seleccionado no está disponible en el menú del día.');
+                    }
+                },
+            ],
             'detalles.*.cantidad' => ['required', 'integer', 'min:1'],
             'detalles.*.observaciones' => ['nullable', 'string'],
         ];
