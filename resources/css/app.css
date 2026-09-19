@@ -1,11 +1,47 @@
+/* Tipografía — Inter desde Google Fonts (debe ir antes de tailwindcss) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
+@source '../**/*.vue';
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* Paleta oficial SGCO-Chayito — CLAUDE.md sección 10 */
+:root {
+  --color-naranja-primario:  #F26A21;
+  --color-naranja-claro:     #FF8C42;
+  --color-naranja-oscuro:    #C24E12;
+  --color-carbon:            #3D3D3D;
+  --color-negro-trazo:       #111111;
+  --color-fondo-base:        #FFFFFF;
+  --color-fondo-secundario:  #FAF7F4;
+  --color-borde:             #E5E0DB;
+  --color-texto-secundario:  #6B6B6B;
+  --color-exito:             #2E7D4F;
+  --color-advertencia:       #E0A800;
+  --color-peligro:           #C62828;
+  --color-info:              #2B6CB0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  background-color: var(--color-fondo-secundario);
+  color: var(--color-negro-trazo);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
 }
