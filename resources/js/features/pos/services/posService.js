@@ -73,3 +73,34 @@ export async function obtenerComandas(estado = '') {
   return respuesta.data.data;
 }
 
+/**
+ * Procesa el cobro de una comanda en caja y genera el comprobante de venta.
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-19
+ * @módulo POS – RF-POS-002
+ *
+ * @param   {{ comanda_id: number, monto_recibido: number, metodo_pago?: string }} payload
+ * @returns {Promise<Object>} Datos del comprobante de venta, total y cambio calculado.
+ */
+export async function procesarCobro(payload) {
+  const respuesta = await api.post('/cobros', payload);
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene los detalles de un comprobante de venta o ticket por su ID.
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-19
+ * @módulo POS – RF-POS-002
+ *
+ * @param   {number} ventaId Identificador de la venta.
+ * @returns {Promise<Object>} Comprobante con desglose de ítems, totales y cambio.
+ */
+export async function obtenerComprobante(ventaId) {
+  const respuesta = await api.get(`/cobros/${ventaId}`);
+  return respuesta.data.data;
+}
+
+
