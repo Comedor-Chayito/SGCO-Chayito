@@ -2,14 +2,6 @@
 
 namespace App\Http\Controllers;
 
-<<<<<<< HEAD
-use App\Http\Requests\StoreComandaRequest;
-use App\Services\ComandaService;
-use Illuminate\Http\JsonResponse;
-
-class ComandaController extends Controller
-{
-=======
 use App\Http\Requests\RegistrarComandaRequest;
 use App\Services\ComandaService;
 use Illuminate\Http\JsonResponse;
@@ -26,33 +18,11 @@ class ComandaController extends Controller
      *
      * @param  ComandaService $comandaService Servicio de lógica de negocio de comandas.
      */
->>>>>>> origin/cesar/dev
     public function __construct(private readonly ComandaService $comandaService)
     {
     }
 
     /**
-<<<<<<< HEAD
-     * Registra una nueva comanda con su detalle de platillos.
-     *
-     * @autor  manuelmv15
-     * @fecha  2026-09-18
-     * @módulo POS – RF-POS-001
-     *
-     * @param  StoreComandaRequest $request Datos ya validados de la comanda.
-     * @return JsonResponse
-     */
-    public function store(StoreComandaRequest $request): JsonResponse
-    {
-        $comanda = $this->comandaService->registrar($request->validated());
-
-        return response()->json([
-            'status' => 'ok',
-            'message' => 'Comanda registrada correctamente.',
-            'data' => $comanda,
-        ], 201);
-    }
-=======
      * Devuelve la lista de platillos disponibles en el menú del día.
      *
      * @autor  Equipo SGCO-Chayito
@@ -138,5 +108,4 @@ class ComandaController extends Controller
             'data'    => $comandas,
         ]);
     }
->>>>>>> origin/cesar/dev
 }

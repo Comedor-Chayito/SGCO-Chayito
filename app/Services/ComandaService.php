@@ -2,67 +2,16 @@
 
 namespace App\Services;
 
-<<<<<<< HEAD
-use App\Models\Comanda;
-use App\Models\Platillo;
-=======
 use App\Http\Requests\RegistrarComandaRequest;
 use App\Models\Comanda;
 use App\Models\Mesa;
 use App\Models\Platillo;
 use Illuminate\Database\Eloquent\Collection;
->>>>>>> origin/cesar/dev
 use Illuminate\Support\Facades\DB;
 
 class ComandaService
 {
     /**
-<<<<<<< HEAD
-     * Registra una comanda junto con su detalle de platillos dentro de una transacción.
-     * El precio de cada renglón se toma del platillo en base de datos, nunca del valor
-     * enviado por el cliente, y el subtotal se calcula como la suma de cantidad × precio.
-     *
-     * @autor  manuelmv15
-     * @fecha  2026-09-18
-     * @módulo POS – RF-POS-001
-     *
-     * @param  array $datos Datos validados: mesa_id, usuario_id, canal, observaciones, detalles[].
-     * @return Comanda Comanda creada con su detalle, mesa y usuario cargados.
-     */
-    public function registrar(array $datos): Comanda
-    {
-        return DB::transaction(function () use ($datos) {
-            $comanda = Comanda::create([
-                'mesa_id' => $datos['mesa_id'] ?? null,
-                'usuario_id' => $datos['usuario_id'],
-                'canal' => $datos['canal'],
-                'estado' => 'pendiente',
-                'observaciones' => $datos['observaciones'] ?? null,
-                'subtotal' => 0,
-            ]);
-
-            $renglones = [];
-
-            foreach ($datos['detalles'] as $detalle) {
-                $platillo = Platillo::findOrFail($detalle['platillo_id']);
-
-                $comanda->detalles()->create([
-                    'platillo_id' => $platillo->id,
-                    'cantidad' => $detalle['cantidad'],
-                    'precio_unitario' => $platillo->precio_unitario,
-                    'observaciones' => $detalle['observaciones'] ?? null,
-                ]);
-
-                $renglones[] = [
-                    'cantidad' => $detalle['cantidad'],
-                    'precio_unitario' => $platillo->precio_unitario,
-                ];
-            }
-
-            $comanda->update(['subtotal' => $this->calcularSubtotal($renglones)]);
-
-            return $comanda->load('detalles.platillo', 'mesa', 'usuario');
-=======
      * Registra una nueva comanda en estado "pendiente" dentro de una transacción.
      * Calcula el subtotal como suma de (cantidad × precio_unitario) de cada ítem.
      *
@@ -103,29 +52,10 @@ class ComandaService
             }
 
             return $comanda->load('detalles.platillo', 'mesa');
->>>>>>> origin/cesar/dev
         });
     }
 
     /**
-<<<<<<< HEAD
-     * Calcula el subtotal de una comanda como la suma de cantidad × precio unitario
-     * de cada renglón. No accede a base de datos: recibe los valores ya resueltos.
-     *
-     * @autor  manuelmv15
-     * @fecha  2026-09-18
-     * @módulo POS – RF-POS-001
-     *
-     * @param  array $renglones Lista de renglones, cada uno con 'cantidad' y 'precio_unitario'.
-     * @return float Subtotal redondeado a 2 decimales.
-     */
-    public function calcularSubtotal(array $renglones): float
-    {
-        $subtotal = 0;
-
-        foreach ($renglones as $renglon) {
-            $subtotal += $renglon['cantidad'] * $renglon['precio_unitario'];
-=======
      * Retorna todos los platillos marcados como disponibles en el menú del día.
      *
      * @autor  Equipo SGCO-Chayito
@@ -178,13 +108,10 @@ class ComandaService
         foreach ($items as $item) {
             $precio    = (float) ($precios[$item['platillo_id']] ?? 0);
             $subtotal += $precio * $item['cantidad'];
->>>>>>> origin/cesar/dev
         }
 
         return round($subtotal, 2);
     }
-<<<<<<< HEAD
-=======
 
     /**
      * Retorna el listado de comandas para pantalla de caja y cola de cocina.
@@ -208,5 +135,4 @@ class ComandaService
 
         return $query->get();
     }
->>>>>>> origin/cesar/dev
 }
