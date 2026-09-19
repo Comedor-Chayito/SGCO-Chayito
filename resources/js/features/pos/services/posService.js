@@ -56,3 +56,20 @@ export async function registrarComanda(payload) {
   const respuesta = await api.post('/comandas', payload);
   return respuesta.data.data;
 }
+
+/**
+ * Obtiene la lista de comandas registradas, opcionalmente filtradas por estado.
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-19
+ * @módulo POS – RF-POS-001
+ *
+ * @param   {string} [estado] Filtro opcional por estado (pendiente, en_cocina, etc.).
+ * @returns {Promise<Array>} Lista de comandas con sus detalles y mesas.
+ */
+export async function obtenerComandas(estado = '') {
+  const params = estado ? { estado } : {};
+  const respuesta = await api.get('/comandas', { params });
+  return respuesta.data.data;
+}
+
