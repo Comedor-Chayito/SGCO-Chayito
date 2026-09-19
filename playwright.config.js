@@ -19,9 +19,12 @@ export default defineConfig({
   use: {
     // URL base del contenedor Sail
     baseURL: process.env.APP_URL ?? 'http://localhost',
+    launchOptions: process.env.PLAYWRIGHT_EXECUTABLE_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
+      : undefined,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: process.env.PLAYWRIGHT_NO_VIDEO === 'true' ? 'off' : 'retain-on-failure',
   },
   projects: [
     {

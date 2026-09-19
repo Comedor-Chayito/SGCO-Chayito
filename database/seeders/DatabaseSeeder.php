@@ -11,15 +11,23 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * Ejecuta todos los seeders del sistema SGCO-Chayito.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-18
+     * @módulo Core
+     *
+     * @return void
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // Usuario de prueba base
         User::factory()->create([
-            'name' => 'Test User',
+            'name'  => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Datos del módulo POS: mesas y platillos del menú diario
+        $this->call(PosSeeder::class);
     }
 }

@@ -19,7 +19,7 @@ const routes = [
   {
     path: '/pos',
     name: 'pos',
-    component: () => import('@/views/POS.vue'),
+    component: () => import('@/features/pos/views/POS.vue'),
     meta: { roles: ['mesero', 'cajero', 'administrador'] },
   },
   {
@@ -60,12 +60,18 @@ const router = createRouter({
 
 /**
  * Guarda de navegación global: verifica autenticación y rol.
+ * El guard solo se activa cuando VITE_AUTH_ENABLED=true en el .env.
+ * Hasta que US-ADM-02 implemente Sanctum, la bandera permanece desactivada.
  *
  * @autor  Equipo SGCO-Chayito
  * @fecha  2026-09-18
  * @módulo Core – RF-ADM-008
  */
 router.beforeEach((to) => {
+  const authActivo = import.meta.env.VITE_AUTH_ENABLED === 'true';
+
+  if (!authActivo) return true;
+
   const sesion = useSesionStore();
 
   if (!to.meta.roles) return true;

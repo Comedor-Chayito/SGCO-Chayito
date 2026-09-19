@@ -1,0 +1,115 @@
+<?php
+
+namespace App\Services;
+
+use App\Http\Requests\RegistrarComandaRequest;
+use App\Models\Comanda;
+use App\Models\Mesa;
+use App\Models\Platillo;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+
+class ComandaService
+{
+    /**
+     * Registra una nueva comanda en estado "pendiente" dentro de una transacción.
+     * Calcula el subtotal como suma de (cantidad × precio_unitario) de cada ítem.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-18
+     * @módulo POS – RF-POS-001
+     *
+     * @param  RegistrarComandaRequest $request   Datos validados de la solicitud.
+     * @param  int                    $usuarioId  ID del usuario que registra la comanda.
+     * @return Comanda La comanda creada con sus detalles cargados.
+     *
+     * @throws \Throwable Si falla la transacción de base de datos.
+     */
+    public function registrar(RegistrarComandaRequest $request, int $usuarioId): Comanda
+    {
+        return DB::transaction(function () use ($request, $usuarioId) {
+            $items     = $request->validated()['items'];
+            $subtotal  = $this->calcularSubtotal($items);
+
+            $comanda = Comanda::create([
+                'mesa_id'       => $request->validated()['mesa_id'] ?? null,
+                'usuario_id'    => $usuarioId,
+                'canal'         => $request->validated()['canal'],
+                'estado'        => 'pendiente',
+                'observaciones' => $request->validated()['observaciones'] ?? null,
+                'subtotal'      => $subtotal,
+            ]);
+
+            foreach ($items as $item) {
+                $platillo = Platillo::findOrFail($item['platillo_id']);
+
+                $comanda->detalles()->create([
+                    'platillo_id'    => $platillo->id,
+                    'cantidad'       => $item['cantidad'],
+                    'precio_unitario' => $platillo->precio_unitario,
+                    'observaciones'  => $item['observaciones'] ?? null,
+                ]);
+            }
+
+            return $comanda->load('detalles.platillo', 'mesa');
+        });
+    }
+
+    /**
+     * Retorna todos los platillos marcados como disponibles en el menú del día.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-18
+     * @módulo POS – RF-POS-001
+     *
+     * @return Collection<int, Platillo>
+     */
+    public function listarPlatillosDisponibles(): Collection
+    {
+        return Platillo::where('disponible', true)
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'descripcion', 'precio_unitario', 'disponible']);
+    }
+
+    /**
+     * Retorna todas las mesas del comedor con su estado actual.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-18
+     * @módulo POS – RF-POS-001
+     *
+     * @return Collection<int, Mesa>
+     */
+    public function listarMesas(): Collection
+    {
+        return Mesa::orderBy('numero')
+            ->get(['id', 'numero', 'capacidad', 'estado']);
+    }
+
+    /**
+     * Calcula el subtotal de una comanda sumando cantidad × precio_unitario de cada ítem.
+     * Obtiene el precio directamente del platillo en BD, no del payload del cliente.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-18
+     * @módulo POS – RF-POS-001
+     *
+     * @param  array<int, array{platillo_id: int, cantidad: int}> $items Ítems validados.
+     * @return float Subtotal redondeado a 2 decimales.
+     */
+    private function calcularSubtotal(array $items): float
+    {
+        $platilloIds  = array_column($items, 'platillo_id');
+        $precios      = Platillo::whereIn('id', $platilloIds)
+            ->pluck('precio_unitario', 'id');
+
+        $subtotal = 0.0;
+
+        foreach ($items as $item) {
+            $precio    = (float) ($precios[$item['platillo_id']] ?? 0);
+            $subtotal += $precio * $item['cantidad'];
+        }
+
+        return round($subtotal, 2);
+    }
+}

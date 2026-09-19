@@ -7,13 +7,18 @@
  * @fecha  2026-09-18
  * @módulo Core – Inicio
  */
+import { RouterLink } from 'vue-router';
+import { ChefHat } from '@lucide/vue';
+import { Button } from '@/components/ui/button';
 </script>
 
 <template>
   <main class="inicio-contenedor" id="vista-inicio">
     <div class="inicio-tarjeta">
       <div class="inicio-logo">
-        <span class="inicio-logo-icono">🍽️</span>
+        <span class="inicio-logo-icono text-[#F26A21] flex justify-center mb-2">
+          <ChefHat :size="48" stroke-width="2" />
+        </span>
       </div>
       <h1 class="inicio-titulo">SGCO-Chayito</h1>
       <p class="inicio-subtitulo">
