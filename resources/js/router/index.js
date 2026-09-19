@@ -5,8 +5,8 @@ import { useSesionStore } from '@/stores/sesion.js';
  * Configuración del enrutador SPA de SGCO-Chayito.
  * Rutas protegidas por rol definidas en CLAUDE.md sección 9.
  *
- * @autor  Equipo SGCO-Chayito
- * @fecha  2026-09-18
+ * @autor  Jeferson De La Cruz
+ * @fecha  2026-09-19
  * @módulo Core – RF-ADM-008
  */
 
@@ -15,6 +15,13 @@ const routes = [
     path: '/',
     name: 'inicio',
     component: () => import('@/views/Inicio.vue'),
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: () =>
+      import('@/features/admin/views/Login.vue'),
+    meta: { publica: true },
   },
   {
     path: '/pos',
@@ -63,25 +70,38 @@ const router = createRouter({
  * El guard solo se activa cuando VITE_AUTH_ENABLED=true en el .env.
  * Hasta que US-ADM-02 implemente Sanctum, la bandera permanece desactivada.
  *
- * @autor  Equipo SGCO-Chayito
- * @fecha  2026-09-18
+ * @autor  Jeferson De La Cruz
+ * @fecha  2026-09-19
  * @módulo Core – RF-ADM-008
  */
 router.beforeEach((to) => {
-  const authActivo = import.meta.env.VITE_AUTH_ENABLED === 'true';
+  const authActivo =
+    import.meta.env.VITE_AUTH_ENABLED === 'true';
 
   if (!authActivo) return true;
 
   const sesion = useSesionStore();
 
-  if (!to.meta.roles) return true;
-
-  if (!sesion.autenticado) {
-    return { name: 'inicio' };
+  // Rutas públicas (login, inicio) — accesibles sin token
+  if (to.meta.publica || to.name === 'inicio') {
+    // Si ya está autenticado, no dejarlo volver al login
+    if (to.name === 'login' && sesion.autenticado) {
+      return { name: 'pos' };
+    }
+    return true;
   }
 
-  if (!to.meta.roles.includes(sesion.rol)) {
-    return { name: 'inicio' };
+  // Sin token → redirigir al login
+  if (!sesion.autenticado) {
+    return { name: 'login' };
+  }
+
+  // Verificar rol si la ruta lo exige
+  if (
+    to.meta.roles &&
+    !to.meta.roles.includes(sesion.rol)
+  ) {
+    return { name: 'pos' };
   }
 
   return true;
