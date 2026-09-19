@@ -3,7 +3,7 @@
  * Componente Builder (Armador) de Platos para Comida a la Vista.
  * Permite seleccionar porciones rápidamente desde listas horizontales.
  * 
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  */
