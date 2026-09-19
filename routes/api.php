@@ -14,4 +14,5 @@ use Illuminate\Support\Facades\Route;
 // Módulo POS — RF-POS-001
 Route::get('/platillos',  [ComandaController::class, 'platillos']);
 Route::get('/mesas',      [ComandaController::class, 'mesas']);
+Route::get('/comandas',   [ComandaController::class, 'index']);
 Route::post('/comandas',  [ComandaController::class, 'registrar']);

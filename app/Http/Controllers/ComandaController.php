@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RegistrarComandaRequest;
 use App\Services\ComandaService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ComandaController extends Controller
 {
@@ -84,5 +85,27 @@ class ComandaController extends Controller
             'message' => 'Comanda registrada correctamente.',
             'data'    => $comanda,
         ], 201);
+    }
+
+    /**
+     * Devuelve la lista de comandas registradas, opcionalmente filtradas por estado.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-19
+     * @módulo POS – RF-POS-001
+     *
+     * @param  Request $request Petición HTTP con posible parámetro ?estado=
+     * @return JsonResponse Lista de comandas con sus detalles, platillos y mesa.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $estado = $request->query('estado');
+        $comandas = $this->comandaService->listarComandas($estado);
+
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'Comandas obtenidas.',
+            'data'    => $comandas,
+        ]);
     }
 }

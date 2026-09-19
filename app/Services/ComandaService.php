@@ -112,4 +112,27 @@ class ComandaService
 
         return round($subtotal, 2);
     }
+
+    /**
+     * Retorna el listado de comandas para pantalla de caja y cola de cocina.
+     * Permite filtrar por estado (ej. "pendiente", "en_cocina") y carga relaciones.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-19
+     * @módulo POS – RF-POS-001
+     *
+     * @param  string|null $estado Filtro opcional por estado de comanda.
+     * @return Collection<int, Comanda>
+     */
+    public function listarComandas(?string $estado = null): Collection
+    {
+        $query = Comanda::with(['detalles.platillo', 'mesa', 'usuario:id,name'])
+            ->orderByDesc('id');
+
+        if ($estado) {
+            $query->where('estado', $estado);
+        }
+
+        return $query->get();
+    }
 }
