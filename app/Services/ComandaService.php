@@ -15,7 +15,7 @@ class ComandaService
      * Registra una nueva comanda en estado "pendiente" dentro de una transacción.
      * Calcula el subtotal como suma de (cantidad × precio_unitario) de cada ítem.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *
@@ -58,7 +58,7 @@ class ComandaService
     /**
      * Retorna todos los platillos marcados como disponibles en el menú del día.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *
@@ -74,7 +74,7 @@ class ComandaService
     /**
      * Retorna todas las mesas del comedor con su estado actual.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *
@@ -90,7 +90,7 @@ class ComandaService
      * Calcula el subtotal de una comanda sumando cantidad × precio_unitario de cada ítem.
      * Obtiene el precio directamente del platillo en BD, no del payload del cliente.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *

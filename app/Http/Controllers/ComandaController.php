@@ -12,7 +12,7 @@ class ComandaController extends Controller
     /**
      * Inicializa el controlador con el servicio de comandas inyectado.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *
@@ -25,7 +25,7 @@ class ComandaController extends Controller
     /**
      * Devuelve la lista de platillos disponibles en el menú del día.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *
@@ -45,7 +45,7 @@ class ComandaController extends Controller
     /**
      * Devuelve la lista de mesas del comedor con su estado actual.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *
@@ -66,7 +66,7 @@ class ComandaController extends Controller
      * Registra una nueva comanda en estado "pendiente".
      * Valida la entrada, delega la lógica al servicio y devuelve la comanda creada.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *

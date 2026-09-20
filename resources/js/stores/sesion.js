@@ -6,7 +6,7 @@ import api from '@/services/api.js';
  * Store de sesión de usuario — autenticación y rol activo.
  * Gestiona el token de sesión que habilita/oculta vistas y botones.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo Admin – RF-ADM-008
  */
@@ -20,7 +20,7 @@ export const useSesionStore = defineStore('sesion', () => {
   /**
    * Inicia sesión con las credenciales del usuario.
    *
-   * @autor  Equipo SGCO-Chayito
+   * @autor  Jeferson De La Cruz
    * @fecha  2026-09-18
    * @módulo Admin – RF-ADM-008
    *
@@ -44,7 +44,7 @@ export const useSesionStore = defineStore('sesion', () => {
   /**
    * Cierra la sesión del usuario actual y limpia el estado local.
    *
-   * @autor  Equipo SGCO-Chayito
+   * @autor  Jeferson De La Cruz
    * @fecha  2026-09-18
    * @módulo Admin – RF-ADM-008
    *

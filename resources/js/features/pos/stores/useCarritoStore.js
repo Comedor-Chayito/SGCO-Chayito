@@ -6,7 +6,7 @@ import { registrarComanda } from '@/features/pos/services/posService.js';
  * Store Pinia del carrito de la comanda activa en el POS.
  * Gestiona los ítems seleccionados, el canal, la mesa y el subtotal calculado.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  */

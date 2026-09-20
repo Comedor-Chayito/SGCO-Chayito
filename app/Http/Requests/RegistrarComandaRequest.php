@@ -12,7 +12,7 @@ class RegistrarComandaRequest extends FormRequest
      * Determina si el usuario está autorizado a hacer esta solicitud.
      * La autorización por rol se implementa en US-ADM-02 con Sanctum.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *
@@ -26,7 +26,7 @@ class RegistrarComandaRequest extends FormRequest
     /**
      * Reglas de validación para el registro de una comanda.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *
@@ -57,7 +57,7 @@ class RegistrarComandaRequest extends FormRequest
     /**
      * Mensajes de error personalizados en español.
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  Jeferson De La Cruz
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *
