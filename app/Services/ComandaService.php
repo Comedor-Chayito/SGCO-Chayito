@@ -87,6 +87,68 @@ class ComandaService
     }
 
     /**
+     * Retorna las comandas activas para la cola de cocina en orden de llegada (FIFO).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-19
+     * @módulo POS – US-POS-02 / RF-POS-001
+     *
+     * @param  string|null $filtroEstado Estado opcional para filtrar ('pendiente', 'en_cocina').
+     * @return Collection<int, Comanda> Colección de comandas ordenadas por llegada.
+     */
+    public function listarColaCocina(?string $filtroEstado = null): Collection
+    {
+        $query = Comanda::with(['detalles.platillo', 'mesa', 'usuario'])
+            ->orderBy('created_at', 'asc');
+
+        if ($filtroEstado) {
+            $query->where('estado', $filtroEstado);
+        } else {
+            // Por defecto en cocina se muestran las pendientes y las que están en preparación
+            $query->whereIn('estado', ['pendiente', 'en_cocina']);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Actualiza el estado operativo de una comanda.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-19
+     * @módulo POS – US-POS-02 / RF-POS-001
+     *
+     * @param  Comanda $comanda     Instancia de la comanda a modificar.
+     * @param  string  $nuevoEstado Nuevo valor para el campo estado.
+     * @return Comanda Comanda actualizada con relaciones cargadas.
+     */
+    public function actualizarEstado(Comanda $comanda, string $nuevoEstado): Comanda
+    {
+        $comanda->update(['estado' => $nuevoEstado]);
+
+        return $comanda->load('detalles.platillo', 'mesa', 'usuario');
+    }
+
+    /**
+     * Retorna las comandas completadas recientemente (últimas 20) ordenadas por fecha de despacho.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-19
+     * @módulo POS – US-POS-02 / RF-POS-001
+     *
+     * @param  int $limite Cantidad máxima de comandas a retornar.
+     * @return Collection<int, Comanda>
+     */
+    public function listarCompletadasRecientes(int $limite = 20): Collection
+    {
+        return Comanda::with(['detalles.platillo', 'mesa', 'usuario'])
+            ->where('estado', 'pagada')
+            ->orderBy('updated_at', 'desc')
+            ->take($limite)
+            ->get();
+    }
+
+    /**
      * Calcula el subtotal de una comanda sumando cantidad × precio_unitario de cada ítem.
      * Obtiene el precio directamente del platillo en BD, no del payload del cliente.
      *

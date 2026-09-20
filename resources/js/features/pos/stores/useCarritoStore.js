@@ -126,30 +126,41 @@ export const useCarritoStore = defineStore('carrito', () => {
     cargando.value = true;
     error.value    = null;
 
+    const listaObservaciones = [];
+    if (observaciones.value && observaciones.value.trim()) {
+      listaObservaciones.push(observaciones.value.trim());
+    }
+
     const payloadDetalles = [];
     items.value.forEach(i => {
       if (i.tipo === 'plato') {
+        // La observación del plato se eleva a nivel general de la comanda
+        if (i.observaciones && i.observaciones.trim()) {
+          listaObservaciones.push(i.observaciones.trim());
+        }
         i.sub_items.forEach(sub => {
-          // Flatten plato sub_items for backend compatibility
+          // Flatten plato sub_items para compatibilidad con el backend
           payloadDetalles.push({
             platillo_id: sub.platillo.id,
             cantidad: sub.cantidad * i.cantidad,
-            observaciones: i.observaciones,
+            observaciones: null,
           });
         });
       } else {
         payloadDetalles.push({
           platillo_id: i.platillo_id,
           cantidad: i.cantidad,
-          observaciones: i.observaciones,
+          observaciones: i.observaciones ? i.observaciones.trim() : null,
         });
       }
     });
 
+    const obsUnicas = [...new Set(listaObservaciones)];
+
     const payload = {
       canal:         canal.value,
       mesa_id:       canal.value === 'mesa' ? mesaId.value : null,
-      observaciones: observaciones.value,
+      observaciones: obsUnicas.length > 0 ? obsUnicas.join(' · ') : null,
       items:         payloadDetalles,
     };
 

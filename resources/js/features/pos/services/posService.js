@@ -56,3 +56,37 @@ export async function registrarComanda(payload) {
   const respuesta = await api.post('/comandas', payload);
   return respuesta.data.data;
 }
+
+/**
+ * Obtiene la cola de comandas activas para la cocina en orden de llegada (FIFO).
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-19
+ * @módulo POS – US-POS-02 / RF-POS-001
+ *
+ * @param   {string|null} [filtroEstado=null] Filtro opcional por estado ('pendiente', 'en_cocina').
+ * @returns {Promise<Array>} Lista de comandas ordenadas cronológicamente con sus detalles.
+ */
+export async function obtenerColaCocina(filtroEstado = null) {
+  const params = filtroEstado ? { estado: filtroEstado } : {};
+  const respuesta = await api.get('/comandas/cocina', { params });
+  return respuesta.data.data;
+}
+
+/**
+ * Actualiza el estado operativo de una comanda desde la pantalla de cocina o caja.
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-19
+ * @módulo POS – US-POS-02 / RF-POS-001
+ *
+ * @param   {number} idComanda   Identificador de la comanda.
+ * @param   {string} nuevoEstado Nuevo estado ('en_cocina', 'pagada', 'cancelada').
+ * @returns {Promise<Object>} Comanda actualizada.
+ */
+export async function actualizarEstadoComanda(idComanda, nuevoEstado) {
+  const respuesta = await api.patch(`/comandas/${idComanda}/estado`, {
+    estado: nuevoEstado,
+  });
+  return respuesta.data.data;
+}

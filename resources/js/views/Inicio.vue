@@ -27,9 +27,22 @@ import { Button } from '@/components/ui/button';
       <p class="inicio-descripcion">
         Comedor Chayito · UES-FMO
       </p>
-      <div class="inicio-estado" id="estado-sistema">
+      <div class="inicio-estado mb-6" id="estado-sistema">
         <span class="estado-punto"></span>
         Sistema operativo
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <RouterLink to="/pos">
+          <Button class="w-full sm:w-auto min-h-[44px] bg-[#F26A21] hover:bg-[#FF8C42] text-white font-bold px-5 rounded-xl cursor-pointer">
+            Punto de Venta (POS)
+          </Button>
+        </RouterLink>
+        <RouterLink to="/cocina">
+          <Button variant="outline" class="w-full sm:w-auto min-h-[44px] border-[#E5E0DB] text-[#3D3D3D] hover:bg-zinc-50 font-semibold px-5 rounded-xl cursor-pointer">
+            Cola de Cocina (KDS)
+          </Button>
+        </RouterLink>
       </div>
     </div>
   </main>

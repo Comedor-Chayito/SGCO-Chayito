@@ -11,8 +11,9 @@
 import { useCarritoStore } from '@/features/pos/stores/useCarritoStore.js';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Store, ShoppingBag, MessageCircle } from '@lucide/vue';
+import { Store, ShoppingBag, MessageCircle, ChefHat } from '@lucide/vue';
 import { markRaw } from 'vue';
+import { RouterLink } from 'vue-router';
 
 const props = defineProps({
   mesas: {
@@ -44,8 +45,24 @@ function seleccionarMesa(id) {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto p-4 md:p-6 space-y-10 animate-in fade-in zoom-in-95 duration-300">
+  <div class="max-w-4xl mx-auto p-4 md:p-6 space-y-8 animate-in fade-in zoom-in-95 duration-300">
     
+    <!-- Barra superior de navegación rápida -->
+    <div class="flex items-center justify-between pb-3 border-b border-[#E5E0DB]">
+      <div>
+        <h1 class="text-xl font-extrabold text-zinc-900 tracking-tight">Punto de Venta</h1>
+        <p class="text-xs text-zinc-500">Registro de comanda</p>
+      </div>
+      <RouterLink
+        to="/cocina"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#E5E0DB] bg-white hover:bg-zinc-50 text-xs font-bold text-[#3D3D3D] shadow-xs active:scale-95 transition-all"
+        title="Ver pantalla de cocina"
+      >
+        <ChefHat :size="16" class="text-[#F26A21]" />
+        <span>Cola de Cocina</span>
+      </RouterLink>
+    </div>
+
     <!-- Sección de Canales -->
     <section>
       <h2 class="text-2xl font-extrabold tracking-tight mb-4 text-zinc-900">¿Dónde comerá el cliente?</h2>
