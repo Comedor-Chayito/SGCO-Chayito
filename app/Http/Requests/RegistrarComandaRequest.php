@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Platillo;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegistrarComandaRequest extends FormRequest
@@ -37,7 +39,16 @@ class RegistrarComandaRequest extends FormRequest
             'mesa_id'                   => ['nullable', 'required_if:canal,mesa', 'exists:mesas,id'],
             'observaciones'             => ['nullable', 'string', 'max:500'],
             'items'                     => ['required', 'array', 'min:1'],
-            'items.*.platillo_id'       => ['required', 'integer', 'exists:platillos,id'],
+            'items.*.platillo_id'       => [
+                'required',
+                'integer',
+                'exists:platillos,id',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (Platillo::whereKey($value)->where('disponible', false)->exists()) {
+                        $fail('El platillo seleccionado no está disponible en el menú del día.');
+                    }
+                },
+            ],
             'items.*.cantidad'          => ['required', 'integer', 'min:1'],
             'items.*.observaciones'     => ['nullable', 'string', 'max:200'],
         ];
