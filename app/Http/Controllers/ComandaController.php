@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ActualizarEstadoComandaRequest;
 use App\Http\Requests\RegistrarComandaRequest;
+use App\Models\Comanda;
 use App\Services\ComandaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -106,6 +108,68 @@ class ComandaController extends Controller
             'status'  => 'ok',
             'message' => 'Comandas obtenidas.',
             'data'    => $comandas,
+        ]);
+    }
+
+    /**
+     * Retorna la lista de comandas activas para la pantalla de cocina en orden FIFO.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-19
+     * @módulo POS – US-POS-02 / RF-POS-001
+     *
+     * @param  Request $request Solicitud con filtro de estado opcional.
+     * @return JsonResponse Lista de comandas activas para cocina.
+     */
+    public function colaCocina(Request $request): JsonResponse
+    {
+        $estado = $request->query('estado');
+
+        if ($estado === 'pagada') {
+            $completadas = $this->comandaService->listarCompletadasRecientes();
+
+            return response()->json([
+                'status'  => 'ok',
+                'message' => 'Comandas completadas obtenidas.',
+                'data'    => $completadas,
+            ]);
+        }
+
+        $activas = $this->comandaService->listarColaCocina($estado);
+        $completadas = $this->comandaService->listarCompletadasRecientes();
+
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'Cola de cocina obtenida.',
+            'data'    => [
+                'activas'     => $activas,
+                'completadas' => $completadas,
+            ],
+        ]);
+    }
+
+    /**
+     * Actualiza el estado de una comanda específica.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-19
+     * @módulo POS – US-POS-02 / RF-POS-001
+     *
+     * @param  ActualizarEstadoComandaRequest $request Datos validados con el nuevo estado.
+     * @param  Comanda                       $comanda Instancia del modelo a actualizar.
+     * @return JsonResponse Comanda actualizada con relaciones.
+     */
+    public function actualizarEstado(ActualizarEstadoComandaRequest $request, Comanda $comanda): JsonResponse
+    {
+        $comandaActualizada = $this->comandaService->actualizarEstado(
+            $comanda,
+            $request->validated()['estado']
+        );
+
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'Estado de la comanda actualizado correctamente.',
+            'data'    => $comandaActualizada,
         ]);
     }
 }

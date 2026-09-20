@@ -30,6 +30,16 @@ const routes = [
     meta: { roles: ['mesero', 'cajero', 'administrador'] },
   },
   {
+    path: '/cocina',
+    name: 'cocina',
+    component: () => import('@/features/pos/views/ColaCocina.vue'),
+    meta: { roles: ['cocinero', 'cajero', 'administrador'] },
+  },
+  {
+    path: '/pos/cocina',
+    redirect: '/cocina',
+  },
+  {
     path: '/inventario',
     name: 'inventario',
     component: () => import('@/views/Inventario.vue'),

@@ -63,6 +63,21 @@ function onConfirmar() {
 
     <!-- Resumen y Acción (Fijo al fondo) -->
     <div class="p-4 bg-white border-t border-zinc-200 shrink-0 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)]">
+      <!-- Observaciones generales de la orden -->
+      <div v-if="!carrito.estaVacio" class="mb-3">
+        <label for="input-obs-pedido" class="block text-xs font-bold text-zinc-700 mb-1">
+          Observaciones del pedido
+        </label>
+        <input
+          id="input-obs-pedido"
+          type="text"
+          v-model="carrito.observaciones"
+          maxlength="200"
+          placeholder="Ej. El pollo con poca sal, salsas aparte…"
+          class="w-full text-xs p-2.5 border border-zinc-200 rounded-lg outline-none text-zinc-800 bg-zinc-50 placeholder:text-zinc-400 focus:ring-2 focus:ring-[#F26A21]/20 focus:border-[#F26A21] transition-all"
+        />
+      </div>
+
       <div class="flex justify-between items-center mb-4">
         <span class="text-sm font-bold text-zinc-600 uppercase tracking-wider">Total</span>
         <span class="text-2xl font-black text-[#F26A21]">{{ carrito.subtotalFormateado }}</span>
