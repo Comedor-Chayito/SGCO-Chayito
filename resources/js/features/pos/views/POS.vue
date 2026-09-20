@@ -4,7 +4,7 @@
  * Orquesta el Wizard de pasos (Configuración -> Menú) con soporte Mobile-First
  * y componentes premium shadcn-vue.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – US-POS-01 / RF-POS-001
  */

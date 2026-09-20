@@ -21,24 +21,6 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Normaliza los nombres de campos para soportar tanto español (correo, contrasena)
-     * como estándar (email, password).
-     *
-     * @autor  Equipo SGCO-Chayito
-     * @fecha  2026-09-19
-     * @módulo Administración y Seguridad – US-ADM-02
-     *
-     * @return void
-     */
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'email'    => $this->input('email', $this->input('correo')),
-            'password' => $this->input('password', $this->input('contrasena')),
-        ]);
-    }
-
-    /**
      * Reglas de validación para el inicio de sesión por correo y contraseña.
      *
      * @autor  manuelmv15

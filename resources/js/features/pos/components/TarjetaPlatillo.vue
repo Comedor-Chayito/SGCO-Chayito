@@ -3,7 +3,7 @@
  * Componente de botón táctil de platillo en el menú del POS.
  * Utiliza shadcn Card para un diseño premium y feedback visual claro.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  */

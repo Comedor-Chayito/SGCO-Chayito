@@ -30,6 +30,16 @@ const routes = [
     meta: { roles: ['mesero', 'cajero', 'administrador'] },
   },
   {
+    path: '/cocina',
+    name: 'cocina',
+    component: () => import('@/features/pos/views/ColaCocina.vue'),
+    meta: { roles: ['cocinero', 'cajero', 'administrador'] },
+  },
+  {
+    path: '/pos/cocina',
+    redirect: '/cocina',
+  },
+  {
     path: '/inventario',
     name: 'inventario',
     component: () => import('@/views/Inventario.vue'),
@@ -52,6 +62,13 @@ const routes = [
     name: 'admin',
     component: () => import('@/views/Admin.vue'),
     meta: { roles: ['administrador'] },
+  },
+  // TODO: ELIMINAR — ruta temporal de prueba CC-37
+  {
+    path: '/prueba-retiro',
+    name: 'prueba-retiro',
+    component: () =>
+      import('@/features/pos/views/PruebaRetiro.vue'),
   },
   {
     path: '/:pathMatch(.*)*',
