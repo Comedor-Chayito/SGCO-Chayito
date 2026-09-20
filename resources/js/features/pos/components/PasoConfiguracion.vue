@@ -4,7 +4,7 @@
  * Utiliza Cards de shadcn para canales y Buttons para mesas.
  * Avanza automáticamente al Paso 2 al seleccionar "Para Llevar/WhatsApp" o al tocar una Mesa.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  */

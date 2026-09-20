@@ -5,7 +5,7 @@ import { useSesionStore } from '@/stores/sesion.js';
  * Cliente HTTP centralizado para todas las llamadas a la API REST.
  * Toda llamada HTTP debe pasar por este módulo, nunca directamente desde componentes.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo Core – Contrato de API (sección 5 CLAUDE.md)
  */
@@ -20,7 +20,7 @@ const api = axios.create({
 /**
  * Interceptor de solicitud: adjunta el token Bearer si existe en el store de sesión.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo Core – RF-ADM-008
  */
@@ -37,7 +37,7 @@ api.interceptors.request.use((config) => {
 /**
  * Interceptor de respuesta: maneja errores 401 cerrando la sesión automáticamente.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo Core – RF-ADM-008
  */

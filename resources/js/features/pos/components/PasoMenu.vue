@@ -3,7 +3,7 @@
  * Paso 2 del Wizard POS: Menú de Comida.
  * Rediseñado para soportar "Armar Plato" (Bandeja) y "A la Carta".
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  */

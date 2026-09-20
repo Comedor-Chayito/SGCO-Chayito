@@ -3,7 +3,7 @@
  * Renglón de un ítem dentro del carrito de la comanda activa.
  * Soporta ítems individuales y "Platos" armados usando Accordion para desglose.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  */

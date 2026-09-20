@@ -3,7 +3,7 @@
  * Vista de inicio / bienvenida del sistema SGCO-Chayito.
  * Muestra el logo, nombre del sistema y acceso al login.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo Core – Inicio
  */

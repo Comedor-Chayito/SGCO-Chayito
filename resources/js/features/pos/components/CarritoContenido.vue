@@ -3,7 +3,7 @@
  * Contenido principal del carrito POS. 
  * Extraído para ser renderizado en un Sheet (móvil) o Panel lateral (desktop).
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  */

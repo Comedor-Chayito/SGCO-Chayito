@@ -4,7 +4,7 @@ import api from '@/services/api.js';
  * Servicio HTTP del módulo POS.
  * Todas las llamadas al backend pasan por este módulo, nunca directamente desde componentes.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  */
@@ -12,7 +12,7 @@ import api from '@/services/api.js';
 /**
  * Obtiene la lista de platillos disponibles en el menú del día.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  *
@@ -26,7 +26,7 @@ export async function obtenerPlatillos() {
 /**
  * Obtiene la lista de mesas del comedor con su estado actual.
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  *
@@ -40,7 +40,7 @@ export async function obtenerMesas() {
 /**
  * Envía una comanda al backend para registrarla en estado "pendiente".
  *
- * @autor  Equipo SGCO-Chayito
+ * @autor  Jeferson De La Cruz
  * @fecha  2026-09-18
  * @módulo POS – RF-POS-001
  *
