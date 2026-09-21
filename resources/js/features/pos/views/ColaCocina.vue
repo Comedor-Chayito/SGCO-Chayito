@@ -9,7 +9,8 @@
  * @módulo POS – US-POS-02 / RF-POS-001
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
+import { useSesionStore } from '@/stores/sesion.js';
 import {
   ChefHat,
   RefreshCw,
@@ -20,11 +21,21 @@ import {
   VolumeX,
   ArrowLeft,
   ChevronDown,
+  LogOut,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
 import { obtenerColaCocina, actualizarEstadoComanda } from '@/features/pos/services/posService.js';
 import ComandaCard from '@/features/pos/components/ComandaCard.vue';
 import ComandaCompletadaItem from '@/features/pos/components/ComandaCompletadaItem.vue';
+
+// Enrutador y Sesión activa
+const router = useRouter();
+const sesion = useSesionStore();
+
+async function manejarCerrarSesion() {
+  await sesion.cerrarSesion();
+  router.push('/login');
+}
 
 // Estado de comandas
 const comandas = ref([]);
@@ -323,6 +334,17 @@ onUnmounted(() => {
         >
           <RefreshCw :size="16" stroke-width="2.2" :class="{ 'animate-spin': cargando }" />
           <span class="hidden sm:inline">Refrescar</span>
+        </button>
+
+        <!-- Botón de Cerrar Sesión -->
+        <button
+          type="button"
+          @click="manejarCerrarSesion"
+          class="flex h-11 items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 text-sm font-semibold text-rose-600 hover:bg-rose-100 active:scale-95 transition-all cursor-pointer shadow-xs"
+          title="Cerrar sesión"
+        >
+          <LogOut :size="16" />
+          <span class="hidden sm:inline">Salir</span>
         </button>
       </div>
     </header>

@@ -14,15 +14,43 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'role'               => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'No autenticado. Token ausente o inválido.',
+                    'data'    => null,
+                ], 401);
+            }
+        });
+
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {
+            if ($request->is('api/*')) {
+                $codigo = auth()->check() ? 403 : 401;
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => auth()->check()
+                        ? 'No tienes permisos suficientes para realizar esta acción.'
+                        : 'No autenticado.',
+                    'data'    => null,
+                ], $codigo);
+            }
+        });
+
         $exceptions->render(function (ValidationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'status' => 'error',
+                    'status'  => 'error',
                     'message' => $e->getMessage(),
-                    'data' => ['errores' => $e->errors()],
+                    'errors'  => $e->errors(),
+                    'data'    => ['errores' => $e->errors()],
                 ], $e->status);
             }
         });
@@ -35,9 +63,9 @@ return Application::configure(basePath: dirname(__DIR__))
             $codigo = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
 
             return response()->json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => $e->getMessage() ?: 'Ocurrió un error inesperado.',
-                'data' => null,
+                'data'    => null,
             ], $codigo);
         });
     })->create();

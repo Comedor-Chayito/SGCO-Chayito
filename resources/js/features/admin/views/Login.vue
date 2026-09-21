@@ -11,6 +11,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ChefHat, Mail, Eye, EyeOff, LogIn, Loader2 } from '@lucide/vue'
 import { useSesionStore } from '@/stores/sesion.js'
+import { obtenerRutaInicioPorRol } from '@/router/index.js'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -84,7 +85,7 @@ async function manejarLogin() {
     )
 
     if (exito) {
-      router.push({ name: 'pos' })
+      router.push(obtenerRutaInicioPorRol(sesion.rol))
     } else {
       error.value =
         'Correo o contraseña incorrectos. Verifica tus datos.'

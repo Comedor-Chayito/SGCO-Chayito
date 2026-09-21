@@ -83,6 +83,27 @@ const router = createRouter({
 });
 
 /**
+ * Determina la ruta de inicio por defecto según el rol del usuario autenticado.
+ *
+ * @param   {string|null} rol Rol asignado al usuario.
+ * @returns {object} Objeto de ruta de Vue Router.
+ */
+export function obtenerRutaInicioPorRol(rol) {
+  switch (rol) {
+    case 'cocinero':
+    case 'cocinera':
+      return { name: 'cocina' };
+    case 'contadora':
+      return { name: 'contabilidad' };
+    case 'mesero':
+    case 'cajero':
+    case 'administrador':
+    default:
+      return { name: 'pos' };
+  }
+}
+
+/**
  * Guarda de navegación global: verifica autenticación y rol.
  * El guard solo se activa cuando VITE_AUTH_ENABLED=true en el .env.
  * Hasta que US-ADM-02 implemente Sanctum, la bandera permanece desactivada.
@@ -91,34 +112,44 @@ const router = createRouter({
  * @fecha  2026-09-19
  * @módulo Core – RF-ADM-008
  */
-router.beforeEach((to) => {
-  const authActivo =
-    import.meta.env.VITE_AUTH_ENABLED === 'true';
+router.beforeEach(async (to) => {
+  const authActivo = import.meta.env.VITE_AUTH_ENABLED !== 'false';
 
   if (!authActivo) return true;
 
   const sesion = useSesionStore();
 
-  // Rutas públicas (login, inicio) — accesibles sin token
+  // Si hay token pero no se ha cargado el usuario, intentar refrescarlo
+  if (sesion.autenticado && !sesion.usuario) {
+    await sesion.cargarUsuario();
+  }
+
+  const rutaDestino = obtenerRutaInicioPorRol(sesion.rol);
+
+  // Rutas públicas (login, inicio)
   if (to.meta.publica || to.name === 'inicio') {
-    // Si ya está autenticado, no dejarlo volver al login
+    // Si ya está autenticado, no permitir volver a login
     if (to.name === 'login' && sesion.autenticado) {
-      return { name: 'pos' };
+      return rutaDestino;
     }
     return true;
   }
 
-  // Sin token → redirigir al login
+  // Si no está autenticado, redirigir a login
   if (!sesion.autenticado) {
     return { name: 'login' };
   }
 
-  // Verificar rol si la ruta lo exige
-  if (
-    to.meta.roles &&
-    !to.meta.roles.includes(sesion.rol)
-  ) {
-    return { name: 'pos' };
+  // Verificar restricción de roles
+  if (to.meta.roles && to.meta.roles.length > 0) {
+    const rolActual = sesion.rol;
+    if (!rolActual || !to.meta.roles.includes(rolActual)) {
+      // Si el usuario no tiene acceso a la ruta solicitada, redirigir a su vista permitida
+      if (to.name === rutaDestino.name) {
+        return { name: 'login' };
+      }
+      return rutaDestino;
+    }
   }
 
   return true;

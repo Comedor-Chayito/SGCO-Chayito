@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProcesarCobroRequest;
+use App\Models\User;
 use App\Services\CobroService;
 use Illuminate\Http\JsonResponse;
 
@@ -33,8 +34,7 @@ class VentaController extends Controller
      */
     public function cobrar(ProcesarCobroRequest $request): JsonResponse
     {
-        // TODO US-ADM-02: reemplazar 1 por auth()->id() cuando Sanctum esté activo
-        $usuarioId = 1;
+        $usuarioId = auth('sanctum')->id() ?? auth()->id() ?? User::query()->value('id') ?? 1;
 
         $venta = $this->cobroService->procesarCobro($request, $usuarioId);
 
