@@ -33,6 +33,12 @@ class AuthService
             ]);
         }
 
+        if (! $usuario->activo) {
+            throw ValidationException::withMessages([
+                'email' => 'Esta cuenta de usuario se encuentra desactivada.',
+            ]);
+        }
+
         $token = $usuario->createToken(self::NOMBRE_TOKEN)->plainTextToken;
 
         return [
