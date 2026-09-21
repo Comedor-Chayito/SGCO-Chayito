@@ -5,23 +5,28 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ActualizarEstadoComandaRequest;
 use App\Http\Requests\RegistrarComandaRequest;
 use App\Models\Comanda;
+use App\Models\User;
 use App\Services\ComandaService;
+use App\Services\TicketImpresionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ComandaController extends Controller
 {
     /**
-     * Inicializa el controlador con el servicio de comandas inyectado.
+     * Inicializa el controlador con los servicios requeridos.
      *
-     * @autor  Jeferson De La Cruz
+     * @autor  Jeferson De La Cruz / Equipo SGCO-Chayito
      * @fecha  2026-09-18
      * @módulo POS – RF-POS-001
      *
-     * @param  ComandaService $comandaService Servicio de lógica de negocio de comandas.
+     * @param  ComandaService         $comandaService         Servicio de lógica de negocio de comandas.
+     * @param  TicketImpresionService $ticketImpresionService Servicio de formateo térmico para cocina.
      */
-    public function __construct(private readonly ComandaService $comandaService)
-    {
+    public function __construct(
+        private readonly ComandaService $comandaService,
+        private readonly TicketImpresionService $ticketImpresionService
+    ) {
     }
 
     /**
@@ -77,8 +82,7 @@ class ComandaController extends Controller
      */
     public function registrar(RegistrarComandaRequest $request): JsonResponse
     {
-        // TODO US-ADM-02: reemplazar 1 por auth()->id() cuando Sanctum esté listo
-        $usuarioId = 1;
+        $usuarioId = auth('sanctum')->id() ?? auth()->id() ?? User::query()->value('id') ?? 1;
 
         $comanda = $this->comandaService->registrar($request, $usuarioId);
 
@@ -170,6 +174,29 @@ class ComandaController extends Controller
             'status'  => 'ok',
             'message' => 'Estado de la comanda actualizado correctamente.',
             'data'    => $comandaActualizada,
+        ]);
+    }
+
+    /**
+     * Devuelve el formato de impresión térmica de la comanda para cocina (58 mm / 80 mm).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-20
+     * @módulo POS – US-POS-02 / RF-POS-001 / Sec. 3.1.2
+     *
+     * @param  Request $request Solicitud con parámetro ?ancho=58|80
+     * @param  Comanda $comanda Instancia de la comanda.
+     * @return JsonResponse Payload con líneas formateadas, texto plano y comandos ESC/POS.
+     */
+    public function impresion(Request $request, Comanda $comanda): JsonResponse
+    {
+        $ancho = (int) $request->query('ancho', 58);
+        $ticket = $this->ticketImpresionService->generarTicketCocina($comanda, $ancho);
+
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'Ticket de cocina generado correctamente.',
+            'data'    => $ticket,
         ]);
     }
 }

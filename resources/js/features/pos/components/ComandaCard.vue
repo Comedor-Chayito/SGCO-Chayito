@@ -18,9 +18,11 @@ import {
   MessageSquare,
   ShoppingBag,
   Store,
+  Printer,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import ModalTicketCocina from '@/features/pos/components/ModalTicketCocina.vue';
 
 const props = defineProps({
   comanda: {
@@ -38,6 +40,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['cambiarEstado']);
+
+// Control del modal de impresión térmica
+const modalImpresionAbierto = ref(false);
 
 // Temporizador reactivo para calcular minutos transcurridos en tiempo real
 const ahora = ref(Date.now());
@@ -202,6 +207,15 @@ function solicitarCambioEstado(nuevoEstado) {
           <h3 class="text-lg font-bold text-[#3D3D3D] tracking-tight">
             Orden #{{ comanda.id }}
           </h3>
+          <button
+            type="button"
+            @click="modalImpresionAbierto = true"
+            class="flex items-center justify-center h-7 w-7 rounded-lg text-zinc-400 hover:text-[#F26A21] hover:bg-orange-50 border border-transparent hover:border-orange-200 transition-all cursor-pointer"
+            title="Imprimir comanda térmica (58 mm / 80 mm)"
+            :id="`btn-imprimir-${comanda.id}`"
+          >
+            <Printer :size="15" />
+          </button>
         </div>
         <p class="text-sm text-[#6B6B6B] mt-0.5">
           {{ comanda.created_at ? new Date(comanda.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '' }}
@@ -315,5 +329,12 @@ function solicitarCambioEstado(nuevoEstado) {
         Comanda completada
       </div>
     </div>
+
+    <!-- Modal de Impresión Térmica para Cocina (US-POS-02 / RF-POS-001) -->
+    <ModalTicketCocina
+      :abierto="modalImpresionAbierto"
+      :comanda-id="comanda.id"
+      @cerrar="modalImpresionAbierto = false"
+    />
   </div>
 </template>

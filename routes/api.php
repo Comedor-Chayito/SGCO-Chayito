@@ -47,6 +47,7 @@ Route::get('/comandas',                     [ComandaController::class, 'index'])
 Route::post('/comandas',                    [ComandaController::class, 'registrar']);
 Route::get('/comandas/cocina',              [ComandaController::class, 'colaCocina']);
 Route::patch('/comandas/{comanda}/estado',  [ComandaController::class, 'actualizarEstado']);
+Route::get('/comandas/{comanda}/impresion', [ComandaController::class, 'impresion']);
 
 // Módulo POS — RF-POS-002 (Cobros y Ventas)
 Route::post('/cobros',       [VentaController::class, 'cobrar']);
