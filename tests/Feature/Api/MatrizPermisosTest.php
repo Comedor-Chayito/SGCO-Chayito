@@ -11,12 +11,12 @@ use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
- * Pruebas de la Matriz de Permisos por Rol RBAC (US-ADM-01 / RF-ADM-008 / CC-85).
+ * Pruebas de la Matriz de Permisos por Rol RBAC (US-ADM-01 / RF-ADM-008 / CC-85 / CC-88).
  * Valida la consistencia de la matriz de acceso, herencia y restricciones por puesto.
  *
  * @autor  Equipo SGCO-Chayito
  * @fecha  2026-09-20
- * @módulo Administración y Seguridad – RF-ADM-008 (CC-85)
+ * @módulo Administración y Seguridad – RF-ADM-008 (CC-85 / CC-88)
  */
 class MatrizPermisosTest extends TestCase
 {

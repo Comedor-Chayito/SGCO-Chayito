@@ -11,11 +11,12 @@ use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
- * Pruebas del CRUD de usuarios y roles RBAC (US-ADM-01 / RF-ADM-008 / CC-84).
+ * Pruebas del CRUD de usuarios y roles RBAC (US-ADM-01 / RF-ADM-008 / CC-84 / CC-88).
+ * Verifica la gestión completa de usuarios, roles, seguridad de tokens y restricciones.
  *
  * @autor  Equipo SGCO-Chayito
  * @fecha  2026-09-20
- * @módulo Administración y Seguridad – RF-ADM-008
+ * @módulo Administración y Seguridad – RF-ADM-008 (CC-88)
  */
 class UsuarioTest extends TestCase
 {
