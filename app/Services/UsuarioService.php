@@ -212,14 +212,21 @@ class UsuarioService
             }
         }
 
-        // Verificar integridad referencial: comandas, ventas o retiros
-        $tieneComandas = DB::table('comandas')->where('usuario_id', $usuario->id)->exists();
-        $tieneVentas   = DB::table('ventas')->where('usuario_id', $usuario->id)->exists();
-        $tieneRetiros  = DB::table('retiros_parciales')->where('usuario_id', $usuario->id)->exists();
+        // Verificar integridad referencial: comandas, ventas, retiros o auditoría
+        $tieneComandas   = DB::table('comandas')->where('usuario_id', $usuario->id)->exists();
+        $tieneVentas     = DB::table('ventas')->where('usuario_id', $usuario->id)->exists();
+        $tieneRetiros    = DB::table('retiros_parciales')->where('usuario_id', $usuario->id)->exists();
+        $tieneAuditorias = DB::table('auditorias')->where('usuario_id', $usuario->id)->exists();
 
         if ($tieneComandas || $tieneVentas || $tieneRetiros) {
             throw ValidationException::withMessages([
                 'usuario' => 'No es posible eliminar permanentemente este usuario porque posee registros operativos vinculados (comandas, ventas o retiros). Se recomienda desactivar la cuenta para bloquear su acceso conservando la trazabilidad contable.',
+            ]);
+        }
+
+        if ($tieneAuditorias) {
+            throw ValidationException::withMessages([
+                'usuario' => 'No es posible eliminar permanentemente este usuario porque registra acciones en el historial de auditoría (RF-ADM-008). Se recomienda desactivar la cuenta para conservar la trazabilidad.',
             ]);
         }
 
