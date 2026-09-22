@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
@@ -54,3 +55,8 @@ Route::post('/cobros',       [VentaController::class, 'cobrar']);
 Route::post('/ventas',       [VentaController::class, 'cobrar']);
 Route::get('/cobros/{id}',   [VentaController::class, 'mostrar']);
 Route::get('/ventas/{id}',   [VentaController::class, 'mostrar']);
+
+// Módulo POS — RF-POS-002 (Cierre de Caja)
+Route::post('/cierres-caja',        [CierreCajaController::class, 'cerrar']);
+Route::get('/cierres-caja',         [CierreCajaController::class, 'historial']);
+Route::get('/cierres-caja/{fecha}', [CierreCajaController::class, 'mostrar']);
