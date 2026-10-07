@@ -36,6 +36,18 @@ const routes = [
     meta: { roles: ['cocinero', 'cajero', 'administrador'] },
   },
   {
+    path: '/caja',
+    name: 'caja',
+    component: () => import('@/features/pos/views/PantallaCobro.vue'),
+    meta: { roles: ['cajero', 'administrador'] },
+  },
+  {
+    path: '/caja/ticket/:id',
+    name: 'ticket-venta',
+    component: () => import('@/features/pos/views/TicketVenta.vue'),
+    meta: { roles: ['cajero', 'administrador'] },
+  },
+  {
     path: '/pos/cocina',
     redirect: '/cocina',
   },

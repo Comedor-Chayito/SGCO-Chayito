@@ -298,7 +298,7 @@ function solicitarCambioEstado(nuevoEstado) {
         <button
           type="button"
           :disabled="procesando"
-          @click="solicitarCambioEstado('pagada')"
+          @click="solicitarCambioEstado('lista')"
           class="flex-1 min-h-[46px] px-4 py-2.5 rounded-xl bg-[#2E7D4F] hover:bg-[#2E7D4F]/90 active:scale-[0.98] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-all duration-150 disabled:opacity-50 cursor-pointer"
           :id="`btn-completar-${comanda.id}`"
         >
