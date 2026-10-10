@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Insumo extends Model
+{
+    protected $fillable = [
+        'nombre',
+        'unidad_medida',
+        'stock_actual',
+        'stock_minimo',
+    ];
+
+    protected $casts = [
+        'stock_actual' => 'decimal:2',
+        'stock_minimo' => 'decimal:2',
+    ];
+
+    /**
+     * Obtiene los renglones de receta donde se usa este insumo.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-10
+     * @módulo Inventario – RF-INV-003
+     *
+     * @return HasMany<Receta>
+     */
+    public function recetas(): HasMany
+    {
+        return $this->hasMany(Receta::class);
+    }
+}

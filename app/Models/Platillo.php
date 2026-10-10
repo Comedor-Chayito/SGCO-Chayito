@@ -32,4 +32,18 @@ class Platillo extends Model
     {
         return $this->hasMany(ComandaDetalle::class);
     }
+
+    /**
+     * Obtiene los renglones de receta (insumos y porción base) de este platillo.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-10
+     * @módulo Inventario – RF-INV-003
+     *
+     * @return HasMany<Receta>
+     */
+    public function recetas(): HasMany
+    {
+        return $this->hasMany(Receta::class);
+    }
 }
