@@ -32,4 +32,18 @@ class Insumo extends Model
     {
         return $this->hasMany(Receta::class);
     }
+
+    /**
+     * Obtiene los renglones de requisición donde se solicita este insumo.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-10
+     * @módulo Inventario – RF-INV-004
+     *
+     * @return HasMany<RequisicionDetalle>
+     */
+    public function requisicionDetalles(): HasMany
+    {
+        return $this->hasMany(RequisicionDetalle::class);
+    }
 }
