@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ActualizarEstadoComandaRequest extends FormRequest
@@ -23,6 +24,8 @@ class ActualizarEstadoComandaRequest extends FormRequest
 
     /**
      * Reglas de validación para actualizar el estado de una comanda.
+     * El estado "pagada" solo lo asigna caja al cobrar (POST /api/cobros), y una
+     * comanda ya pagada no puede regresar a la cola de cocina.
      *
      * @autor  Equipo SGCO-Chayito
      * @fecha  2026-09-19
@@ -33,7 +36,16 @@ class ActualizarEstadoComandaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'estado' => ['required', 'string', 'in:pendiente,en_cocina,pagada,cancelada'],
+            'estado' => [
+                'required',
+                'string',
+                'in:pendiente,en_preparacion,lista,cancelada',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if ($this->route('comanda')?->estado === 'pagada') {
+                        $fail('La comanda ya fue pagada y no puede cambiar de estado.');
+                    }
+                },
+            ],
         ];
     }
 
@@ -50,7 +62,7 @@ class ActualizarEstadoComandaRequest extends FormRequest
     {
         return [
             'estado.required' => 'El estado de la comanda es obligatorio.',
-            'estado.in'       => 'El estado debe ser: pendiente, en_cocina, pagada o cancelada.',
+            'estado.in'       => 'El estado debe ser: pendiente, en_preparacion, lista o cancelada.',
         ];
     }
 }

@@ -9,7 +9,7 @@
  * @fecha  2026-10-07
  * @módulo POS – US-POS-03 / RF-POS-002
  */
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   ArrowLeft,
@@ -25,11 +25,16 @@ import {
   ChefHat,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
-import { useCocinaStore } from '@/features/pos/stores/useCocinaStore.js';
-import { procesarCobro } from '@/features/pos/services/posService.js';
+import { obtenerComandas, procesarCobro } from '@/features/pos/services/posService.js';
 
 const router = useRouter();
-const cocinaStore = useCocinaStore();
+
+// Comandas que la cocina marcó como listas, leídas de la BD
+const comandasListas = ref([]);
+
+// Sondeo periódico para ver las comandas que cocina va terminando
+const INTERVALO_POLLING_MS = 3000;
+let pollingTimer = null;
 
 // Comanda seleccionada para cobrar
 const comandaSeleccionada = ref(null);
@@ -113,6 +118,25 @@ function infoCanal(comanda) {
 }
 
 /**
+ * Consulta en el backend las comandas en estado "lista" pendientes de cobro.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-12
+ * @módulo POS – US-POS-03 / RF-POS-002
+ *
+ * @param {boolean} esSilencioso Si es true, no muestra error al fallar (sondeo de fondo).
+ */
+async function cargarComandasListas(esSilencioso = false) {
+  try {
+    comandasListas.value = await obtenerComandas('lista');
+  } catch (error) {
+    if (!esSilencioso) {
+      toast.error('Error al cargar las comandas listas para cobro.');
+    }
+  }
+}
+
+/**
  * Selecciona una comanda para cobrar y limpia el formulario anterior.
  *
  * @autor  Equipo SGCO-Chayito
@@ -129,7 +153,7 @@ function seleccionarComanda(comanda) {
 
 /**
  * Confirma el cobro de la comanda seleccionada llamando al backend.
- * Si es exitoso, retira la comanda del store local y navega al ticket.
+ * Si es exitoso, navega al ticket (la BD ya deja la comanda en "pagada").
  *
  * @autor  Equipo SGCO-Chayito
  * @fecha  2026-10-07
@@ -145,9 +169,6 @@ async function confirmarCobro() {
       monto_recibido: parseFloat(montoRecibido.value),
       metodo_pago:    metodoPago.value,
     });
-
-    // Retirar del estado local del store (la BD ya tiene estado "pagada")
-    cocinaStore.retirarCompletada(comandaSeleccionada.value.id);
 
     toast.success(`Cobro procesado. Cambio: $${cambio.value.toFixed(2)}`);
 
@@ -169,6 +190,15 @@ async function confirmarCobro() {
 function formatearMoneda(valor) {
   return `$${Number(valor).toFixed(2)}`;
 }
+
+onMounted(() => {
+  cargarComandasListas();
+  pollingTimer = setInterval(() => cargarComandasListas(true), INTERVALO_POLLING_MS);
+});
+
+onUnmounted(() => {
+  if (pollingTimer) clearInterval(pollingTimer);
+});
 </script>
 
 <template>
@@ -200,11 +230,11 @@ function formatearMoneda(valor) {
       <!-- Badge de comandas en espera -->
       <div class="flex items-center gap-2">
         <span
-          v-if="cocinaStore.totalListasCobro > 0"
+          v-if="comandasListas.length > 0"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-[#2E7D4F] text-xs font-bold"
         >
           <CheckCircle2 :size="14" stroke-width="2.5" />
-          {{ cocinaStore.totalListasCobro }} lista(s) para cobro
+          {{ comandasListas.length }} lista(s) para cobro
         </span>
       </div>
     </header>
@@ -220,13 +250,13 @@ function formatearMoneda(valor) {
             <span class="text-sm font-bold text-[#3D3D3D]">Comandas listas</span>
           </div>
           <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-[#2E7D4F] text-xs font-bold">
-            {{ cocinaStore.totalListasCobro }}
+            {{ comandasListas.length }}
           </span>
         </div>
 
         <!-- Sin comandas listas -->
         <div
-          v-if="cocinaStore.comandasListasCobro.length === 0"
+          v-if="comandasListas.length === 0"
           class="flex-1 flex flex-col items-center justify-center p-8 text-center"
         >
           <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FAF7F4] border border-[#E5E0DB] mb-3">
@@ -239,7 +269,7 @@ function formatearMoneda(valor) {
         <!-- Lista de comandas listas -->
         <div v-else class="flex-1 overflow-y-auto p-3 space-y-2">
           <button
-            v-for="comanda in cocinaStore.comandasListasCobro"
+            v-for="comanda in comandasListas"
             :key="comanda.id"
             type="button"
             class="w-full text-left p-3 rounded-xl border transition-all cursor-pointer"

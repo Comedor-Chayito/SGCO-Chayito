@@ -64,12 +64,28 @@ export async function registrarComanda(payload) {
  * @fecha  2026-09-19
  * @módulo POS – US-POS-02 / RF-POS-001
  *
- * @param   {string|null} [filtroEstado=null] Filtro opcional por estado ('pendiente', 'en_cocina').
+ * @param   {string|null} [filtroEstado=null] Filtro opcional por estado ('pendiente', 'en_preparacion').
  * @returns {Promise<Array>} Lista de comandas ordenadas cronológicamente con sus detalles.
  */
 export async function obtenerColaCocina(filtroEstado = null) {
   const params = filtroEstado ? { estado: filtroEstado } : {};
   const respuesta = await api.get('/comandas/cocina', { params });
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene las comandas registradas, con filtro opcional por estado (ej. 'lista' para caja).
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-12
+ * @módulo POS – US-POS-03 / RF-POS-002
+ *
+ * @param   {string|null} [estado=null] Estado por el cual filtrar.
+ * @returns {Promise<Array>} Lista de comandas con detalles, mesa y usuario.
+ */
+export async function obtenerComandas(estado = null) {
+  const params = estado ? { estado } : {};
+  const respuesta = await api.get('/comandas', { params });
   return respuesta.data.data;
 }
 
@@ -81,7 +97,7 @@ export async function obtenerColaCocina(filtroEstado = null) {
  * @módulo POS – US-POS-02 / RF-POS-001
  *
  * @param   {number} idComanda   Identificador de la comanda.
- * @param   {string} nuevoEstado Nuevo estado ('en_cocina', 'pagada', 'cancelada').
+ * @param   {string} nuevoEstado Nuevo estado ('pendiente', 'en_preparacion', 'lista', 'cancelada').
  * @returns {Promise<Object>} Comanda actualizada.
  */
 export async function actualizarEstadoComanda(idComanda, nuevoEstado) {

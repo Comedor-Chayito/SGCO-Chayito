@@ -113,7 +113,7 @@ const infoCanal = computed(() => {
 
 // Estado de la orden
 const esPendiente = computed(() => props.comanda.estado === 'pendiente');
-const esEnCocina = computed(() => props.comanda.estado === 'en_cocina');
+const esEnCocina = computed(() => props.comanda.estado === 'en_preparacion');
 
 // Observación general a nivel de pedido (muestra comanda.observaciones o unifica notas de bandeja)
 const observacionGeneral = computed(() => {
@@ -275,7 +275,7 @@ function solicitarCambioEstado(nuevoEstado) {
         v-if="esPendiente"
         type="button"
         :disabled="procesando"
-        @click="solicitarCambioEstado('en_cocina')"
+        @click="solicitarCambioEstado('en_preparacion')"
         class="w-full min-h-[46px] px-4 py-2.5 rounded-xl bg-[#F26A21] hover:bg-[#FF8C42] active:scale-[0.98] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-all duration-150 disabled:opacity-50 cursor-pointer"
         :id="`btn-iniciar-${comanda.id}`"
       >

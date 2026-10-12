@@ -24,9 +24,6 @@ import {
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
 import { obtenerColaCocina, actualizarEstadoComanda } from '@/features/pos/services/posService.js';
-import { useCocinaStore } from '@/features/pos/stores/useCocinaStore.js';
-
-const cocinaStore = useCocinaStore();
 import ComandaCard from '@/features/pos/components/ComandaCard.vue';
 import ComandaCompletadaItem from '@/features/pos/components/ComandaCompletadaItem.vue';
 
@@ -35,7 +32,7 @@ const comandas = ref([]);
 const completadas = ref([]);
 const cargando = ref(true);
 const procesandoId = ref(null);
-const filtroEstado = ref('todas'); // 'todas', 'pendiente', 'en_cocina', 'completadas'
+const filtroEstado = ref('todas'); // 'todas', 'pendiente', 'en_preparacion', 'completadas'
 const sonidoHabilitado = ref(true);
 const autoRefresco = ref(true);
 
@@ -64,7 +61,7 @@ const TABS = [
     count: () => totalPendientes.value,
   },
   {
-    id: 'en_cocina',
+    id: 'en_preparacion',
     label: 'En Preparación',
     icon: 'Flame',
     colorActivo: 'text-amber-700',
@@ -160,14 +157,10 @@ async function cargarComandas(esSilencioso = false) {
       activas = datos;
     }
 
-    // Detectar si hay órdenes nuevas que no estaban antes.
-    // Se excluyen las que el cocinero ya marcó como "lista" localmente para
-    // evitar que el polling las reporte como nuevas en cada ciclo.
+    // Detectar si hay órdenes nuevas que no estaban antes
     if (comandas.value.length > 0 && activas.length > 0) {
       const idsActuales = new Set(comandas.value.map(c => c.id));
-      const nuevasOrdenes = activas.filter(
-        c => !idsActuales.has(c.id) && !cocinaStore.esLista(c.id)
-      );
+      const nuevasOrdenes = activas.filter(c => !idsActuales.has(c.id));
 
       if (nuevasOrdenes.length > 0) {
         reproducirCampanilla();
@@ -181,9 +174,7 @@ async function cargarComandas(esSilencioso = false) {
       }
     }
 
-    // Excluir del array activo las comandas que el cocinero ya marcó como
-    // "lista para cobro" localmente, para que no reaparezcan con el polling.
-    comandas.value = activas.filter(c => !cocinaStore.esLista(c.id));
+    comandas.value = activas;
     completadas.value = nuevasCompletadas;
     ultimoRefresco.value = new Date();
   } catch (error) {
@@ -218,43 +209,27 @@ async function manejarReactivarComanda(id) {
 }
 
 /**
- * Maneja la transición de estado de una comanda.
- * Si el nuevo estado es 'lista', la operación es solo local (sin backend):
- * guarda la comanda en el store de cocina para que la pantalla de caja
- * la muestre y procese el cobro real.
- * Cualquier otro estado (pendiente ↔ en_cocina) sí actualiza la BD.
+ * Maneja la transición de estado de una comanda y la persiste en la BD:
+ * pendiente ↔ en_preparacion → lista. El paso a "pagada" lo hace caja al cobrar.
  *
- * @autor  Equipo SGCO-Chayito
- * @fecha  2026-10-07
- * @módulo POS – US-POS-03 / RF-POS-002
+ * @autor  manuelmv15
+ * @fecha  2026-10-12
+ * @módulo POS – US-POS-02 / RF-POS-001
  *
  * @param {{ id: number, nuevoEstado: string }} evento Payload del evento emitido por la tarjeta.
  */
 async function manejarCambioEstado({ id, nuevoEstado }) {
-  // --- Flujo local (sin BD): cocinero marca la comanda como lista para cobro ---
-  if (nuevoEstado === 'lista') {
-    const comanda = comandas.value.find(c => c.id === id);
-    if (!comanda) return;
-
-    cocinaStore.marcarComoLista(comanda);
-
-    // Sacar inmediatamente del array activo (el polling ya la filtrará)
-    comandas.value = comandas.value.filter(c => c.id !== id);
-
-    toast.success(`Orden #${id} lista. Pasa a Caja para cobro.`, {
-      description: 'La comanda está en espera de cobro.',
-      duration: 6000,
-    });
-    return;
-  }
-
-  // --- Flujo normal: actualiza estado en la BD (pendiente ↔ en_cocina, cancelada) ---
   procesandoId.value = id;
   try {
     await actualizarEstadoComanda(id, nuevoEstado);
 
-    if (nuevoEstado === 'en_cocina') {
+    if (nuevoEstado === 'en_preparacion') {
       toast.success(`Orden #${id} en preparación.`);
+    } else if (nuevoEstado === 'lista') {
+      toast.success(`Orden #${id} lista. Pasa a Caja para cobro.`, {
+        description: 'La comanda está en espera de cobro.',
+        duration: 6000,
+      });
     } else {
       toast.info(`Orden #${id} actualizada a ${nuevoEstado}.`);
     }
@@ -279,7 +254,10 @@ const totalPendientes = computed(() =>
   comandas.value.filter(c => c.estado === 'pendiente').length
 );
 const totalEnCocina = computed(() =>
-  comandas.value.filter(c => c.estado === 'en_cocina').length
+  comandas.value.filter(c => c.estado === 'en_preparacion').length
+);
+const totalListasCobro = computed(() =>
+  completadas.value.filter(c => c.estado === 'lista').length
 );
 
 // Iniciar y pausar el temporizador de polling
@@ -346,17 +324,17 @@ onUnmounted(() => {
         <RouterLink
           to="/caja"
           class="relative flex h-11 items-center gap-2 rounded-xl border border-[#E5E0DB] bg-white px-3.5 text-sm font-semibold text-[#3D3D3D] hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer shadow-xs"
-          :class="cocinaStore.totalListasCobro > 0 ? 'border-[#2E7D4F] bg-emerald-50 text-[#2E7D4F]' : ''"
+          :class="totalListasCobro > 0 ? 'border-[#2E7D4F] bg-emerald-50 text-[#2E7D4F]' : ''"
           title="Ir a Caja"
         >
           <Receipt :size="16" stroke-width="2.2" />
           <span class="hidden sm:inline">Caja</span>
           <!-- Badge con cantidad de comandas listas -->
           <span
-            v-if="cocinaStore.totalListasCobro > 0"
+            v-if="totalListasCobro > 0"
             class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#2E7D4F] text-white text-[10px] font-black"
           >
-            {{ cocinaStore.totalListasCobro }}
+            {{ totalListasCobro }}
           </span>
         </RouterLink>
 
