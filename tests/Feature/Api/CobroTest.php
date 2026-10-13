@@ -357,5 +357,119 @@ class CobroTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * Valida el cálculo exacto de cambio con centavos y fracciones (CC-33).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-12
+     * @módulo POS – US-POS-03 / CC-33
+     *
+     * @return void
+     */
+    public function test_calculo_cambio_con_centavos_y_fracciones(): void
+    {
+        // Actualizamos subtotal con centavos (ej. $7.35)
+        $this->comanda->update(['subtotal' => 7.35]);
+
+        $payload = [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 10.00,
+            'metodo_pago'    => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.total', '7.35')
+            ->assertJsonPath('data.monto_recibido', '10.00')
+            ->assertJsonPath('data.cambio', '2.65');
+
+        $this->assertDatabaseHas('ventas', [
+            'comanda_id'     => $this->comanda->id,
+            'total'          => 7.35,
+            'monto_recibido' => 10.00,
+            'cambio'         => 2.65,
+        ]);
+    }
+
+    /**
+     * Valida el cálculo de cambio al pagar con billete de $20.00 (CC-33).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-12
+     * @módulo POS – US-POS-03 / CC-33
+     *
+     * @return void
+     */
+    public function test_calculo_cambio_con_billete_de_veinte_dolares(): void
+    {
+        $this->comanda->update(['subtotal' => 12.50]);
+
+        $payload = [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 20.00,
+            'metodo_pago'    => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.total', '12.50')
+            ->assertJsonPath('data.monto_recibido', '20.00')
+            ->assertJsonPath('data.cambio', '7.50');
+    }
+
+    /**
+     * Valida que el pago exacto con centavos genera cambio $0.00 (CC-33).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-12
+     * @módulo POS – US-POS-03 / CC-33
+     *
+     * @return void
+     */
+    public function test_calculo_cambio_con_pago_exacto_en_centavos(): void
+    {
+        $this->comanda->update(['subtotal' => 8.75]);
+
+        $payload = [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 8.75,
+            'metodo_pago'    => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.total', '8.75')
+            ->assertJsonPath('data.monto_recibido', '8.75')
+            ->assertJsonPath('data.cambio', '0.00');
+    }
+
+    /**
+     * Valida que si el monto recibido es tan solo 1 centavo menor al total, se rechaza (CC-33).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-12
+     * @módulo POS – US-POS-03 / CC-33
+     *
+     * @return void
+     */
+    public function test_calculo_cambio_rechaza_centavo_menos_que_el_total(): void
+    {
+        $this->comanda->update(['subtotal' => 10.00]);
+
+        $payload = [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 9.99,
+            'metodo_pago'    => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['monto_recibido']);
+    }
 }
 
