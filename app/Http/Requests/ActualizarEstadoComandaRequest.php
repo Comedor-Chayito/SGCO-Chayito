@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Comanda;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ActualizarEstadoComandaRequest extends FormRequest
@@ -33,7 +35,25 @@ class ActualizarEstadoComandaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'estado' => ['required', 'string', 'in:pendiente,en_cocina,pagada,cancelada'],
+            'estado' => [
+                'required',
+                'string',
+                'in:pendiente,en_cocina,pagada,cancelada',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    $comanda = $this->route('comanda');
+                    if (! ($comanda instanceof Comanda) && is_numeric($comanda)) {
+                        $comanda = Comanda::find($comanda);
+                    }
+
+                    if ($comanda instanceof Comanda) {
+                        if ($comanda->estado === 'pagada' && $value === 'pagada') {
+                            $fail('Esta comanda ya ha sido pagada.');
+                        } elseif ($comanda->estado === 'cancelada') {
+                            $fail('No se puede modificar el estado de una comanda cancelada.');
+                        }
+                    }
+                },
+            ],
         ];
     }
 
