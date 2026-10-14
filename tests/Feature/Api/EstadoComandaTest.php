@@ -133,28 +133,6 @@ class EstadoComandaTest extends TestCase
     }
 
     /**
-     * Valida que el estado "pagada" no puede asignarse por la ruta de cambio de estado;
-     * solo se asigna al procesar el cobro en caja.
-     *
-     * @autor  manuelmv15
-     * @fecha  2026-10-12
-     * @módulo POS – US-POS-02 / RF-POS-001
-     *
-     * @return void
-     */
-    public function test_no_se_puede_marcar_pagada_desde_cambio_de_estado(): void
-    {
-        $comanda = $this->crearComanda('lista');
-
-        $response = $this->patchJson("/api/comandas/{$comanda->id}/estado", ['estado' => 'pagada']);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['estado']);
-
-        $this->assertDatabaseHas('comandas', ['id' => $comanda->id, 'estado' => 'lista']);
-    }
-
-    /**
      * Valida que una comanda ya pagada no puede regresar a la cola de cocina.
      *
      * @autor  manuelmv15

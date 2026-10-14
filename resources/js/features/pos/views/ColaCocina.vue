@@ -575,6 +575,7 @@ onUnmounted(() => {
             :posicion="index + 1"
             :procesando="procesandoId === comanda.id"
             @cambiar-estado="manejarCambioEstado"
+            @comanda-cobrada="cargarComandas(false)"
           />
         </TransitionGroup>
       </template>

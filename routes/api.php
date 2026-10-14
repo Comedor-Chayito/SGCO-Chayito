@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
+use App\Http\Controllers\InsumoController;
+use App\Http\Controllers\RecetaController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Http\Request;
@@ -65,3 +67,17 @@ Route::get('/ventas/{id}',   [VentaController::class, 'mostrar']);
 Route::post('/cierres-caja',        [CierreCajaController::class, 'cerrar']);
 Route::get('/cierres-caja',         [CierreCajaController::class, 'historial']);
 Route::get('/cierres-caja/{fecha}', [CierreCajaController::class, 'mostrar']);
+
+// Módulo Inventario — CC-45: CRUD de insumos con unidad de medida (US-INV-01 / RF-INV-003)
+Route::get('/insumos',           [InsumoController::class, 'index']);
+Route::post('/insumos',          [InsumoController::class, 'store']);
+Route::get('/insumos/{insumo}',  [InsumoController::class, 'show']);
+Route::put('/insumos/{insumo}',  [InsumoController::class, 'update']);
+Route::delete('/insumos/{insumo}', [InsumoController::class, 'destroy']);
+
+// Módulo Inventario — CC-46: Vincular ingredientes a platillos (US-INV-01 / RF-INV-003)
+Route::get('/platillos/{platillo}/recetas',                        [RecetaController::class, 'index']);
+Route::post('/platillos/{platillo}/recetas',                       [RecetaController::class, 'store']);
+Route::put('/platillos/{platillo}/recetas/{receta}',               [RecetaController::class, 'update']);
+Route::delete('/platillos/{platillo}/recetas/{receta}',            [RecetaController::class, 'destroy']);
+

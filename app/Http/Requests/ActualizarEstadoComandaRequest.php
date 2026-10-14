@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Comanda;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,8 +25,8 @@ class ActualizarEstadoComandaRequest extends FormRequest
 
     /**
      * Reglas de validación para actualizar el estado de una comanda.
-     * El estado "pagada" solo lo asigna caja al cobrar (POST /api/cobros), y una
-     * comanda ya pagada no puede regresar a la cola de cocina.
+     * Una comanda pagada o cancelada no puede cambiar de estado, por lo que una
+     * comanda ya pagada no regresa a la cola de cocina (CC-28 / CC-34).
      *
      * @autor  Equipo SGCO-Chayito
      * @fecha  2026-09-19
@@ -39,10 +40,19 @@ class ActualizarEstadoComandaRequest extends FormRequest
             'estado' => [
                 'required',
                 'string',
-                'in:pendiente,en_preparacion,lista,cancelada',
+                'in:pendiente,en_preparacion,lista,pagada,cancelada',
                 function (string $attribute, mixed $value, Closure $fail): void {
-                    if ($this->route('comanda')?->estado === 'pagada') {
-                        $fail('La comanda ya fue pagada y no puede cambiar de estado.');
+                    $comanda = $this->route('comanda');
+                    if (! ($comanda instanceof Comanda) && is_numeric($comanda)) {
+                        $comanda = Comanda::find($comanda);
+                    }
+
+                    if ($comanda instanceof Comanda) {
+                        if ($comanda->estado === 'pagada') {
+                            $fail('Esta comanda ya ha sido pagada.');
+                        } elseif ($comanda->estado === 'cancelada') {
+                            $fail('No se puede modificar el estado de una comanda cancelada.');
+                        }
                     }
                 },
             ],
@@ -62,7 +72,7 @@ class ActualizarEstadoComandaRequest extends FormRequest
     {
         return [
             'estado.required' => 'El estado de la comanda es obligatorio.',
-            'estado.in'       => 'El estado debe ser: pendiente, en_preparacion, lista o cancelada.',
+            'estado.in'       => 'El estado debe ser: pendiente, en_preparacion, lista, pagada o cancelada.',
         ];
     }
 }
