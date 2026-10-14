@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProcesarCobroRequest;
-use App\Models\User;
 use App\Services\CobroService;
 use Illuminate\Http\JsonResponse;
 
@@ -34,9 +33,7 @@ class VentaController extends Controller
      */
     public function cobrar(ProcesarCobroRequest $request): JsonResponse
     {
-        $usuarioId = auth('sanctum')->id() ?? auth()->id() ?? User::query()->value('id') ?? 1;
-
-        $venta = $this->cobroService->procesarCobro($request, $usuarioId);
+        $venta = $this->cobroService->procesarCobro($request, $request->user()->id);
 
         return response()->json([
             'status'  => 'ok',

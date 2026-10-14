@@ -41,6 +41,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/usuarios/{usuario}',                [UsuarioController::class, 'destroy']);
         Route::patch('/usuarios/{usuario}/toggle-activo',   [UsuarioController::class, 'toggleActivo']);
     });
+
+    // Módulo POS — RF-POS-002 (Cobros y Ventas): solo cajero y administrador (CLAUDE.md §9)
+    Route::middleware('role:cajero|administrador')->group(function () {
+        Route::post('/cobros',     [VentaController::class, 'cobrar']);
+        Route::post('/ventas',     [VentaController::class, 'cobrar']);
+        Route::get('/cobros/{id}', [VentaController::class, 'mostrar']);
+        Route::get('/ventas/{id}', [VentaController::class, 'mostrar']);
+    });
 });
 
 // Módulo POS — RF-POS-001 (Comandas)
@@ -56,12 +64,6 @@ Route::get('/comandas/{comanda}/impresion', [ComandaController::class, 'impresio
 // IMPORTANTE: /comandas/cocina debe ir antes de /comandas/{comanda} para evitar conflicto de rutas
 Route::get('/comandas/cocina',              [ComandaController::class, 'colaCocina']);
 Route::patch('/comandas/{comanda}/estado',  [ComandaController::class, 'actualizarEstado']);
-
-// Módulo POS — RF-POS-002 (Cobros y Ventas)
-Route::post('/cobros',       [VentaController::class, 'cobrar']);
-Route::post('/ventas',       [VentaController::class, 'cobrar']);
-Route::get('/cobros/{id}',   [VentaController::class, 'mostrar']);
-Route::get('/ventas/{id}',   [VentaController::class, 'mostrar']);
 
 // Módulo POS — RF-POS-002 (Cierre de Caja)
 Route::post('/cierres-caja',        [CierreCajaController::class, 'cerrar']);
