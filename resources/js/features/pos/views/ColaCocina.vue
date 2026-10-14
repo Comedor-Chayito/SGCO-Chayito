@@ -14,13 +14,10 @@ import { useSesionStore } from '@/stores/sesion.js';
 import {
   ChefHat,
   RefreshCw,
-  Flame,
-  Clock,
   CheckCircle2,
   Volume2,
   VolumeX,
   ArrowLeft,
-  ChevronDown,
   Receipt,
   LogOut,
 } from '@lucide/vue';
@@ -43,64 +40,40 @@ const comandas = ref([]);
 const completadas = ref([]);
 const cargando = ref(true);
 const procesandoId = ref(null);
-const filtroEstado = ref('todas'); // 'todas', 'pendiente', 'en_preparacion', 'completadas'
 const sonidoHabilitado = ref(true);
 const autoRefresco = ref(true);
 
-// Control del collapsible de pestañas en móvil (< md)
-const tabsAbiertas = ref(false);
+// Estado del arrastre entre columnas del tablero (drag & drop nativo)
+const arrastrandoId = ref(null);
+const columnaDestino = ref(null);
 
 /**
- * Definición de las pestañas para reutilizar en el collapsible y la barra desktop.
- * Cada pestaña tiene: id, etiqueta, icono (componente Lucide), color activo y color badge.
+ * Columnas del tablero Kanban de cocina, en el orden del flujo de la comanda.
+ * Cada columna define los estados que agrupa y el estado que asigna al soltar una tarjeta.
  */
-const TABS = [
-  {
-    id: 'todas',
-    label: 'Todas activas',
-    icon: null,
-    colorActivo: 'text-[#F26A21]',
-    badgeActivo: 'bg-orange-100 text-[#C24E12]',
-    count: () => comandas.value.length,
-  },
+const COLUMNAS = [
   {
     id: 'pendiente',
     label: 'Pendientes',
-    icon: 'Clock',
-    colorActivo: 'text-[#2B6CB0]',
-    badgeActivo: 'bg-blue-100 text-[#2B6CB0]',
-    count: () => totalPendientes.value,
+    estadoDestino: 'pendiente',
+    punto: 'bg-[#2B6CB0]',
+    badge: 'bg-blue-100 text-[#2B6CB0]',
   },
   {
     id: 'en_preparacion',
-    label: 'En Preparación',
-    icon: 'Flame',
-    colorActivo: 'text-amber-700',
-    badgeActivo: 'bg-amber-100 text-amber-800',
-    count: () => totalEnCocina.value,
+    label: 'En preparación',
+    estadoDestino: 'en_preparacion',
+    punto: 'bg-[#E0A800]',
+    badge: 'bg-amber-100 text-amber-800',
   },
   {
-    id: 'completadas',
-    label: 'Completadas',
-    icon: 'CheckCircle2',
-    colorActivo: 'text-[#2E7D4F]',
-    badgeActivo: 'bg-emerald-100 text-[#2E7D4F]',
-    count: () => completadas.value.length,
+    id: 'lista',
+    label: 'Listas para cobro',
+    estadoDestino: 'lista',
+    punto: 'bg-[#2E7D4F]',
+    badge: 'bg-emerald-100 text-[#2E7D4F]',
   },
 ];
-
-/**
- * Cambia la pestaña activa y cierra el collapsible móvil al seleccionar.
- *
- * @param {string} tabId Identificador de la pestaña seleccionada.
- */
-function seleccionarTab(tabId) {
-  filtroEstado.value = tabId;
-  tabsAbiertas.value = false;
-}
-
-// Pestaña activa actual (objeto completo)
-const tabActiva = computed(() => TABS.find(t => t.id === filtroEstado.value));
 
 // Control de polling (sondeo cada 3 segundos)
 const INTERVALO_POLLING_MS = 3000;
@@ -254,19 +227,78 @@ async function manejarCambioEstado({ id, nuevoEstado }) {
   }
 }
 
-// Comandas filtradas según la pestaña seleccionada
-const comandasFiltradas = computed(() => {
-  if (filtroEstado.value === 'todas') return comandas.value;
-  return comandas.value.filter(c => c.estado === filtroEstado.value);
-});
+// Tarjetas agrupadas por columna; la columna de listas incluye también las ya pagadas
+const tarjetasPorColumna = computed(() => ({
+  pendiente: comandas.value.filter(c => c.estado === 'pendiente'),
+  en_preparacion: comandas.value.filter(c => c.estado === 'en_preparacion'),
+  lista: completadas.value,
+}));
 
-// Contadores para las insignias de pestañas
-const totalPendientes = computed(() =>
-  comandas.value.filter(c => c.estado === 'pendiente').length
-);
-const totalEnCocina = computed(() =>
-  comandas.value.filter(c => c.estado === 'en_preparacion').length
-);
+/**
+ * Busca una comanda en las listas activas y completadas por su identificador.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-14
+ * @módulo POS – US-POS-02 / RF-POS-001
+ *
+ * @param   {number} id Identificador de la comanda.
+ * @returns {Object|undefined} La comanda encontrada o undefined.
+ */
+function buscarComanda(id) {
+  return comandas.value.find(c => c.id === id) || completadas.value.find(c => c.id === id);
+}
+
+/**
+ * Inicia el arrastre de una tarjeta. Las comandas pagadas ya salieron de cocina y no se mueven.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-14
+ * @módulo POS – US-POS-02 / RF-POS-001
+ *
+ * @param {DragEvent} evento  Evento nativo de arrastre.
+ * @param {Object}    comanda Comanda que se arrastra.
+ */
+function iniciarArrastre(evento, comanda) {
+  if (comanda.estado === 'pagada' || procesandoId.value) {
+    evento.preventDefault();
+    return;
+  }
+
+  arrastrandoId.value = comanda.id;
+  evento.dataTransfer.effectAllowed = 'move';
+  evento.dataTransfer.setData('text/plain', String(comanda.id));
+}
+
+/**
+ * Limpia el estado visual del arrastre al soltar o cancelar.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-14
+ * @módulo POS – US-POS-02 / RF-POS-001
+ */
+function terminarArrastre() {
+  arrastrandoId.value = null;
+  columnaDestino.value = null;
+}
+
+/**
+ * Suelta una tarjeta sobre una columna y persiste el nuevo estado si cambió.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-14
+ * @módulo POS – US-POS-02 / RF-POS-001
+ *
+ * @param {Object} columna Columna del tablero donde se soltó la tarjeta.
+ */
+async function soltarEnColumna(columna) {
+  const comanda = buscarComanda(arrastrandoId.value);
+  terminarArrastre();
+
+  if (!comanda || comanda.estado === columna.estadoDestino) return;
+
+  await manejarCambioEstado({ id: comanda.id, nuevoEstado: columna.estadoDestino });
+}
+
 const totalListasCobro = computed(() =>
   completadas.value.filter(c => c.estado === 'lista').length
 );
@@ -374,210 +406,97 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <!-- Barra de pestañas y contadores -->
-    <div class="border-b border-[#E5E0DB] bg-white">
-
-      <!-- ══════════════════════════════════════════
-           MÓVIL (< md): Collapsible — muestra solo la sección activa
-           y despliega las demás opciones al tocar.
-      ══════════════════════════════════════════ -->
-      <div class="md:hidden">
-        <!-- Trigger: sección activa + chevron -->
-        <button
-          type="button"
-          id="btn-tabs-collapsible"
-          class="w-full flex items-center justify-between px-4 py-3 gap-3 cursor-pointer"
-          :aria-expanded="tabsAbiertas"
-          aria-controls="panel-tabs-movil"
-          @click="tabsAbiertas = !tabsAbiertas"
+    <!-- Tablero Kanban tipo Jira: una columna por estado de la comanda -->
+    <main class="flex-1 overflow-x-auto p-4 md:p-6">
+      <div
+        class="flex h-full snap-x snap-mandatory gap-4 md:grid md:snap-none md:grid-cols-3"
+      >
+        <section
+          v-for="columna in COLUMNAS"
+          :key="columna.id"
+          :id="`columna-${columna.id}`"
+          class="flex w-[85vw] max-w-sm shrink-0 snap-start flex-col rounded-2xl md:w-auto md:max-w-none"
+          :class="columnaDestino === columna.id
+            ? 'bg-orange-50 ring-2 ring-[#F26A21]/60'
+            : 'bg-[#F0ECE8]'"
+          @dragover.prevent="columnaDestino = columna.id"
+          @dragleave.self="columnaDestino = null"
+          @drop.prevent="soltarEnColumna(columna)"
         >
-          <!-- Sección activa actual -->
-          <div class="flex items-center gap-2">
-            <span
-              class="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 bg-[#FAF7F4] border border-[#E5E0DB]/80"
-              :class="tabActiva?.colorActivo"
-            >
-              <Clock v-if="tabActiva?.icon === 'Clock'" :size="14" stroke-width="2.2" />
-              <Flame v-else-if="tabActiva?.icon === 'Flame'" :size="14" stroke-width="2.2" />
-              <CheckCircle2 v-else-if="tabActiva?.icon === 'CheckCircle2'" :size="14" stroke-width="2.2" />
-              {{ tabActiva?.label }}
-              <span
-                class="px-1.5 py-0.5 rounded-md text-[11px] font-bold"
-                :class="tabActiva?.badgeActivo"
-              >
-                {{ tabActiva?.count() }}
-              </span>
-            </span>
-            <span class="text-[10px] text-[#6B6B6B] font-medium">· Toca para cambiar</span>
-          </div>
-
-          <!-- Chevron animado -->
-          <ChevronDown
-            :size="18"
-            stroke-width="2.2"
-            class="text-[#6B6B6B] transition-transform duration-300 shrink-0"
-            :class="{ 'rotate-180': tabsAbiertas }"
-          />
-        </button>
-
-        <!-- Panel desplegable con las otras pestañas -->
-        <Transition
-          enter-active-class="transition-all duration-300 ease-out"
-          enter-from-class="opacity-0 -translate-y-2"
-          enter-to-class="opacity-100 translate-y-0"
-          leave-active-class="transition-all duration-200 ease-in"
-          leave-from-class="opacity-100 translate-y-0"
-          leave-to-class="opacity-0 -translate-y-2"
-        >
-          <div
-            v-if="tabsAbiertas"
-            id="panel-tabs-movil"
-            class="border-t border-[#E5E0DB] px-4 pb-3 pt-2 space-y-1 bg-[#FAF7F4]"
-          >
-            <button
-              v-for="tab in TABS"
-              :key="tab.id"
-              type="button"
-              class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
-              :class="filtroEstado === tab.id
-                ? `bg-white border border-[#E5E0DB] shadow-xs ${tab.colorActivo}`
-                : 'text-[#6B6B6B] hover:bg-white/70 hover:text-[#3D3D3D]'"
-              @click="seleccionarTab(tab.id)"
-            >
-              <span class="flex items-center gap-2">
-                <Clock v-if="tab.icon === 'Clock'" :size="14" stroke-width="2.2" />
-                <Flame v-else-if="tab.icon === 'Flame'" :size="14" stroke-width="2.2" />
-                <CheckCircle2 v-else-if="tab.icon === 'CheckCircle2'" :size="14" stroke-width="2.2" />
-                {{ tab.label }}
-              </span>
-              <span
-                class="px-1.5 py-0.5 rounded-md text-[11px] font-bold"
-                :class="filtroEstado === tab.id ? tab.badgeActivo : 'bg-zinc-200 text-zinc-600'"
-              >
-                {{ tab.count() }}
-              </span>
-            </button>
-          </div>
-        </Transition>
-      </div>
-
-      <!-- ══════════════════════════════════════════
-           DESKTOP (md+): Barra horizontal de pestañas
-      ══════════════════════════════════════════ -->
-      <div class="hidden md:flex items-center px-4 py-2.5">
-        <div class="flex items-center gap-1.5 p-1 bg-[#FAF7F4] rounded-xl border border-[#E5E0DB]/80">
-          <button
-            v-for="tab in TABS"
-            :key="tab.id"
-            type="button"
-            class="min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2"
-            :class="filtroEstado === tab.id
-              ? `bg-white shadow-xs ${tab.colorActivo}`
-              : 'text-[#6B6B6B] hover:text-[#3D3D3D]'"
-            @click="filtroEstado = tab.id"
-          >
-            <Clock v-if="tab.icon === 'Clock'" :size="14" stroke-width="2.2" />
-            <Flame v-else-if="tab.icon === 'Flame'" :size="14" stroke-width="2.2" />
-            <CheckCircle2 v-else-if="tab.icon === 'CheckCircle2'" :size="14" stroke-width="2.2" />
-            <span>{{ tab.label }}</span>
-            <span
-              class="px-1.5 py-0.5 rounded-md text-[11px] font-bold"
-              :class="filtroEstado === tab.id ? tab.badgeActivo : 'bg-zinc-200 text-zinc-600'"
-            >
-              {{ tab.count() }}
-            </span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Área principal de contenido -->
-    <main class="flex-1 p-4 md:p-6 overflow-y-auto">
-      <!-- VISTA A: Pestaña de Órdenes Completadas (1 línea compacta + desplegable tipo card simple) -->
-      <div v-if="filtroEstado === 'completadas'" class="max-w-4xl mx-auto space-y-3">
-        <div class="flex items-center justify-between pb-2 border-b border-[#E5E0DB]">
-          <div class="flex items-center gap-2">
-            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-[#2E7D4F]">
-              <CheckCircle2 :size="16" stroke-width="2.5" />
-            </span>
-            <div>
-              <h2 class="font-bold text-sm text-[#3D3D3D]">Historial de Comandas Completadas</h2>
-              <p class="text-[11px] text-[#6B6B6B]">Pulsa "Info" para desplegar la información completa de cada orden</p>
+          <!-- Encabezado de la columna con contador -->
+          <header class="flex items-center justify-between px-3.5 pt-3.5 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full" :class="columna.punto"></span>
+              <h2 class="text-xs font-bold uppercase tracking-wider text-[#6B6B6B]">
+                {{ columna.label }}
+              </h2>
             </div>
+            <span class="rounded-md px-2 py-0.5 text-xs font-bold" :class="columna.badge">
+              {{ tarjetasPorColumna[columna.id].length }}
+            </span>
+          </header>
+
+          <!-- Skeleton de carga inicial -->
+          <div v-if="cargando && comandas.length === 0" class="space-y-3 p-2.5 animate-pulse">
+            <div v-for="n in 2" :key="n" class="h-40 rounded-xl bg-zinc-200/80"></div>
           </div>
-          <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-[#2E7D4F]">
-            {{ completadas.length }} completada(s)
-          </span>
-        </div>
 
-        <!-- Skeleton de completadas -->
-        <div v-if="cargando && completadas.length === 0" class="space-y-2 animate-pulse">
-          <div v-for="n in 4" :key="n" class="h-12 bg-zinc-200 rounded-xl"></div>
-        </div>
+          <!-- Tarjetas de la columna -->
+          <TransitionGroup
+            v-else
+            name="cola-comandas"
+            tag="div"
+            class="relative flex min-h-[8rem] flex-1 flex-col gap-3 p-2.5"
+          >
+            <template v-if="columna.id === 'lista'">
+              <div
+                v-for="comp in tarjetasPorColumna.lista"
+                :key="comp.id"
+                :draggable="comp.estado !== 'pagada'"
+                :class="{ 'opacity-40': arrastrandoId === comp.id }"
+                class="cursor-grab active:cursor-grabbing"
+                @dragstart="iniciarArrastre($event, comp)"
+                @dragend="terminarArrastre"
+              >
+                <ComandaCompletadaItem
+                  :comanda="comp"
+                  :procesando="procesandoId === comp.id"
+                  @reactivar="manejarReactivarComanda"
+                />
+              </div>
+            </template>
 
-        <!-- Estado vacío si no hay completadas -->
-        <div
-          v-else-if="completadas.length === 0"
-          class="text-center py-16 text-zinc-400 text-xs flex flex-col items-center gap-2 bg-white rounded-2xl border border-[#E5E0DB] p-8"
-        >
-          <CheckCircle2 :size="36" class="text-zinc-300" />
-          <span class="text-sm font-semibold text-zinc-600">Aún no hay órdenes completadas recientemente</span>
-          <p class="text-zinc-400 max-w-xs">A medida que marques comandas como listas en la cocina, se registrarán aquí.</p>
-        </div>
+            <template v-else>
+              <div
+                v-for="(comanda, index) in tarjetasPorColumna[columna.id]"
+                :key="comanda.id"
+                draggable="true"
+                :class="{ 'opacity-40': arrastrandoId === comanda.id }"
+                class="cursor-grab active:cursor-grabbing"
+                @dragstart="iniciarArrastre($event, comanda)"
+                @dragend="terminarArrastre"
+              >
+                <ComandaCard
+                  :comanda="comanda"
+                  :posicion="index + 1"
+                  :procesando="procesandoId === comanda.id"
+                  @cambiar-estado="manejarCambioEstado"
+                />
+              </div>
+            </template>
 
-        <!-- Lista en 1 sola línea por comanda con despliegue de card simple -->
-        <div v-else class="space-y-2">
-          <ComandaCompletadaItem
-            v-for="comp in completadas"
-            :key="comp.id"
-            :comanda="comp"
-            :procesando="procesandoId === comp.id"
-            @reactivar="manejarReactivarComanda"
-          />
-        </div>
+            <!-- Columna vacía -->
+            <div
+              v-if="tarjetasPorColumna[columna.id].length === 0"
+              key="vacia"
+              class="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-[#E5E0DB] p-6 text-center text-xs text-[#6B6B6B]"
+            >
+              <CheckCircle2 :size="22" class="text-zinc-300" />
+              <span>Sin comandas</span>
+            </div>
+          </TransitionGroup>
+        </section>
       </div>
-
-      <!-- VISTA B: Pestañas de Comandas Activas (Todas, Pendientes, En Preparación) -->
-      <template v-else>
-        <!-- Skeleton de carga inicial -->
-        <div v-if="cargando && comandas.length === 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-pulse">
-          <div v-for="n in 3" :key="n" class="h-64 rounded-2xl bg-zinc-200/80 border border-zinc-300/60"></div>
-        </div>
-
-        <!-- Estado vacío: Sin órdenes pendientes -->
-        <div
-          v-else-if="comandasFiltradas.length === 0"
-          class="flex min-h-[50vh] flex-col items-center justify-center text-center p-8"
-        >
-          <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-white border border-[#E5E0DB] shadow-xs text-[#2E7D4F] mb-4">
-            <CheckCircle2 :size="42" stroke-width="1.8" />
-          </div>
-          <h3 class="text-xl font-bold text-[#3D3D3D] tracking-tight">
-            ¡Cocina al día!
-          </h3>
-          <p class="text-sm text-[#6B6B6B] max-w-sm mt-1">
-            No hay órdenes pendientes en este momento. Las nuevas comandas enviadas desde las mesas aparecerán aquí automáticamente.
-          </p>
-        </div>
-
-        <!-- Grid con animación deslizante (TransitionGroup) -->
-        <TransitionGroup
-          v-else
-          name="cola-comandas"
-          tag="div"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-start"
-        >
-          <ComandaCard
-            v-for="(comanda, index) in comandasFiltradas"
-            :key="comanda.id"
-            :comanda="comanda"
-            :posicion="index + 1"
-            :procesando="procesandoId === comanda.id"
-            @cambiar-estado="manejarCambioEstado"
-          />
-        </TransitionGroup>
-      </template>
     </main>
   </div>
 </template>
