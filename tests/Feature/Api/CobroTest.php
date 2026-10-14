@@ -8,6 +8,8 @@ use App\Models\Platillo;
 use App\Models\User;
 use App\Models\Venta;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -39,7 +41,12 @@ class CobroTest extends TestCase
     {
         parent::setUp();
 
-        $this->cajero = User::factory()->create(['id' => 1]);
+        Role::firstOrCreate(['name' => 'cajero', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'mesero', 'guard_name' => 'web']);
+
+        $this->cajero = User::factory()->create();
+        $this->cajero->assignRole('cajero');
+        Sanctum::actingAs($this->cajero);
 
         $this->mesa = Mesa::create([
             'numero'    => 3,
@@ -460,6 +467,100 @@ class CobroTest extends TestCase
                     ],
                 ],
             ]);
+    }
+
+    /**
+     * Valida que consultar un comprobante inexistente responde 404 con el contrato de la API.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-14
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
+     *
+     * @return void
+     */
+    public function test_obtener_comprobante_inexistente_responde_404(): void
+    {
+        $response = $this->getJson('/api/cobros/999999');
+
+        $response->assertStatus(404)
+            ->assertJsonPath('status', 'error');
+    }
+
+    /**
+     * Valida que la venta queda registrada a nombre del cajero autenticado.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-14
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
+     *
+     * @return void
+     */
+    public function test_cobro_registra_la_venta_a_nombre_del_usuario_autenticado(): void
+    {
+        $this->postJson('/api/cobros', [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 10.00,
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('ventas', [
+            'comanda_id' => $this->comanda->id,
+            'usuario_id' => $this->cajero->id,
+        ]);
+    }
+
+    /**
+     * Valida que sin sesión no se puede cobrar ni consultar comprobantes (RF-ADM-008).
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-14
+     * @módulo POS – US-POS-03 / RF-ADM-008 (CC-38)
+     *
+     * @return void
+     */
+    public function test_cobro_y_comprobante_rechazan_solicitud_sin_sesion(): void
+    {
+        $this->app['auth']->forgetGuards();
+
+        $venta = Venta::create([
+            'comanda_id'     => $this->comanda->id,
+            'usuario_id'     => $this->cajero->id,
+            'total'          => 10.00,
+            'monto_recibido' => 10.00,
+            'cambio'         => 0.00,
+            'metodo_pago'    => 'efectivo',
+        ]);
+
+        $this->postJson('/api/cobros', [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 10.00,
+        ])->assertStatus(401);
+
+        $this->getJson('/api/cobros/' . $venta->id)->assertStatus(401);
+    }
+
+    /**
+     * Valida que un mesero no puede cobrar: el cobro es exclusivo de caja (CLAUDE.md §9).
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-14
+     * @módulo POS – US-POS-03 / RF-ADM-008 (CC-38)
+     *
+     * @return void
+     */
+    public function test_mesero_no_puede_cobrar(): void
+    {
+        $mesero = User::factory()->create();
+        $mesero->assignRole('mesero');
+        Sanctum::actingAs($mesero);
+
+        $this->postJson('/api/cobros', [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 10.00,
+        ])->assertStatus(403);
+
+        $this->assertDatabaseMissing('ventas', [
+            'comanda_id' => $this->comanda->id,
+        ]);
     }
 
     /**
