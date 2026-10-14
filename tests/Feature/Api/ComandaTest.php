@@ -463,5 +463,37 @@ class ComandaTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.estado', 'en_cocina');
     }
+
+    /**
+     * Valida que registrar una comanda con mesa cambia el estado de la mesa a 'ocupada' (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-13
+     * @módulo POS – US-POS-03 / CC-34
+     *
+     * @return void
+     */
+    public function test_registro_comanda_mesa_marca_mesa_como_ocupada(): void
+    {
+        // Aseguramos que la mesa inicie libre
+        $this->mesa->update(['estado' => 'libre']);
+        $this->assertSame('libre', $this->mesa->fresh()->estado);
+
+        $payload = [
+            'canal'   => 'mesa',
+            'mesa_id' => $this->mesa->id,
+            'items'   => [
+                [
+                    'platillo_id' => $this->platilloA->id,
+                    'cantidad'    => 1,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson('/api/comandas', $payload);
+
+        $response->assertStatus(201);
+        $this->assertSame('ocupada', $this->mesa->fresh()->estado);
+    }
 }
 

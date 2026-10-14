@@ -471,5 +471,200 @@ class CobroTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['monto_recibido']);
     }
+
+    /**
+     * Valida que al procesar el cobro, la comanda pasa a pagada y se libera la mesa si no hay más comandas activas (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-13
+     * @módulo POS – US-POS-03 / CC-34
+     *
+     * @return void
+     */
+    public function test_cambiar_estado_a_pagada_actualiza_comanda_y_libera_mesa(): void
+    {
+        $this->assertSame('ocupada', $this->mesa->fresh()->estado);
+        $this->assertSame('pendiente', $this->comanda->fresh()->estado);
+
+        $payload = [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 15.00,
+            'metodo_pago'    => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201);
+        $this->assertSame('pagada', $this->comanda->fresh()->estado);
+        $this->assertSame('libre', $this->mesa->fresh()->estado);
+    }
+
+    /**
+     * Valida que la mesa no se libera al cobrar si aún tiene otra comanda activa en la misma mesa (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-13
+     * @módulo POS – US-POS-03 / CC-34
+     *
+     * @return void
+     */
+    public function test_mesa_no_se_libera_si_tiene_otra_comanda_activa(): void
+    {
+        // Creamos una segunda comanda activa en la misma mesa
+        $comanda2 = Comanda::create([
+            'mesa_id'       => $this->mesa->id,
+            'usuario_id'    => $this->cajero->id,
+            'canal'         => 'mesa',
+            'estado'        => 'en_cocina',
+            'observaciones' => null,
+            'subtotal'      => 6.00,
+        ]);
+
+        $payload = [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 10.00,
+            'metodo_pago'    => 'efectivo',
+        ];
+
+        // Se cobra la primera comanda
+        $response = $this->postJson('/api/cobros', $payload);
+        $response->assertStatus(201);
+
+        $this->assertSame('pagada', $this->comanda->fresh()->estado);
+        // La mesa debe seguir ocupada porque comanda2 sigue activa
+        $this->assertSame('ocupada', $this->mesa->fresh()->estado);
+
+        // Se cobra la segunda comanda
+        $response2 = $this->postJson('/api/cobros', [
+            'comanda_id'     => $comanda2->id,
+            'monto_recibido' => 10.00,
+            'metodo_pago'    => 'efectivo',
+        ]);
+        $response2->assertStatus(201);
+
+        $this->assertSame('pagada', $comanda2->fresh()->estado);
+        // Ahora sí la mesa debe quedar libre
+        $this->assertSame('libre', $this->mesa->fresh()->estado);
+    }
+
+    /**
+     * Valida que una comanda pagada se excluye de la cola activa de cocina (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-13
+     * @módulo POS – US-POS-03 / CC-34
+     *
+     * @return void
+     */
+    public function test_comanda_pagada_se_excluye_de_cola_de_cocina_activa(): void
+    {
+        // Inicialmente está pendiente y debe figurar en la cola activa
+        $resActivasAntes = $this->getJson('/api/comandas/cocina');
+        $resActivasAntes->assertStatus(200);
+        $idsAntes = collect($resActivasAntes->json('data.activas'))->pluck('id')->all();
+        $this->assertContains($this->comanda->id, $idsAntes);
+
+        // Procesamos el cobro
+        $this->postJson('/api/cobros', [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 10.00,
+        ])->assertStatus(201);
+
+        // Ya no debe figurar en la cola activa
+        $resActivasDespues = $this->getJson('/api/comandas/cocina');
+        $resActivasDespues->assertStatus(200);
+        $idsDespues = collect($resActivasDespues->json('data.activas'))->pluck('id')->all();
+        $this->assertNotContains($this->comanda->id, $idsDespues);
+
+        // Pero sí debe figurar en completadas recientes
+        $resCompletadas = $this->getJson('/api/comandas/cocina?estado=pagada');
+        $resCompletadas->assertStatus(200);
+        $idsCompletadas = collect($resCompletadas->json('data'))->pluck('id')->all();
+        $this->assertContains($this->comanda->id, $idsCompletadas);
+    }
+
+    /**
+     * Valida que se rechaza la actualización de estado a 'pagada' si la comanda ya está pagada (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-13
+     * @módulo POS – US-POS-03 / CC-34
+     *
+     * @return void
+     */
+    public function test_rechaza_actualizar_estado_a_pagada_si_ya_esta_pagada(): void
+    {
+        $this->comanda->update(['estado' => 'pagada']);
+
+        $response = $this->patchJson('/api/comandas/' . $this->comanda->id . '/estado', [
+            'estado' => 'pagada',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['estado'])
+            ->assertJsonFragment([
+                'estado' => [
+                    'Esta comanda ya ha sido pagada.',
+                ],
+            ]);
+    }
+
+    /**
+     * Valida que se rechaza la actualización de estado si la comanda se encuentra cancelada (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-13
+     * @módulo POS – US-POS-03 / CC-34
+     *
+     * @return void
+     */
+    public function test_rechaza_actualizar_estado_si_comanda_esta_cancelada(): void
+    {
+        $this->comanda->update(['estado' => 'cancelada']);
+
+        $response = $this->patchJson('/api/comandas/' . $this->comanda->id . '/estado', [
+            'estado' => 'pagada',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['estado'])
+            ->assertJsonFragment([
+                'estado' => [
+                    'No se puede modificar el estado de una comanda cancelada.',
+                ],
+            ]);
+    }
+
+    /**
+     * Valida que actualizar estado a pagada directamente vía endpoint PATCH libera la mesa (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-10-13
+     * @módulo POS – US-POS-03 / CC-34
+     *
+     * @return void
+     */
+    public function test_actualizar_estado_a_pagada_via_endpoint_libera_mesa(): void
+    {
+        $this->assertSame('ocupada', $this->mesa->fresh()->estado);
+
+        $response = $this->patchJson('/api/comandas/' . $this->comanda->id . '/estado', [
+            'estado' => 'pagada',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'status'  => 'ok',
+                'message' => 'Estado de la comanda actualizado correctamente.',
+                'data'    => [
+                    'id'     => $this->comanda->id,
+                    'estado' => 'pagada',
+                ],
+            ]);
+
+        $this->assertSame('pagada', $this->comanda->fresh()->estado);
+        $this->assertSame('libre', $this->mesa->fresh()->estado);
+    }
 }
+
 

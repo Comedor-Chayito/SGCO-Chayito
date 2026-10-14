@@ -40,6 +40,12 @@ class ComandaService
                 'subtotal'      => $subtotal,
             ]);
 
+            // Si es comanda de mesa, marcar la mesa como ocupada (CC-34)
+            if (! empty($request->validated()['mesa_id'])) {
+                Mesa::where('id', $request->validated()['mesa_id'])
+                    ->update(['estado' => 'ocupada']);
+            }
+
             foreach ($items as $item) {
                 $platillo = Platillo::findOrFail($item['platillo_id']);
 
@@ -124,9 +130,23 @@ class ComandaService
      */
     public function actualizarEstado(Comanda $comanda, string $nuevoEstado): Comanda
     {
-        $comanda->update(['estado' => $nuevoEstado]);
+        return DB::transaction(function () use ($comanda, $nuevoEstado) {
+            $comanda->update(['estado' => $nuevoEstado]);
 
-        return $comanda->load('detalles.platillo', 'mesa', 'usuario');
+            // Si pasa a pagada y tiene mesa, verificar liberación de mesa (CC-34)
+            if ($nuevoEstado === 'pagada' && $comanda->mesa_id) {
+                $otrasActivas = Comanda::where('mesa_id', $comanda->mesa_id)
+                    ->where('id', '!=', $comanda->id)
+                    ->whereIn('estado', ['pendiente', 'en_cocina'])
+                    ->exists();
+
+                if (! $otrasActivas && $comanda->mesa) {
+                    $comanda->mesa->update(['estado' => 'libre']);
+                }
+            }
+
+            return $comanda->load('detalles.platillo', 'mesa', 'usuario');
+        });
     }
 
     /**

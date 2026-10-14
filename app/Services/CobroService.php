@@ -45,6 +45,18 @@ class CobroService
 
             $comanda->update(['estado' => 'pagada']);
 
+            // Liberar la mesa asociada si no quedan otras comandas activas (CC-34)
+            if ($comanda->mesa_id) {
+                $otrasActivas = Comanda::where('mesa_id', $comanda->mesa_id)
+                    ->where('id', '!=', $comanda->id)
+                    ->whereIn('estado', ['pendiente', 'en_cocina'])
+                    ->exists();
+
+                if (! $otrasActivas && $comanda->mesa) {
+                    $comanda->mesa->update(['estado' => 'libre']);
+                }
+            }
+
             return $venta->load(['comanda.detalles.platillo', 'comanda.mesa', 'usuario:id,name']);
         });
     }
