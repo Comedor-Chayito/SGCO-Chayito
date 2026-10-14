@@ -288,6 +288,110 @@ class CobroTest extends TestCase
     }
 
     /**
+     * Valida que con tarjeta se cobra el total exacto aunque llegue un monto mayor: sin cambio.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-14
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-33)
+     *
+     * @return void
+     */
+    public function test_cobro_con_tarjeta_registra_total_exacto_sin_cambio(): void
+    {
+        $payload = [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 50.00,
+            'metodo_pago'    => 'tarjeta',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.metodo_pago', 'tarjeta')
+            ->assertJsonPath('data.monto_recibido', '10.00')
+            ->assertJsonPath('data.cambio', '0.00');
+
+        $this->assertDatabaseHas('ventas', [
+            'comanda_id'     => $this->comanda->id,
+            'metodo_pago'    => 'tarjeta',
+            'monto_recibido' => 10.00,
+            'cambio'         => 0.00,
+        ]);
+    }
+
+    /**
+     * Valida que una transferencia no exige monto recibido y se registra por el total.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-14
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-33)
+     *
+     * @return void
+     */
+    public function test_cobro_con_transferencia_no_requiere_monto_recibido(): void
+    {
+        $payload = [
+            'comanda_id'  => $this->comanda->id,
+            'metodo_pago' => 'transferencia',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.monto_recibido', '10.00')
+            ->assertJsonPath('data.cambio', '0.00');
+    }
+
+    /**
+     * Valida que en efectivo el monto recibido sigue siendo obligatorio.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-14
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-33)
+     *
+     * @return void
+     */
+    public function test_cobro_en_efectivo_exige_monto_recibido(): void
+    {
+        $payload = [
+            'comanda_id'  => $this->comanda->id,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['monto_recibido']);
+
+        $this->assertDatabaseMissing('ventas', [
+            'comanda_id' => $this->comanda->id,
+        ]);
+    }
+
+    /**
+     * Valida que se rechaza un método de pago que el comedor no acepta.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-14
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-33)
+     *
+     * @return void
+     */
+    public function test_cobro_rechaza_metodo_de_pago_no_permitido(): void
+    {
+        $payload = [
+            'comanda_id'     => $this->comanda->id,
+            'monto_recibido' => 10.00,
+            'metodo_pago'    => 'cheque',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['metodo_pago']);
+    }
+
+    /**
      * Valida que el cobro puede procesarse también a través del endpoint alternativo /api/ventas.
      *
      * @autor  Equipo SGCO-Chayito
