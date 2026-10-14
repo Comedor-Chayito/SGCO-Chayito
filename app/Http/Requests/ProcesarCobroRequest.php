@@ -3,8 +3,10 @@
 namespace App\Http\Requests;
 
 use App\Models\Comanda;
+use App\Models\Venta;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProcesarCobroRequest extends FormRequest
 {
@@ -51,6 +53,7 @@ class ProcesarCobroRequest extends FormRequest
                 },
             ],
             'monto_recibido' => [
+                Rule::excludeIf(fn (): bool => ! $this->esPagoEnEfectivo()),
                 'required',
                 'numeric',
                 'min:0.01',
@@ -64,8 +67,23 @@ class ProcesarCobroRequest extends FormRequest
                     }
                 },
             ],
-            'metodo_pago'    => ['nullable', 'string', 'in:efectivo,transferencia'],
+            'metodo_pago'    => ['nullable', 'string', Rule::in(Venta::METODOS_PAGO)],
         ];
+    }
+
+    /**
+     * Indica si el cobro es en efectivo; un método vacío se toma como efectivo.
+     * Solo el efectivo exige monto recibido, los demás se cobran por el total exacto.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-14
+     * @módulo POS – US-POS-03 / RF-POS-002
+     *
+     * @return bool
+     */
+    private function esPagoEnEfectivo(): bool
+    {
+        return ($this->input('metodo_pago') ?? Venta::METODO_EFECTIVO) === Venta::METODO_EFECTIVO;
     }
 
     /**
@@ -86,7 +104,7 @@ class ProcesarCobroRequest extends FormRequest
             'monto_recibido.required' => 'El monto recibido es obligatorio.',
             'monto_recibido.numeric'  => 'El monto recibido debe ser un valor numérico.',
             'monto_recibido.min'      => 'El monto recibido debe ser mayor a 0.',
-            'metodo_pago.in'          => 'El método de pago debe ser: efectivo o transferencia.',
+            'metodo_pago.in'          => 'El método de pago debe ser: efectivo, tarjeta o transferencia.',
         ];
     }
 }

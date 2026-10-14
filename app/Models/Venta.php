@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Venta extends Model
 {
+    public const METODO_EFECTIVO = 'efectivo';
+
+    public const METODOS_PAGO = ['efectivo', 'tarjeta', 'transferencia'];
+
     protected $table = 'ventas';
 
     protected $fillable = [

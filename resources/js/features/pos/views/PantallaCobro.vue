@@ -23,9 +23,11 @@ import {
   Utensils,
   Receipt,
   ChefHat,
+  ArrowRightLeft,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
 import { obtenerComandas, procesarCobro } from '@/features/pos/services/posService.js';
+import { useCalculoCambio } from '@/features/pos/composables/useCalculoCambio.js';
 
 const router = useRouter();
 
@@ -39,10 +41,14 @@ let pollingTimer = null;
 // Comanda seleccionada para cobrar
 const comandaSeleccionada = ref(null);
 
-// Formulario de cobro
-const montoRecibido = ref('');
-const metodoPago = ref('efectivo');
 const procesando = ref(false);
+
+// Métodos de pago aceptados por el comedor; el color acompaña al ícono y al texto
+const METODOS_PAGO = [
+  { valor: 'efectivo', etiqueta: 'Efectivo', icono: Banknote, color: '#F26A21' },
+  { valor: 'tarjeta', etiqueta: 'Tarjeta', icono: CreditCard, color: '#2B6CB0' },
+  { valor: 'transferencia', etiqueta: 'Transferencia', icono: ArrowRightLeft, color: '#2B6CB0' },
+];
 
 // IVA implícito (El Salvador: 13%)
 const TASA_IVA = 0.13;
@@ -82,17 +88,17 @@ const subtotal = computed(() =>
 const costoNeto = computed(() => calcularCostoNeto(subtotal.value));
 const montoIva = computed(() => calcularIva(subtotal.value));
 
-// Cambio calculado en tiempo real
-const cambio = computed(() => {
-  const recibido = parseFloat(montoRecibido.value) || 0;
-  return Math.round((recibido - subtotal.value) * 100) / 100;
-});
-
-// Validación: el monto recibido debe cubrir el total
-const montoValido = computed(() => {
-  const recibido = parseFloat(montoRecibido.value) || 0;
-  return recibido >= subtotal.value;
-});
+// Formulario de cobro: monto, método y cambio en tiempo real (CC-33)
+const {
+  montoRecibido,
+  montoRecibidoNumero,
+  metodoPago,
+  esEfectivo,
+  esSuficiente,
+  cambio,
+  limpiar,
+  seleccionarMetodo,
+} = useCalculoCambio(subtotal);
 
 /**
  * Devuelve la etiqueta e ícono descriptivos según el canal de la comanda.
@@ -147,8 +153,8 @@ async function cargarComandasListas(esSilencioso = false) {
  */
 function seleccionarComanda(comanda) {
   comandaSeleccionada.value = comanda;
-  montoRecibido.value = '';
-  metodoPago.value = 'efectivo';
+  seleccionarMetodo('efectivo');
+  limpiar();
 }
 
 /**
@@ -160,22 +166,26 @@ function seleccionarComanda(comanda) {
  * @módulo POS – US-POS-03 / RF-POS-002
  */
 async function confirmarCobro() {
-  if (!comandaSeleccionada.value || !montoValido.value) return;
+  if (!comandaSeleccionada.value || !esSuficiente.value) return;
 
   procesando.value = true;
   try {
     const venta = await procesarCobro({
       comanda_id:     comandaSeleccionada.value.id,
-      monto_recibido: parseFloat(montoRecibido.value),
+      monto_recibido: montoRecibidoNumero.value,
       metodo_pago:    metodoPago.value,
     });
 
-    toast.success(`Cobro procesado. Cambio: $${cambio.value.toFixed(2)}`);
+    toast.success(
+      esEfectivo.value
+        ? `Cobro procesado. Cambio: $${cambio.value.toFixed(2)}`
+        : 'Cobro procesado.'
+    );
 
     // Navegar al ticket con el ID de la venta
     router.push({ name: 'ticket-venta', params: { id: venta.id } });
   } catch (error) {
-    toast.error('No se pudo procesar el cobro. Intenta de nuevo.');
+    toast.error(error.response?.data?.message || 'No se pudo procesar el cobro. Intenta de nuevo.');
   } finally {
     procesando.value = false;
   }
@@ -378,33 +388,29 @@ onUnmounted(() => {
             <span class="text-xs font-bold text-[#6B6B6B] uppercase tracking-wider">Cobro</span>
 
             <!-- Método de pago -->
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-3 gap-2">
               <button
+                v-for="metodo in METODOS_PAGO"
+                :key="metodo.valor"
                 type="button"
-                class="flex items-center justify-center gap-2 min-h-[44px] rounded-xl border text-sm font-semibold transition-all cursor-pointer"
-                :class="metodoPago === 'efectivo'
-                  ? 'bg-[#F26A21] border-[#F26A21] text-white shadow-xs'
+                :id="`btn-metodo-${metodo.valor}`"
+                class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 min-h-[44px] py-2 rounded-xl border text-sm font-semibold transition-all cursor-pointer"
+                :class="metodoPago === metodo.valor
+                  ? 'text-white shadow-xs'
                   : 'bg-white border-[#E5E0DB] text-[#6B6B6B] hover:border-[#F26A21]/50'"
-                @click="metodoPago = 'efectivo'"
+                :style="metodoPago === metodo.valor
+                  ? { backgroundColor: metodo.color, borderColor: metodo.color }
+                  : null"
+                :aria-pressed="metodoPago === metodo.valor"
+                @click="seleccionarMetodo(metodo.valor)"
               >
-                <Banknote :size="18" stroke-width="2" />
-                Efectivo
-              </button>
-              <button
-                type="button"
-                class="flex items-center justify-center gap-2 min-h-[44px] rounded-xl border text-sm font-semibold transition-all cursor-pointer"
-                :class="metodoPago === 'tarjeta'
-                  ? 'bg-[#2B6CB0] border-[#2B6CB0] text-white shadow-xs'
-                  : 'bg-white border-[#E5E0DB] text-[#6B6B6B] hover:border-[#2B6CB0]/50'"
-                @click="metodoPago = 'tarjeta'"
-              >
-                <CreditCard :size="18" stroke-width="2" />
-                Tarjeta
+                <component :is="metodo.icono" :size="18" stroke-width="2" />
+                {{ metodo.etiqueta }}
               </button>
             </div>
 
-            <!-- Monto recibido -->
-            <div>
+            <!-- Monto recibido: solo en efectivo -->
+            <div v-if="esEfectivo">
               <label class="block text-xs font-semibold text-[#3D3D3D] mb-1.5" for="monto-recibido">
                 Monto recibido (USD)
               </label>
@@ -416,19 +422,29 @@ onUnmounted(() => {
                   type="number"
                   min="0"
                   step="0.01"
+                  inputmode="decimal"
                   placeholder="0.00"
                   class="w-full pl-8 pr-4 py-3 rounded-xl border border-[#E5E0DB] text-[#3D3D3D] font-semibold text-base focus:outline-none focus:ring-2 focus:ring-[#F26A21]/30 focus:border-[#F26A21] transition-all"
-                  :class="montoRecibido && !montoValido ? 'border-[#C62828] ring-1 ring-[#C62828]/20' : ''"
+                  :class="montoRecibido && !esSuficiente ? 'border-[#C62828] ring-1 ring-[#C62828]/20' : ''"
                 />
               </div>
-              <p v-if="montoRecibido && !montoValido" class="text-xs text-[#C62828] mt-1 font-medium">
+              <p v-if="montoRecibido && !esSuficiente" class="text-xs text-[#C62828] mt-1 font-medium">
                 El monto no cubre el total de ${{ subtotal.toFixed(2) }}
               </p>
             </div>
 
+            <!-- Tarjeta / transferencia: se cobra el total exacto, sin cambio -->
+            <div
+              v-else
+              class="flex items-center justify-between px-4 py-3 rounded-xl bg-[#2B6CB0]/5 border border-[#2B6CB0]/20"
+            >
+              <span class="text-sm font-semibold text-[#2B6CB0]">Se cobra el total exacto, sin cambio</span>
+              <span class="text-xl font-bold text-[#2B6CB0]">{{ formatearMoneda(subtotal) }}</span>
+            </div>
+
             <!-- Cambio calculado -->
             <div
-              v-if="montoValido && montoRecibido"
+              v-if="esEfectivo && esSuficiente && montoRecibido"
               class="flex items-center justify-between px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200"
             >
               <span class="text-sm font-semibold text-[#2E7D4F]">Cambio a entregar</span>
@@ -439,7 +455,7 @@ onUnmounted(() => {
             <button
               type="button"
               id="btn-confirmar-cobro"
-              :disabled="!montoValido || procesando"
+              :disabled="!esSuficiente || procesando"
               class="w-full min-h-[52px] rounded-xl bg-[#F26A21] hover:bg-[#FF8C42] active:scale-[0.98] text-white font-bold text-base flex items-center justify-center gap-2.5 shadow-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               @click="confirmarCobro"
             >

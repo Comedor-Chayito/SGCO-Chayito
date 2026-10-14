@@ -12,6 +12,7 @@ class CobroService
     /**
      * Procesa el cobro de una comanda dentro de una transacción de base de datos.
      * Calcula el cambio exacto, genera el registro de venta y actualiza la comanda a "pagada".
+     * Con tarjeta o transferencia el monto recibido es el total y el cambio es cero.
      *
      * @autor  Equipo SGCO-Chayito
      * @fecha  2026-09-19
@@ -30,9 +31,13 @@ class CobroService
             $comanda = Comanda::lockForUpdate()->findOrFail($datos['comanda_id']);
 
             $total = (float) $comanda->subtotal;
-            $montoRecibido = (float) $datos['monto_recibido'];
+            $metodoPago = $datos['metodo_pago'] ?? Venta::METODO_EFECTIVO;
+
+            // Tarjeta y transferencia se cobran por el total exacto: no hay cambio que entregar
+            $montoRecibido = $metodoPago === Venta::METODO_EFECTIVO
+                ? (float) $datos['monto_recibido']
+                : $total;
             $cambio = round($montoRecibido - $total, 2);
-            $metodoPago = $datos['metodo_pago'] ?? 'efectivo';
 
             $venta = Venta::create([
                 'comanda_id'     => $comanda->id,

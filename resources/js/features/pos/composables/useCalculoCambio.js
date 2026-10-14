@@ -1,7 +1,11 @@
 import { ref, computed, toValue } from 'vue';
 
+// Único método con monto recibido y cambio; tarjeta y transferencia van por el total exacto
+export const METODO_EFECTIVO = 'efectivo';
+
 /**
- * Composable para el cálculo reactivo del cambio y gestión del cobro en efectivo y transferencia.
+ * Composable para el cálculo reactivo del cambio y gestión del cobro (efectivo, tarjeta y
+ * transferencia).
  * Soporta cálculo en tiempo real, validación de montos insuficientes, denominaciones rápidas
  * y formateo estandarizado de moneda en USD (RF-POS-002 / CC-33).
  *
@@ -14,7 +18,12 @@ import { ref, computed, toValue } from 'vue';
  */
 export function useCalculoCambio(totalReferencia) {
   const montoRecibido = ref('');
-  const metodoPago = ref('efectivo'); // 'efectivo' | 'transferencia'
+  const metodoPago = ref(METODO_EFECTIVO); // 'efectivo' | 'tarjeta' | 'transferencia'
+
+  /**
+   * Indica si el método seleccionado es efectivo (requiere monto recibido y cambio).
+   */
+  const esEfectivo = computed(() => metodoPago.value === METODO_EFECTIVO);
 
   /**
    * Total numérico normalizado de la orden.
@@ -33,7 +42,7 @@ export function useCalculoCambio(totalReferencia) {
    * Monto recibido numérico normalizado.
    */
   const montoRecibidoNumero = computed(() => {
-    if (metodoPago.value === 'transferencia') {
+    if (!esEfectivo.value) {
       return total.value;
     }
     const limpio = String(montoRecibido.value).replace(/[^0-9.]/g, '');
@@ -50,7 +59,7 @@ export function useCalculoCambio(totalReferencia) {
    * Determina si el monto ingresado cubre la totalidad de la cuenta.
    */
   const esSuficiente = computed(() => {
-    if (metodoPago.value === 'transferencia') {
+    if (!esEfectivo.value) {
       return true;
     }
     return montoRecibidoNumero.value >= total.value && montoRecibidoNumero.value > 0;
@@ -60,7 +69,7 @@ export function useCalculoCambio(totalReferencia) {
    * Indica si el pago recibido es exactamente igual al total.
    */
   const esMontoExacto = computed(() => {
-    if (metodoPago.value === 'transferencia') {
+    if (!esEfectivo.value) {
       return true;
     }
     return Math.abs(montoRecibidoNumero.value - total.value) < 0.005 && total.value > 0;
@@ -68,10 +77,10 @@ export function useCalculoCambio(totalReferencia) {
 
   /**
    * Cambio a entregar al cliente redondeado estrictamente a 2 decimales.
-   * Si el monto es insuficiente o el método es transferencia, es 0.00.
+   * Si el monto es insuficiente o el método no es efectivo, es 0.00.
    */
   const cambio = computed(() => {
-    if (metodoPago.value === 'transferencia') {
+    if (!esEfectivo.value) {
       return 0;
     }
     if (montoRecibidoNumero.value >= total.value) {
@@ -89,7 +98,7 @@ export function useCalculoCambio(totalReferencia) {
    * Dinero faltante cuando el cliente entrega un monto inferior al total.
    */
   const montoFaltante = computed(() => {
-    if (metodoPago.value === 'transferencia') {
+    if (!esEfectivo.value) {
       return 0;
     }
     if (montoRecibidoNumero.value < total.value) {
@@ -162,13 +171,13 @@ export function useCalculoCambio(totalReferencia) {
   }
 
   /**
-   * Cambia el método de pago y ajusta el monto recibido si es transferencia.
+   * Cambia el método de pago y fija el total como monto recibido si no es efectivo.
    *
-   * @param {'efectivo'|'transferencia'} metodo Método seleccionado.
+   * @param {'efectivo'|'tarjeta'|'transferencia'} metodo Método seleccionado.
    */
   function seleccionarMetodo(metodo) {
     metodoPago.value = metodo;
-    if (metodo === 'transferencia') {
+    if (metodo !== METODO_EFECTIVO) {
       montoRecibido.value = total.value.toFixed(2);
     }
   }
@@ -180,6 +189,7 @@ export function useCalculoCambio(totalReferencia) {
     montoRecibidoNumero,
     montoRecibidoFormateado,
     metodoPago,
+    esEfectivo,
     cambio,
     cambioFormateado,
     montoFaltante,
