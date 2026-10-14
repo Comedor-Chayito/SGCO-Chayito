@@ -19,13 +19,10 @@ import {
   ShoppingBag,
   Store,
   Printer,
-  CircleDollarSign,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ModalTicketCocina from '@/features/pos/components/ModalTicketCocina.vue';
-import ModalCobro from '@/features/pos/components/ModalCobro.vue';
-import { usePermisos } from '@/shared/composables/usePermisos.js';
 
 const props = defineProps({
   comanda: {
@@ -42,19 +39,10 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['cambiarEstado', 'comandaCobrada']);
+const emit = defineEmits(['cambiarEstado']);
 
-// Control de modales
+// Control del modal de impresión
 const modalImpresionAbierto = ref(false);
-const modalCobroAbierto = ref(false);
-
-const { puedeVer } = usePermisos();
-const puedeCobrar = computed(() => puedeVer(['cajero', 'administrador']));
-
-function onCobroCompletado(datos) {
-  modalCobroAbierto.value = false;
-  emit('comandaCobrada', datos);
-}
 
 // Temporizador reactivo para calcular minutos transcurridos en tiempo real
 const ahora = ref(Date.now());
@@ -228,19 +216,6 @@ function solicitarCambioEstado(nuevoEstado) {
           >
             <Printer :size="15" />
           </button>
-
-          <!-- Botón de Cobro Rápido con Calculadora de Cambio (CC-33) -->
-          <button
-            v-if="puedeCobrar && comanda.estado !== 'pagada'"
-            type="button"
-            @click="modalCobroAbierto = true"
-            class="flex items-center gap-1 h-7 px-2 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 font-bold text-xs transition-all cursor-pointer active:scale-95"
-            title="Cobrar orden y calcular cambio (CC-33)"
-            :id="`btn-cobrar-${comanda.id}`"
-          >
-            <CircleDollarSign :size="14" stroke-width="2.2" />
-            <span>Cobrar</span>
-          </button>
         </div>
         <p class="text-sm text-[#6B6B6B] mt-0.5">
           {{ comanda.created_at ? new Date(comanda.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '' }}
@@ -360,14 +335,6 @@ function solicitarCambioEstado(nuevoEstado) {
       :abierto="modalImpresionAbierto"
       :comanda-id="comanda.id"
       @cerrar="modalImpresionAbierto = false"
-    />
-
-    <!-- Modal de Cobro y Cálculo de Cambio (CC-33 / RF-POS-002) -->
-    <ModalCobro
-      :abierto="modalCobroAbierto"
-      :comanda="comanda"
-      @cerrar="modalCobroAbierto = false"
-      @cobro-completado="onCobroCompletado"
     />
   </div>
 </template>
