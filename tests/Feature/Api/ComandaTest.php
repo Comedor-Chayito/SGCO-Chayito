@@ -449,7 +449,7 @@ class ComandaTest extends TestCase
             'mesa_id'    => $this->mesa->id,
             'usuario_id' => $this->usuario->id,
             'canal'      => 'mesa',
-            'estado'     => 'en_cocina',
+            'estado'     => 'en_preparacion',
             'subtotal'   => 8.00,
         ]);
 
@@ -458,10 +458,10 @@ class ComandaTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.estado', 'pendiente');
 
-        $responseCocina = $this->getJson('/api/comandas?estado=en_cocina');
+        $responseCocina = $this->getJson('/api/comandas?estado=en_preparacion');
         $responseCocina->assertStatus(200)
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.estado', 'en_cocina');
+            ->assertJsonPath('data.0.estado', 'en_preparacion');
     }
 
     /**

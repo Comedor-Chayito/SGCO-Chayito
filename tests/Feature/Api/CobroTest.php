@@ -515,7 +515,7 @@ class CobroTest extends TestCase
             'mesa_id'       => $this->mesa->id,
             'usuario_id'    => $this->cajero->id,
             'canal'         => 'mesa',
-            'estado'        => 'en_cocina',
+            'estado'        => 'en_preparacion',
             'observaciones' => null,
             'subtotal'      => 6.00,
         ]);

@@ -70,6 +70,27 @@ class ComandaController extends Controller
     }
 
     /**
+     * Devuelve el listado de comandas, con filtro opcional por estado (ej. ?estado=lista para caja).
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-12
+     * @módulo POS – US-POS-02 / RF-POS-001
+     *
+     * @param  Request $request Solicitud con filtro de estado opcional.
+     * @return JsonResponse Lista de comandas con detalles, mesa y usuario.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $comandas = $this->comandaService->listarComandas($request->query('estado'));
+
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'Comandas obtenidas.',
+            'data'    => $comandas,
+        ]);
+    }
+
+    /**
      * Registra una nueva comanda en estado "pendiente".
      * Valida la entrada, delega la lógica al servicio y devuelve la comanda creada.
      *
@@ -91,28 +112,6 @@ class ComandaController extends Controller
             'message' => 'Comanda registrada correctamente.',
             'data'    => $comanda,
         ], 201);
-    }
-
-    /**
-     * Devuelve la lista de comandas registradas, opcionalmente filtradas por estado.
-     *
-     * @autor  Equipo SGCO-Chayito
-     * @fecha  2026-09-19
-     * @módulo POS – RF-POS-001
-     *
-     * @param  Request $request Petición HTTP con posible parámetro ?estado=
-     * @return JsonResponse Lista de comandas con sus detalles, platillos y mesa.
-     */
-    public function index(Request $request): JsonResponse
-    {
-        $estado = $request->query('estado');
-        $comandas = $this->comandaService->listarComandas($estado);
-
-        return response()->json([
-            'status'  => 'ok',
-            'message' => 'Comandas obtenidas.',
-            'data'    => $comandas,
-        ]);
     }
 
     /**

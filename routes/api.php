@@ -52,6 +52,11 @@ Route::get('/comandas/cocina',              [ComandaController::class, 'colaCoci
 Route::patch('/comandas/{comanda}/estado',  [ComandaController::class, 'actualizarEstado']);
 Route::get('/comandas/{comanda}/impresion', [ComandaController::class, 'impresion']);
 
+// US-POS-02: Cola de cocina y cambio de estado (CC-27 / CC-28)
+// IMPORTANTE: /comandas/cocina debe ir antes de /comandas/{comanda} para evitar conflicto de rutas
+Route::get('/comandas/cocina',              [ComandaController::class, 'colaCocina']);
+Route::patch('/comandas/{comanda}/estado',  [ComandaController::class, 'actualizarEstado']);
+
 // Módulo POS — RF-POS-002 (Cobros y Ventas)
 Route::post('/cobros',       [VentaController::class, 'cobrar']);
 Route::post('/ventas',       [VentaController::class, 'cobrar']);

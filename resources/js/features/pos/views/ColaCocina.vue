@@ -21,6 +21,7 @@ import {
   VolumeX,
   ArrowLeft,
   ChevronDown,
+  Receipt,
   LogOut,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
@@ -42,7 +43,7 @@ const comandas = ref([]);
 const completadas = ref([]);
 const cargando = ref(true);
 const procesandoId = ref(null);
-const filtroEstado = ref('todas'); // 'todas', 'pendiente', 'en_cocina', 'completadas'
+const filtroEstado = ref('todas'); // 'todas', 'pendiente', 'en_preparacion', 'completadas'
 const sonidoHabilitado = ref(true);
 const autoRefresco = ref(true);
 
@@ -71,7 +72,7 @@ const TABS = [
     count: () => totalPendientes.value,
   },
   {
-    id: 'en_cocina',
+    id: 'en_preparacion',
     label: 'En Preparación',
     icon: 'Flame',
     colorActivo: 'text-amber-700',
@@ -101,8 +102,8 @@ function seleccionarTab(tabId) {
 // Pestaña activa actual (objeto completo)
 const tabActiva = computed(() => TABS.find(t => t.id === filtroEstado.value));
 
-// Control de polling (sondeo cada 6 segundos)
-const INTERVALO_POLLING_MS = 6000;
+// Control de polling (sondeo cada 3 segundos)
+const INTERVALO_POLLING_MS = 3000;
 let pollingTimer = null;
 const ultimoRefresco = ref(new Date());
 
@@ -219,10 +220,11 @@ async function manejarReactivarComanda(id) {
 }
 
 /**
- * Maneja la transición de estado de una comanda (ej. pendiente -> en_cocina).
+ * Maneja la transición de estado de una comanda y la persiste en la BD:
+ * pendiente ↔ en_preparacion → lista. El paso a "pagada" lo hace caja al cobrar.
  *
- * @autor  Equipo SGCO-Chayito
- * @fecha  2026-09-19
+ * @autor  manuelmv15
+ * @fecha  2026-10-12
  * @módulo POS – US-POS-02 / RF-POS-001
  *
  * @param {{ id: number, nuevoEstado: string }} evento Payload del evento emitido por la tarjeta.
@@ -232,11 +234,13 @@ async function manejarCambioEstado({ id, nuevoEstado }) {
   try {
     await actualizarEstadoComanda(id, nuevoEstado);
 
-    // Mensaje de éxito según el nuevo estado
-    if (nuevoEstado === 'en_cocina') {
+    if (nuevoEstado === 'en_preparacion') {
       toast.success(`Orden #${id} en preparación.`);
-    } else if (nuevoEstado === 'pagada') {
-      toast.success(`Orden #${id} marcada como lista y despachada.`);
+    } else if (nuevoEstado === 'lista') {
+      toast.success(`Orden #${id} lista. Pasa a Caja para cobro.`, {
+        description: 'La comanda está en espera de cobro.',
+        duration: 6000,
+      });
     } else {
       toast.info(`Orden #${id} actualizada a ${nuevoEstado}.`);
     }
@@ -261,7 +265,10 @@ const totalPendientes = computed(() =>
   comandas.value.filter(c => c.estado === 'pendiente').length
 );
 const totalEnCocina = computed(() =>
-  comandas.value.filter(c => c.estado === 'en_cocina').length
+  comandas.value.filter(c => c.estado === 'en_preparacion').length
+);
+const totalListasCobro = computed(() =>
+  completadas.value.filter(c => c.estado === 'lista').length
 );
 
 // Iniciar y pausar el temporizador de polling
@@ -303,8 +310,8 @@ onUnmounted(() => {
             <h1 class="text-lg font-bold leading-tight text-[#3D3D3D] tracking-tight">
               Cola de Cocina
             </h1>
-            <p class="text-xs text-[#6B6B6B]">
-              Comedor Chayito · Pedidos en tiempo real (FIFO)
+            <p class="text-sm text-[#6B6B6B]">
+              Comedor Chayito
             </p>
           </div>
         </div>
@@ -323,6 +330,24 @@ onUnmounted(() => {
           <Volume2 v-if="sonidoHabilitado" :size="20" stroke-width="2" />
           <VolumeX v-else :size="20" stroke-width="2" />
         </button>
+
+        <!-- Botón de acceso rápido a Caja con badge de comandas listas -->
+        <RouterLink
+          to="/caja"
+          class="relative flex h-11 items-center gap-2 rounded-xl border border-[#E5E0DB] bg-white px-3.5 text-sm font-semibold text-[#3D3D3D] hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer shadow-xs"
+          :class="totalListasCobro > 0 ? 'border-[#2E7D4F] bg-emerald-50 text-[#2E7D4F]' : ''"
+          title="Ir a Caja"
+        >
+          <Receipt :size="16" stroke-width="2.2" />
+          <span class="hidden sm:inline">Caja</span>
+          <!-- Badge con cantidad de comandas listas -->
+          <span
+            v-if="totalListasCobro > 0"
+            class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#2E7D4F] text-white text-[10px] font-black"
+          >
+            {{ totalListasCobro }}
+          </span>
+        </RouterLink>
 
         <!-- Botón de refresco manual con spinner -->
         <button

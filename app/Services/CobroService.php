@@ -49,7 +49,7 @@ class CobroService
             if ($comanda->mesa_id) {
                 $otrasActivas = Comanda::where('mesa_id', $comanda->mesa_id)
                     ->where('id', '!=', $comanda->id)
-                    ->whereIn('estado', ['pendiente', 'en_cocina'])
+                    ->whereIn('estado', ['pendiente', 'en_preparacion', 'lista'])
                     ->exists();
 
                 if (! $otrasActivas && $comanda->mesa) {

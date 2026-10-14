@@ -99,7 +99,7 @@ class ComandaService
      * @fecha  2026-09-19
      * @módulo POS – US-POS-02 / RF-POS-001
      *
-     * @param  string|null $filtroEstado Estado opcional para filtrar ('pendiente', 'en_cocina').
+     * @param  string|null $filtroEstado Estado opcional para filtrar ('pendiente', 'en_preparacion').
      * @return Collection<int, Comanda> Colección de comandas ordenadas por llegada.
      */
     public function listarColaCocina(?string $filtroEstado = null): Collection
@@ -111,7 +111,7 @@ class ComandaService
             $query->where('estado', $filtroEstado);
         } else {
             // Por defecto en cocina se muestran las pendientes y las que están en preparación
-            $query->whereIn('estado', ['pendiente', 'en_cocina']);
+            $query->whereIn('estado', ['pendiente', 'en_preparacion']);
         }
 
         return $query->get();
@@ -137,7 +137,7 @@ class ComandaService
             if ($nuevoEstado === 'pagada' && $comanda->mesa_id) {
                 $otrasActivas = Comanda::where('mesa_id', $comanda->mesa_id)
                     ->where('id', '!=', $comanda->id)
-                    ->whereIn('estado', ['pendiente', 'en_cocina'])
+                    ->whereIn('estado', ['pendiente', 'en_preparacion', 'lista'])
                     ->exists();
 
                 if (! $otrasActivas && $comanda->mesa) {
@@ -150,7 +150,8 @@ class ComandaService
     }
 
     /**
-     * Retorna las comandas completadas recientemente (últimas 20) ordenadas por fecha de despacho.
+     * Retorna las comandas que la cocina ya terminó (listas para cobro y pagadas),
+     * las más recientes primero, para que cocina sepa qué órdenes ya despachó.
      *
      * @autor  Equipo SGCO-Chayito
      * @fecha  2026-09-19
@@ -162,7 +163,7 @@ class ComandaService
     public function listarCompletadasRecientes(int $limite = 20): Collection
     {
         return Comanda::with(['detalles.platillo', 'mesa', 'usuario'])
-            ->where('estado', 'pagada')
+            ->whereIn('estado', ['lista', 'pagada'])
             ->orderBy('updated_at', 'desc')
             ->take($limite)
             ->get();
@@ -197,7 +198,7 @@ class ComandaService
 
     /**
      * Retorna el listado de comandas para pantalla de caja y cola de cocina.
-     * Permite filtrar por estado (ej. "pendiente", "en_cocina") y carga relaciones.
+     * Permite filtrar por estado (ej. "pendiente", "lista") y carga relaciones.
      *
      * @autor  Equipo SGCO-Chayito
      * @fecha  2026-09-19

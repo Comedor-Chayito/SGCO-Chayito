@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Utensils,
   AlertTriangle,
+  Receipt,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 
@@ -56,6 +57,9 @@ const totalItems = computed(() => {
   if (!props.comanda.detalles) return 0;
   return props.comanda.detalles.reduce((acc, d) => acc + (d.cantidad || 1), 0);
 });
+
+// Una comanda pagada ya salió de cocina; solo las listas pueden reactivarse
+const esPagada = computed(() => props.comanda.estado === 'pagada');
 
 // Hora de despacho
 const horaDespacho = computed(() => {
@@ -106,6 +110,16 @@ const observacionTexto = computed(() => {
           {{ totalItems }} platillo(s)
         </span>
       </div>
+
+      <!-- Estado: lista para cobro o ya pagada -->
+      <span
+        class="flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-full text-[11px] font-bold"
+        :class="esPagada ? 'bg-zinc-100 text-zinc-600' : 'bg-emerald-100 text-[#2E7D4F]'"
+      >
+        <Receipt v-if="esPagada" :size="12" stroke-width="2.2" />
+        <CheckCircle2 v-else :size="12" stroke-width="2.2" />
+        {{ esPagada ? 'Pagada' : 'Lista' }}
+      </span>
 
       <!-- Hora y botón Más Info -->
       <div class="flex items-center gap-1.5 shrink-0">
@@ -180,8 +194,9 @@ const observacionTexto = computed(() => {
           Total: <span class="text-[#F26A21]">${{ parseFloat(comanda.subtotal || 0).toFixed(2) }}</span>
         </span>
 
-        <!-- Botón para reactivar a cocina si se marcó completada por error -->
+        <!-- Botón para reactivar a cocina si se marcó lista por error (no aplica a pagadas) -->
         <button
+          v-if="!esPagada"
           type="button"
           :disabled="procesando"
           @click="emit('reactivar', comanda.id)"
