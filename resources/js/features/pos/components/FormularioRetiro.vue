@@ -212,6 +212,8 @@ function formatearMonto(evento) {
     valor = partes[0] + '.' + partes[1].slice(0, 2)
   }
 
+  // Si el valor limpio no cambia, Vue no vuelve a pintar el input: se escribe directo en el DOM
+  evento.target.value = valor
   monto.value = valor
 }
 
@@ -286,9 +288,11 @@ const formularioValido = computed(() =>
             class="formulario-retiro-input-icono"
             aria-hidden="true"
           />
-          <Input
+          <!-- Input nativo: el componente Input guarda su propia copia del valor y
+               reescribiría los decimales que formatearMonto recorta -->
+          <input
             id="campo-monto"
-            :model-value="monto"
+            :value="monto"
             type="text"
             inputmode="decimal"
             placeholder="0.00"
