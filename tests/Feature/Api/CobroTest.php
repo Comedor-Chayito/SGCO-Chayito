@@ -536,6 +536,11 @@ class CobroTest extends TestCase
         ])->assertStatus(401);
 
         $this->getJson('/api/cobros/' . $venta->id)->assertStatus(401);
+
+        // Navegador sin "Accept: application/json": antes respondía 500 "Route [login] not defined"
+        $this->get('/api/cobros/' . $venta->id)
+            ->assertStatus(401)
+            ->assertJsonPath('status', 'error');
     }
 
     /**
