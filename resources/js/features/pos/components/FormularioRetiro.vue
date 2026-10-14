@@ -1,7 +1,7 @@
 <script setup>
 /**
- * Formulario de registro de retiros/ingresos de efectivo asociado al turno.
- * Permite al cajero registrar movimientos de caja con tipo, monto y detalle.
+ * Formulario de registro de retiros parciales de efectivo asociados al turno.
+ * Permite al cajero registrar un retiro con monto y motivo.
  *
  * @autor  Jeferson De La Cruz
  * @fecha  2026-09-19
@@ -10,7 +10,6 @@
 import { ref, computed } from 'vue'
 import {
   ArrowDownCircle,
-  ArrowUpCircle,
   DollarSign,
   FileText,
   Loader2,
@@ -31,57 +30,39 @@ import {
 
 const emit = defineEmits(['retiro-registrado'])
 
+// ─── Límites alineados con RegistrarRetiroRequest y la tabla retiros_parciales ───
+const MONTO_MAXIMO_RETIRO = 99999.99
+const LARGO_MAXIMO_MOTIVO = 150
+
 // ─── Estado del formulario ───
-const tipo = ref('egreso')
 const monto = ref('')
-const detalle = ref('')
-const detallePersonalizado = ref('')
+const motivo = ref('')
+const motivoPersonalizado = ref('')
 const cargando = ref(false)
 const error = ref('')
 const exito = ref(false)
 const erroresValidacion = ref({
-  tipo: '',
   monto: '',
-  detalle: '',
+  motivo: '',
 })
 
-// ─── Opciones predefinidas de detalle ───
-const DETALLES_COMUNES = [
+// ─── Motivos predefinidos de retiro ───
+const MOTIVOS_COMUNES = [
   { valor: 'Pago a proveedor', etiqueta: 'Pago a proveedor' },
   { valor: 'Cambio de billetes', etiqueta: 'Cambio de billetes' },
   { valor: 'Gastos menores', etiqueta: 'Gastos menores' },
   { valor: 'Compra de insumos', etiqueta: 'Compra de insumos' },
-  { valor: 'Fondo de caja', etiqueta: 'Fondo de caja' },
   { valor: 'otro', etiqueta: 'Otro (especificar)' },
 ]
 
-const TIPOS = [
-  {
-    valor: 'egreso',
-    etiqueta: 'Egreso (retiro)',
-    icono: ArrowDownCircle,
-    color: 'text-red-600',
-  },
-  {
-    valor: 'ingreso',
-    etiqueta: 'Ingreso',
-    icono: ArrowUpCircle,
-    color: 'text-emerald-600',
-  },
-]
-
-const tipoActual = computed(() =>
-  TIPOS.find((t) => t.valor === tipo.value)
+const esMotivoPersonalizado = computed(() =>
+  motivo.value === 'otro'
 )
 
-const esDetallePersonalizado = computed(() =>
-  detalle.value === 'otro'
-)
-
-const detalleDefinitivo = computed(() =>
-  esDetallePersonalizado.value
-    ? detallePersonalizado.value.trim()
-    : detalle.value
+const motivoDefinitivo = computed(() =>
+  esMotivoPersonalizado.value
+    ? motivoPersonalizado.value.trim()
+    : motivo.value
 )
 
 /**
@@ -95,17 +76,10 @@ const detalleDefinitivo = computed(() =>
  */
 function validarCampos() {
   erroresValidacion.value = {
-    tipo: '',
     monto: '',
-    detalle: '',
+    motivo: '',
   }
   let valido = true
-
-  if (!tipo.value) {
-    erroresValidacion.value.tipo =
-      'Selecciona el tipo de movimiento.'
-    valido = false
-  }
 
   const montoNumerico = parseFloat(monto.value)
 
@@ -117,19 +91,19 @@ function validarCampos() {
     erroresValidacion.value.monto =
       'El monto debe ser mayor a $0.00.'
     valido = false
-  } else if (montoNumerico > 99999.99) {
+  } else if (montoNumerico > MONTO_MAXIMO_RETIRO) {
     erroresValidacion.value.monto =
       'El monto no puede superar $99,999.99.'
     valido = false
   }
 
-  if (!detalleDefinitivo.value) {
-    erroresValidacion.value.detalle =
-      'El detalle es obligatorio.'
+  if (!motivoDefinitivo.value) {
+    erroresValidacion.value.motivo =
+      'El motivo es obligatorio.'
     valido = false
-  } else if (detalleDefinitivo.value.length < 3) {
-    erroresValidacion.value.detalle =
-      'El detalle debe tener al menos 3 caracteres.'
+  } else if (motivoDefinitivo.value.length < 3) {
+    erroresValidacion.value.motivo =
+      'El motivo debe tener al menos 3 caracteres.'
     valido = false
   }
 
@@ -146,20 +120,18 @@ function validarCampos() {
  * @returns {void}
  */
 function reiniciarFormulario() {
-  tipo.value = 'egreso'
   monto.value = ''
-  detalle.value = ''
-  detallePersonalizado.value = ''
+  motivo.value = ''
+  motivoPersonalizado.value = ''
   error.value = ''
   erroresValidacion.value = {
-    tipo: '',
     monto: '',
-    detalle: '',
+    motivo: '',
   }
 }
 
 /**
- * Procesa el envío del formulario de retiro/ingreso.
+ * Procesa el envío del formulario de retiro.
  * Delega el registro al servicio de caja.
  *
  * @autor  Jeferson De La Cruz
@@ -178,11 +150,10 @@ async function manejarRegistro() {
 
   try {
     const resultado = await registrarRetiro({
-      tipo: tipo.value,
       monto: parseFloat(
         parseFloat(monto.value).toFixed(2)
       ),
-      detalle: detalleDefinitivo.value,
+      motivo: motivoDefinitivo.value,
     })
 
     exito.value = true
@@ -198,14 +169,14 @@ async function manejarRegistro() {
 
       erroresValidacion.value.monto =
         errores.monto?.[0] ?? ''
-      erroresValidacion.value.detalle =
-        errores.detalle?.[0] ?? ''
-      erroresValidacion.value.tipo =
-        errores.tipo?.[0] ?? ''
+      erroresValidacion.value.motivo =
+        errores.motivo?.[0] ?? ''
+      // Regla de negocio sin campo propio: la caja del día ya está cerrada
+      error.value = errores.caja?.[0] ?? ''
     } else {
       error.value =
         err.response?.data?.message
-        ?? 'Error al registrar el movimiento. '
+        ?? 'Error al registrar el retiro. '
           + 'Intenta de nuevo.'
     }
   } finally {
@@ -245,10 +216,9 @@ function formatearMonto(evento) {
 }
 
 const formularioValido = computed(() =>
-  tipo.value
-  && monto.value
+  monto.value
   && parseFloat(monto.value) > 0
-  && detalleDefinitivo.value.length >= 3
+  && motivoDefinitivo.value.length >= 3
 )
 </script>
 
@@ -260,18 +230,17 @@ const formularioValido = computed(() =>
     <!-- Encabezado -->
     <div class="formulario-retiro-encabezado">
       <div class="formulario-retiro-icono-envoltorio">
-        <component
-          :is="tipoActual?.icono"
+        <ArrowDownCircle
           :size="24"
-          :class="tipoActual?.color"
+          class="text-red-600"
         />
       </div>
       <div>
         <h2 class="formulario-retiro-titulo">
-          Registrar movimiento de caja
+          Registrar retiro de efectivo
         </h2>
         <p class="formulario-retiro-subtitulo">
-          Ingresa los datos del retiro o ingreso
+          Se descuenta del efectivo del turno
         </p>
       </div>
     </div>
@@ -293,7 +262,7 @@ const formularioValido = computed(() =>
       role="status"
     >
       <CheckCircle2 :size="20" />
-      Movimiento registrado correctamente
+      Retiro registrado correctamente
     </div>
 
     <!-- Formulario -->
@@ -303,50 +272,6 @@ const formularioValido = computed(() =>
       @submit.prevent="manejarRegistro"
       novalidate
     >
-      <!-- Tipo de movimiento -->
-      <div class="formulario-retiro-campo">
-        <Label
-          for="campo-tipo"
-          class="formulario-retiro-etiqueta"
-        >
-          Tipo de movimiento
-        </Label>
-        <div class="formulario-retiro-tipo-grid">
-          <button
-            v-for="t in TIPOS"
-            :key="t.valor"
-            type="button"
-            class="formulario-retiro-tipo-btn"
-            :class="{
-              'formulario-retiro-tipo-activo':
-                tipo === t.valor,
-              'formulario-retiro-tipo-egreso':
-                tipo === t.valor && t.valor === 'egreso',
-              'formulario-retiro-tipo-ingreso':
-                tipo === t.valor && t.valor === 'ingreso',
-            }"
-            :aria-pressed="tipo === t.valor"
-            @click="tipo = t.valor"
-          >
-            <component
-              :is="t.icono"
-              :size="22"
-              class="formulario-retiro-tipo-icono"
-            />
-            <span class="formulario-retiro-tipo-texto">
-              {{ t.etiqueta }}
-            </span>
-          </button>
-        </div>
-        <p
-          v-if="erroresValidacion.tipo"
-          class="formulario-retiro-error-campo"
-          role="alert"
-        >
-          {{ erroresValidacion.tipo }}
-        </p>
-      </div>
-
       <!-- Monto -->
       <div class="formulario-retiro-campo">
         <Label
@@ -389,26 +314,26 @@ const formularioValido = computed(() =>
         </p>
       </div>
 
-      <!-- Detalle -->
+      <!-- Motivo -->
       <div class="formulario-retiro-campo">
         <Label
-          for="campo-detalle"
+          for="campo-motivo"
           class="formulario-retiro-etiqueta"
         >
-          Detalle
+          Motivo
         </Label>
         <Select
-          v-model="detalle"
+          v-model="motivo"
           :disabled="cargando"
         >
           <SelectTrigger
-            id="campo-detalle"
+            id="campo-motivo"
             :class="[
               'formulario-retiro-select-trigger',
               {
                 'formulario-retiro-input-error':
-                  erroresValidacion.detalle
-                  && !esDetallePersonalizado,
+                  erroresValidacion.motivo
+                  && !esMotivoPersonalizado,
               },
             ]"
           >
@@ -425,43 +350,43 @@ const formularioValido = computed(() =>
           </SelectTrigger>
           <SelectContent>
             <SelectItem
-              v-for="d in DETALLES_COMUNES"
-              :key="d.valor"
-              :value="d.valor"
+              v-for="m in MOTIVOS_COMUNES"
+              :key="m.valor"
+              :value="m.valor"
             >
-              {{ d.etiqueta }}
+              {{ m.etiqueta }}
             </SelectItem>
           </SelectContent>
         </Select>
 
         <!-- Campo personalizado si eligió "Otro" -->
         <div
-          v-if="esDetallePersonalizado"
-          class="formulario-retiro-detalle-custom"
+          v-if="esMotivoPersonalizado"
+          class="formulario-retiro-motivo-custom"
         >
           <Input
-            id="campo-detalle-personalizado"
-            v-model="detallePersonalizado"
+            id="campo-motivo-personalizado"
+            v-model="motivoPersonalizado"
             type="text"
-            placeholder="Describe el motivo del movimiento…"
-            maxlength="200"
+            placeholder="Describe el motivo del retiro…"
+            :maxlength="LARGO_MAXIMO_MOTIVO"
             autocomplete="off"
             :disabled="cargando"
             :class="[
               'formulario-retiro-input',
               {
                 'formulario-retiro-input-error':
-                  erroresValidacion.detalle,
+                  erroresValidacion.motivo,
               },
             ]"
           />
         </div>
         <p
-          v-if="erroresValidacion.detalle"
+          v-if="erroresValidacion.motivo"
           class="formulario-retiro-error-campo"
           role="alert"
         >
-          {{ erroresValidacion.detalle }}
+          {{ erroresValidacion.motivo }}
         </p>
       </div>
 
@@ -470,21 +395,6 @@ const formularioValido = computed(() =>
         v-if="formularioValido"
         class="formulario-retiro-resumen"
       >
-        <div class="formulario-retiro-resumen-fila">
-          <span class="formulario-retiro-resumen-label">
-            Tipo
-          </span>
-          <span
-            class="formulario-retiro-resumen-valor"
-            :class="
-              tipo === 'egreso'
-                ? 'text-red-600'
-                : 'text-emerald-600'
-            "
-          >
-            {{ tipoActual?.etiqueta }}
-          </span>
-        </div>
         <div class="formulario-retiro-resumen-fila">
           <span class="formulario-retiro-resumen-label">
             Monto
@@ -498,10 +408,10 @@ const formularioValido = computed(() =>
         </div>
         <div class="formulario-retiro-resumen-fila">
           <span class="formulario-retiro-resumen-label">
-            Detalle
+            Motivo
           </span>
           <span class="formulario-retiro-resumen-valor">
-            {{ detalleDefinitivo }}
+            {{ motivoDefinitivo }}
           </span>
         </div>
       </div>
@@ -519,17 +429,13 @@ const formularioValido = computed(() =>
           class="formulario-retiro-spinner"
         />
         <CheckCircle2 v-else-if="exito" :size="20" />
-        <component
-          v-else
-          :is="tipoActual?.icono"
-          :size="20"
-        />
+        <ArrowDownCircle v-else :size="20" />
         {{
           cargando
             ? 'Registrando…'
             : exito
               ? '¡Registrado!'
-              : 'Registrar movimiento'
+              : 'Registrar retiro'
         }}
       </Button>
     </form>
@@ -661,71 +567,6 @@ const formularioValido = computed(() =>
   color: var(--color-carbon);
 }
 
-/* ─── Tipo de movimiento (toggle) ─── */
-.formulario-retiro-tipo-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.625rem;
-}
-
-.formulario-retiro-tipo-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  min-height: 52px;
-  padding: 0.75rem 1rem;
-  border: 1.5px solid var(--color-borde);
-  border-radius: 0.75rem;
-  background: var(--color-fondo-base);
-  color: var(--color-texto-secundario);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.formulario-retiro-tipo-btn:hover {
-  border-color: var(--color-naranja-primario);
-  color: var(--color-carbon);
-}
-
-.formulario-retiro-tipo-egreso {
-  border-color: var(--color-peligro);
-  background: rgb(198 40 40 / 5%);
-  color: var(--color-peligro);
-  box-shadow: 0 0 0 3px rgb(198 40 40 / 8%);
-}
-
-.formulario-retiro-tipo-egreso:hover {
-  border-color: var(--color-peligro);
-  color: var(--color-peligro);
-}
-
-.formulario-retiro-tipo-ingreso {
-  border-color: var(--color-exito);
-  background: rgb(46 125 79 / 5%);
-  color: var(--color-exito);
-  box-shadow: 0 0 0 3px rgb(46 125 79 / 8%);
-}
-
-.formulario-retiro-tipo-ingreso:hover {
-  border-color: var(--color-exito);
-  color: var(--color-exito);
-}
-
-.formulario-retiro-tipo-icono {
-  flex-shrink: 0;
-}
-
-.formulario-retiro-tipo-texto {
-  white-space: nowrap;
-}
-
 /* ─── Inputs ─── */
 .formulario-retiro-input-envoltorio {
   position: relative;
@@ -805,8 +646,8 @@ const formularioValido = computed(() =>
   flex-shrink: 0;
 }
 
-/* ─── Detalle personalizado ─── */
-.formulario-retiro-detalle-custom {
+/* ─── Motivo personalizado ─── */
+.formulario-retiro-motivo-custom {
   margin-top: 0.5rem;
   animation: retiro-aparecer 0.2s ease-out;
 }

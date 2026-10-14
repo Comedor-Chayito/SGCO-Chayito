@@ -75,13 +75,6 @@ const routes = [
     component: () => import('@/views/Admin.vue'),
     meta: { roles: ['administrador'] },
   },
-  // TODO: ELIMINAR — ruta temporal de prueba CC-37
-  {
-    path: '/prueba-retiro',
-    name: 'prueba-retiro',
-    component: () =>
-      import('@/features/pos/views/PruebaRetiro.vue'),
-  },
   {
     path: '/:pathMatch(.*)*',
     name: 'no-encontrado',

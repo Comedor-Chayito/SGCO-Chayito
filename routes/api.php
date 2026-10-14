@@ -5,6 +5,7 @@ use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\RecetaController;
+use App\Http\Controllers\RetiroController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Http\Request;
@@ -48,6 +49,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/ventas',     [VentaController::class, 'cobrar']);
         Route::get('/cobros/{id}', [VentaController::class, 'mostrar']);
         Route::get('/ventas/{id}', [VentaController::class, 'mostrar']);
+
+        // Retiros parciales de efectivo asociados al turno (CC-37)
+        Route::get('/retiros',  [RetiroController::class, 'index']);
+        Route::post('/retiros', [RetiroController::class, 'store']);
     });
 });
 

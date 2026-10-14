@@ -24,10 +24,12 @@ import {
   Receipt,
   ChefHat,
   ArrowRightLeft,
+  ArrowDownCircle,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
 import { obtenerComandas, procesarCobro } from '@/features/pos/services/posService.js';
 import { useCalculoCambio } from '@/features/pos/composables/useCalculoCambio.js';
+import PanelRetiros from '@/features/pos/components/PanelRetiros.vue';
 
 const router = useRouter();
 
@@ -42,6 +44,9 @@ let pollingTimer = null;
 const comandaSeleccionada = ref(null);
 
 const procesando = ref(false);
+
+// Panel lateral de retiros parciales del turno (CC-37)
+const panelRetirosAbierto = ref(false);
 
 // Métodos de pago aceptados por el comedor; el color acompaña al ícono y al texto
 const METODOS_PAGO = [
@@ -237,8 +242,18 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Badge de comandas en espera -->
+      <!-- Badge de comandas en espera y acceso a retiros -->
       <div class="flex items-center gap-2">
+        <button
+          type="button"
+          id="btn-abrir-retiros"
+          class="flex h-11 items-center gap-2 rounded-xl border border-[#E5E0DB] bg-white px-3 text-sm font-semibold text-[#3D3D3D] hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer shadow-xs"
+          @click="panelRetirosAbierto = true"
+        >
+          <ArrowDownCircle :size="18" class="text-[#C62828]" stroke-width="2" />
+          <span>Retiros</span>
+        </button>
+
         <span
           v-if="comandasListas.length > 0"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-[#2E7D4F] text-xs font-bold"
@@ -467,5 +482,7 @@ onUnmounted(() => {
         </div>
       </section>
     </main>
+
+    <PanelRetiros v-model:abierto="panelRetirosAbierto" />
   </div>
 </template>
