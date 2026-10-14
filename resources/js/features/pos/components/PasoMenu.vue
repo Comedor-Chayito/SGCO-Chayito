@@ -9,9 +9,12 @@
  */
 import { computed } from 'vue';
 import { useCarritoStore } from '@/features/pos/stores/useCarritoStore.js';
+import { useSesionStore } from '@/stores/sesion.js';
+import { usePermisos } from '@/shared/composables/usePermisos.js';
+import { useRouter, RouterLink } from 'vue-router';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CupSoda, UtensilsCrossed, ArrowLeft } from '@lucide/vue';
+import { CupSoda, UtensilsCrossed, ArrowLeft, ShieldCheck, LogOut } from '@lucide/vue';
 import ArmadorPlato from '@/features/pos/components/ArmadorPlato.vue';
 import TarjetaPlatillo from '@/features/pos/components/TarjetaPlatillo.vue';
 
@@ -26,6 +29,9 @@ const props = defineProps({
   }
 });
 
+const router = useRouter();
+const sesion = useSesionStore();
+const { puedeVer } = usePermisos();
 const carrito = useCarritoStore();
 
 const tituloCanal = computed(() => {
@@ -52,6 +58,11 @@ const platillosBandeja = computed(() => {
 function volver() {
   carrito.pasoActual = 1;
 }
+
+async function salir() {
+  await sesion.cerrarSesion();
+  router.push('/login');
+}
 </script>
 
 <template>
@@ -67,6 +78,29 @@ function volver() {
           <span class="text-[11px] font-medium leading-none text-zinc-500">Orden actual</span>
           <span class="mt-0.5 text-sm font-black leading-tight text-zinc-900">{{ tituloCanal }}</span>
         </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <RouterLink
+          v-if="puedeVer(['administrador'])"
+          to="/admin"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-700 hover:bg-purple-800 text-xs font-bold text-white transition-all shadow-xs"
+          title="Panel de Administración de Usuarios y Roles"
+        >
+          <ShieldCheck :size="14" />
+          <span class="hidden sm:inline">Panel Admin</span>
+        </RouterLink>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-8 rounded-lg px-2 text-zinc-500 hover:text-rose-600 hover:bg-rose-50 text-xs font-semibold"
+          @click="salir"
+          title="Cerrar sesión actual"
+        >
+          <LogOut :size="14" class="mr-1" />
+          <span class="hidden sm:inline">Salir</span>
+        </Button>
       </div>
     </header>
 

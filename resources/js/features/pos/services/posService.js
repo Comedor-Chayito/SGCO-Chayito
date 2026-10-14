@@ -107,7 +107,8 @@ export async function actualizarEstadoComanda(idComanda, nuevoEstado) {
   return respuesta.data.data;
 }
 
- /* Procesa el cobro de una comanda en caja y genera el comprobante de venta.
+/**
+ * Procesa el cobro de una comanda en caja y genera el comprobante de venta.
  *
  * @autor  Equipo SGCO-Chayito
  * @fecha  2026-09-19
@@ -133,5 +134,23 @@ export async function procesarCobro(payload) {
  */
 export async function obtenerComprobante(ventaId) {
   const respuesta = await api.get(`/cobros/${ventaId}`);
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene el formato de impresión térmica de una comanda para cocina (58 mm / 80 mm).
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-20
+ * @módulo POS – US-POS-02 / RF-POS-001 / Sec. 3.1.2
+ *
+ * @param   {number} idComanda Identificador de la comanda.
+ * @param   {number} [ancho=58] Ancho del rollo térmico en mm (58 u 80).
+ * @returns {Promise<Object>} Datos del ticket (líneas, texto plano, comandos ESC/POS).
+ */
+export async function obtenerTicketImpresion(idComanda, ancho = 58) {
+  const respuesta = await api.get(`/comandas/${idComanda}/impresion`, {
+    params: { ancho },
+  });
   return respuesta.data.data;
 }

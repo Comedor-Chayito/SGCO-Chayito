@@ -27,6 +27,9 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
+        // Roles y Permisos (RBAC — US-ADM-01)
+        $this->call(RolePermissionSeeder::class);
+
         // Datos del módulo POS: mesas y platillos del menú diario
         $this->call(PosSeeder::class);
     }

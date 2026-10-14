@@ -9,11 +9,13 @@
  * @módulo POS – RF-POS-001
  */
 import { useCarritoStore } from '@/features/pos/stores/useCarritoStore.js';
+import { useSesionStore } from '@/stores/sesion.js';
+import { usePermisos } from '@/shared/composables/usePermisos.js';
+import { useRouter, RouterLink } from 'vue-router';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Store, ShoppingBag, MessageCircle, ChefHat } from '@lucide/vue';
+import { Store, ShoppingBag, MessageCircle, ChefHat, ShieldCheck, LogOut } from '@lucide/vue';
 import { markRaw } from 'vue';
-import { RouterLink } from 'vue-router';
 
 const props = defineProps({
   mesas: {
@@ -22,6 +24,9 @@ const props = defineProps({
   }
 });
 
+const router = useRouter();
+const sesion = useSesionStore();
+const { puedeVer, rolActual } = usePermisos();
 const carrito = useCarritoStore();
 
 const CANALES = [
@@ -42,25 +47,64 @@ function seleccionarMesa(id) {
   carrito.mesaId = id;
   carrito.pasoActual = 2; // Avanza automático
 }
+
+async function salir() {
+  await sesion.cerrarSesion();
+  router.push('/login');
+}
 </script>
 
 <template>
   <div class="max-w-4xl mx-auto p-4 md:p-6 space-y-8 animate-in fade-in zoom-in-95 duration-300">
     
-    <!-- Barra superior de navegación rápida -->
-    <div class="flex items-center justify-between pb-3 border-b border-[#E5E0DB]">
-      <div>
-        <h1 class="text-xl font-extrabold text-zinc-900 tracking-tight">Punto de Venta</h1>
-        <p class="text-xs text-zinc-500">Registro de comanda</p>
+    <!-- Barra superior de navegación rápida con RBAC -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E5E0DB]">
+      <div class="flex items-center gap-3">
+        <div>
+          <h1 class="text-xl font-extrabold text-zinc-900 tracking-tight">Punto de Venta</h1>
+          <p class="text-xs text-zinc-500">
+            Registro de comanda
+            <span v-if="sesion.usuario" class="font-medium text-zinc-700">· {{ sesion.usuario.name }}</span>
+            <span v-if="rolActual" class="ml-1 font-bold text-[#F26A21]">({{ rolActual.toUpperCase() }})</span>
+          </p>
+        </div>
       </div>
-      <RouterLink
-        to="/cocina"
-        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#E5E0DB] bg-white hover:bg-zinc-50 text-xs font-bold text-[#3D3D3D] shadow-xs active:scale-95 transition-all"
-        title="Ver pantalla de cocina"
-      >
-        <ChefHat :size="16" class="text-[#F26A21]" />
-        <span>Cola de Cocina</span>
-      </RouterLink>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Botón Panel Admin (Solo visible para rol administrador) -->
+        <RouterLink
+          v-if="puedeVer(['administrador'])"
+          to="/admin"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-xs font-bold text-white shadow-xs active:scale-95 transition-all"
+          title="Panel de Administración de Usuarios y Roles"
+        >
+          <ShieldCheck :size="15" />
+          <span>Panel Admin</span>
+        </RouterLink>
+
+        <!-- Botón Cola de Cocina (Cocinero, Cajero, Admin) -->
+        <RouterLink
+          v-if="puedeVer(['cocinero', 'cajero', 'administrador'])"
+          to="/cocina"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E0DB] bg-white hover:bg-zinc-50 text-xs font-bold text-[#3D3D3D] shadow-xs active:scale-95 transition-all"
+          title="Ver pantalla de cocina"
+        >
+          <ChefHat :size="15" class="text-[#F26A21]" />
+          <span>Cola de Cocina</span>
+        </RouterLink>
+
+        <!-- Botón Cerrar Sesión -->
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-8 rounded-xl px-2.5 text-zinc-500 hover:text-rose-600 hover:bg-rose-50 text-xs font-semibold"
+          @click="salir"
+          title="Cerrar sesión actual"
+        >
+          <LogOut :size="14" class="mr-1" />
+          Salir
+        </Button>
+      </div>
     </div>
 
     <!-- Sección de Canales -->
