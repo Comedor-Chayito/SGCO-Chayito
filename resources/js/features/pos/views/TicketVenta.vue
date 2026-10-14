@@ -10,16 +10,7 @@
  */
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import {
-  ArrowLeft,
-  Printer,
-  ShoppingCart,
-  CheckCircle2,
-  Store,
-  ShoppingBag,
-  MessageSquare,
-  Utensils,
-} from '@lucide/vue';
+import { ArrowLeft, Printer, ShoppingCart, CheckCircle2 } from '@lucide/vue';
 import { obtenerComprobante } from '@/features/pos/services/posService.js';
 
 const route  = useRoute();
@@ -56,6 +47,10 @@ const montoIva  = computed(() => Math.round(costoNeto.value * TASA_IVA * 100) / 
 /**
  * Formatea un número como moneda en dólares.
  *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-10-07
+ * @módulo POS – US-POS-03 / RF-POS-002
+ *
  * @param {number} valor Valor a formatear.
  * @returns {string} Cadena formateada (ej. "$12.50").
  */
@@ -65,6 +60,10 @@ function formatearMoneda(valor) {
 
 /**
  * Formatea una fecha ISO como cadena legible en hora local.
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-10-07
+ * @módulo POS – US-POS-03 / RF-POS-002
  *
  * @param {string} fechaIso Cadena de fecha ISO 8601.
  * @returns {string} Fecha y hora formateadas.
@@ -83,6 +82,10 @@ function formatearFecha(fechaIso) {
 /**
  * Devuelve la etiqueta del canal de la comanda.
  *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-10-07
+ * @módulo POS – US-POS-03 / RF-POS-002
+ *
  * @param {Object} comanda Objeto comanda.
  * @returns {string} Etiqueta descriptiva del canal.
  */
@@ -92,6 +95,18 @@ function etiquetaCanal(comanda) {
   if (comanda.canal === 'para_llevar') return 'Para llevar';
   if (comanda.canal === 'whatsapp') return 'WhatsApp';
   return comanda.canal;
+}
+
+/**
+ * Abre el diálogo de impresión del navegador para el comprobante.
+ * Los estilos print ocultan la barra de acciones y dejan solo el ticket.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-14
+ * @módulo POS – US-POS-03 / RF-POS-002 (CC-35)
+ */
+function imprimirTicket() {
+  window.print();
 }
 </script>
 
@@ -117,7 +132,7 @@ function etiquetaCanal(comanda) {
           type="button"
           id="btn-imprimir-ticket"
           class="flex h-11 items-center gap-2 rounded-xl border border-[#E5E0DB] bg-white px-4 text-sm font-semibold text-[#3D3D3D] hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer shadow-xs"
-          @click="window.print()"
+          @click="imprimirTicket"
         >
           <Printer :size="16" stroke-width="2.2" />
           <span class="hidden sm:inline">Imprimir</span>
@@ -264,9 +279,8 @@ function etiquetaCanal(comanda) {
 
 <style scoped>
 @media print {
-  /* Ocultar todo excepto el ticket */
-  body > *:not(#vista-ticket-venta) {
-    display: none;
+  @page {
+    margin: 0;
   }
 
   #vista-ticket-venta {

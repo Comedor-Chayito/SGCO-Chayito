@@ -10,6 +10,7 @@
  * @módulo POS – US-POS-03 / CC-33
  */
 import { ref, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import {
   X,
   Banknote,
@@ -40,6 +41,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['cerrar', 'cobroCompletado']);
+
+const router = useRouter();
 
 // Subtotal normalizado de la comanda
 const subtotalComanda = computed(() => {
@@ -145,6 +148,20 @@ async function ejecutarCobro() {
  */
 function cerrarModal() {
   emit('cerrar');
+}
+
+/**
+ * Cierra el modal y abre el comprobante digital de la venta recién registrada.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-14
+ * @módulo POS – US-POS-03 / RF-POS-002 (CC-35)
+ */
+function verComprobante() {
+  if (!ventaResultado.value?.id) return;
+
+  emit('cerrar');
+  router.push({ name: 'ticket-venta', params: { id: ventaResultado.value.id } });
 }
 </script>
 
@@ -485,7 +502,19 @@ function cerrarModal() {
           <template v-else>
             <Button
               type="button"
-              class="w-full min-h-[44px] bg-[#2E7D4F] hover:bg-[#2E7D4F]/90 text-white font-bold"
+              variant="outline"
+              class="flex-1 min-h-[44px] font-semibold text-zinc-700"
+              @click="verComprobante"
+              :disabled="!ventaResultado?.id"
+            >
+              <span class="flex items-center gap-1.5">
+                <Receipt :size="18" stroke-width="2" />
+                <span>Ver comprobante</span>
+              </span>
+            </Button>
+            <Button
+              type="button"
+              class="flex-1 min-h-[44px] bg-[#2E7D4F] hover:bg-[#2E7D4F]/90 text-white font-bold"
               @click="cerrarModal"
             >
               Finalizar y Cerrar
