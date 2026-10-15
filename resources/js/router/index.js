@@ -54,6 +54,12 @@ const routes = [
     meta: { roles: ['cajero', 'administrador'] },
   },
   {
+    path: '/caja/cierre',
+    name: 'cierre-caja',
+    component: () => import('@/features/pos/views/ReporteCierreCaja.vue'),
+    meta: { roles: ['cajero', 'administrador'] },
+  },
+  {
     path: '/pos/cocina',
     redirect: '/cocina',
   },

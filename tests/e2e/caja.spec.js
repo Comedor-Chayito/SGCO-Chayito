@@ -92,5 +92,20 @@ test.describe('Caja - retiros y métodos de pago', () => {
     await page.locator('#btn-reiniciar-conteo').click();
     await expect(page.getByText('$0.00').first()).toBeVisible();
   });
+
+  test('la pantalla de cobro tiene acceso al reporte de cierre de caja y se muestra correctamente (CC-42)', async ({ page }) => {
+    await page.locator('#btn-ir-cierre-caja').click();
+    await page.waitForURL('**/caja/cierre');
+    await expect(page.locator('#vista-reporte-cierre')).toBeVisible();
+    await expect(page.getByText('Cierre Diario y Cuadre de Caja')).toBeVisible();
+
+    // Probar cambio a la pestaña de historial
+    await page.locator('#tab-historial').click();
+    await expect(page.getByText('Historial de Cierres de Caja')).toBeVisible();
+
+    // Regresar a pestaña de reporte
+    await page.locator('#tab-reporte').click();
+    await expect(page.locator('#tab-reporte')).toBeVisible();
+  });
 });
 

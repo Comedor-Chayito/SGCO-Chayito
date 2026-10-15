@@ -69,3 +69,51 @@ export async function obtenerAperturaTurno(fecha) {
   return respuesta.data.data;
 }
 
+/**
+ * Ejecuta el cierre diario de caja enviando saldo inicial, saldo final y observaciones.
+ * El backend consolida automáticamente ventas y retiros del día.
+ *
+ * @autor  Cristian Alexis
+ * @fecha  2026-10-15
+ * @módulo POS – US-POS-04 / RF-POS-002 (CC-42)
+ *
+ * @param   {{ fecha: string, saldo_inicial: number, saldo_final: number, observaciones?: string }} datos
+ * @returns {Promise<Object>} Registro del cierre creado con los totales consolidados.
+ */
+export async function cerrarCaja(datos) {
+  const respuesta = await api.post('/cierres-caja', datos);
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene el reporte de cierre de caja registrado para una fecha específica.
+ *
+ * @autor  Cristian Alexis
+ * @fecha  2026-10-15
+ * @módulo POS – US-POS-04 / RF-POS-002 (CC-42)
+ *
+ * @param   {string} fecha Fecha en formato YYYY-MM-DD.
+ * @returns {Promise<Object>} Datos del cierre con usuario y métricas calculadas.
+ */
+export async function obtenerCierre(fecha) {
+  const respuesta = await api.get(`/cierres-caja/${fecha}`);
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene el historial paginado de cierres de caja.
+ *
+ * @autor  Cristian Alexis
+ * @fecha  2026-10-15
+ * @módulo POS – US-POS-04 / RF-POS-002 (CC-42)
+ *
+ * @param   {number} [porPagina=15] Cantidad de registros por página.
+ * @param   {number} [pagina=1] Número de página a consultar.
+ * @returns {Promise<Object>} Objeto paginado con la colección de cierres de caja.
+ */
+export async function historialCierres(porPagina = 15, pagina = 1) {
+  const respuesta = await api.get('/cierres-caja', {
+    params: { por_pagina: porPagina, page: pagina },
+  });
+  return respuesta.data.data;
+}

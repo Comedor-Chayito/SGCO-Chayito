@@ -26,6 +26,7 @@ import {
   ArrowRightLeft,
   ArrowDownCircle,
   DollarSign,
+  Scale,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
 import { obtenerComandas, procesarCobro } from '@/features/pos/services/posService.js';
@@ -269,6 +270,16 @@ onUnmounted(() => {
           <ArrowDownCircle :size="18" class="text-[#C62828]" stroke-width="2" />
           <span>Retiros</span>
         </button>
+
+        <RouterLink
+          to="/caja/cierre"
+          id="btn-ir-cierre-caja"
+          class="flex h-11 items-center gap-2 rounded-xl border border-[#E5E0DB] bg-white px-3 text-sm font-semibold text-[#3D3D3D] hover:bg-zinc-50 active:scale-95 transition-all shadow-xs"
+          title="Reporte de Cierre y Cuadre de Caja"
+        >
+          <Scale :size="18" class="text-[#F26A21]" stroke-width="2" />
+          <span class="hidden sm:inline">Cierre de Caja</span>
+        </RouterLink>
 
         <span
           v-if="comandasListas.length > 0"
