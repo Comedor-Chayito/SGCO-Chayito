@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AperturaCajaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
@@ -53,6 +54,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // Retiros parciales de efectivo asociados al turno (CC-37)
         Route::get('/retiros',  [RetiroController::class, 'index']);
         Route::post('/retiros', [RetiroController::class, 'store']);
+
+        // Apertura de caja y saldo inicial por denominación (CC-39 / US-POS-04)
+        Route::get('/aperturas-caja/turno', [AperturaCajaController::class, 'obtenerDelTurno']);
+        Route::post('/aperturas-caja',       [AperturaCajaController::class, 'store']);
     });
 });
 

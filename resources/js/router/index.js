@@ -42,6 +42,12 @@ const routes = [
     meta: { roles: ['cajero', 'administrador'] },
   },
   {
+    path: '/caja/apertura',
+    name: 'caja-apertura',
+    component: () => import('@/features/pos/views/AperturaCaja.vue'),
+    meta: { roles: ['cajero', 'administrador'] },
+  },
+  {
     path: '/caja/ticket/:id',
     name: 'ticket-venta',
     component: () => import('@/features/pos/views/TicketVenta.vue'),

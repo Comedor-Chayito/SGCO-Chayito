@@ -37,3 +37,35 @@ export async function obtenerRetirosTurno() {
   const respuesta = await api.get('/retiros');
   return respuesta.data.data;
 }
+
+/**
+ * Registra la apertura de caja y el saldo inicial por denominación del turno.
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-10-15
+ * @módulo POS – US-POS-04 / RF-POS-002 (CC-39)
+ *
+ * @param   {{ fecha?: string, denominaciones: Array<{denominacion: number, tipo: string, cantidad: number}>, observaciones?: string }} datos
+ * @returns {Promise<Object>} Apertura creada con id, saldo_inicial, denominaciones, fecha y usuario.
+ */
+export async function registrarAperturaCaja(datos) {
+  const respuesta = await api.post('/aperturas-caja', datos);
+  return respuesta.data.data;
+}
+
+/**
+ * Consulta si existe una apertura de caja registrada para el turno de hoy.
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-10-15
+ * @módulo POS – US-POS-04 / RF-POS-002 (CC-39)
+ *
+ * @param   {string} [fecha] Fecha opcional a consultar (YYYY-MM-DD).
+ * @returns {Promise<Object|null>} Apertura de caja del turno o null si no se ha abierto.
+ */
+export async function obtenerAperturaTurno(fecha) {
+  const params = fecha ? { fecha } : {};
+  const respuesta = await api.get('/aperturas-caja/turno', { params });
+  return respuesta.data.data;
+}
+

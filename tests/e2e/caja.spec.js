@@ -65,4 +65,32 @@ test.describe('Caja - retiros y métodos de pago', () => {
     await page.locator('#btn-metodo-efectivo').click();
     await expect(page.locator('#monto-recibido')).toBeVisible();
   });
+
+  test('el formulario de saldo inicial calcula el total en tiempo real por denominación (CC-39)', async ({ page }) => {
+    await page.locator('#btn-abrir-saldo-inicial').click();
+    await expect(page.locator('#formulario-saldo-inicial')).toBeVisible();
+
+    // Si ya existe apertura del día, el formulario muestra la información de apertura inalterable
+    const cajaAbiertaBadge = page.getByText('Caja Abierta');
+    if (await cajaAbiertaBadge.isVisible()) {
+      await expect(page.getByText('Desglose de Denominaciones Registrado')).toBeVisible();
+      return;
+    }
+
+    // Probar incremento de billetes de $20 y $10
+    const btnInc20 = page.locator('#btn-incrementar-20');
+    await btnInc20.click();
+    await btnInc20.click(); // 2 * $20 = $40
+
+    const input10 = page.locator('#input-cantidad-10');
+    await input10.fill('1'); // 1 * $10 = $10
+
+    // Verificar que el total se actualice a $50.00
+    await expect(page.getByText('$50.00').first()).toBeVisible();
+
+    // Probar botón de poner a cero
+    await page.locator('#btn-reiniciar-conteo').click();
+    await expect(page.getByText('$0.00').first()).toBeVisible();
+  });
 });
+
