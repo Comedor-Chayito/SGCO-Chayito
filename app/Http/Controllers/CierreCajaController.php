@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CerrarCajaRequest;
-use App\Models\User;
 use App\Services\CierreCajaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,10 +36,7 @@ class CierreCajaController extends Controller
      */
     public function cerrar(CerrarCajaRequest $request): JsonResponse
     {
-        // TODO: Reemplazar por auth()->id() al implementar US-ADM-02
-        $usuarioId = auth('sanctum')->id() ?? auth()->id() ?? User::query()->value('id') ?? 1;
-
-        $cierre = $this->cierreCajaService->cerrar($request->validated(), $usuarioId);
+        $cierre = $this->cierreCajaService->cerrar($request->validated(), $request->user()->id);
 
         return response()->json([
             'status' => 'ok',

@@ -58,6 +58,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Apertura de caja y saldo inicial por denominación (CC-39 / US-POS-04)
         Route::get('/aperturas-caja/turno', [AperturaCajaController::class, 'obtenerDelTurno']);
         Route::post('/aperturas-caja',       [AperturaCajaController::class, 'store']);
+
+        // Cierre diario y cuadre de caja (CC-41 / US-POS-04)
+        Route::post('/cierres-caja',        [CierreCajaController::class, 'cerrar']);
+        Route::get('/cierres-caja',         [CierreCajaController::class, 'historial']);
+        Route::get('/cierres-caja/{fecha}', [CierreCajaController::class, 'mostrar']);
     });
 });
 
@@ -74,11 +79,6 @@ Route::get('/comandas/{comanda}/impresion', [ComandaController::class, 'impresio
 // IMPORTANTE: /comandas/cocina debe ir antes de /comandas/{comanda} para evitar conflicto de rutas
 Route::get('/comandas/cocina',              [ComandaController::class, 'colaCocina']);
 Route::patch('/comandas/{comanda}/estado',  [ComandaController::class, 'actualizarEstado']);
-
-// Módulo POS — RF-POS-002 (Cierre de Caja)
-Route::post('/cierres-caja',        [CierreCajaController::class, 'cerrar']);
-Route::get('/cierres-caja',         [CierreCajaController::class, 'historial']);
-Route::get('/cierres-caja/{fecha}', [CierreCajaController::class, 'mostrar']);
 
 // Módulo Inventario — CC-45: CRUD de insumos con unidad de medida (US-INV-01 / RF-INV-003)
 Route::get('/insumos',           [InsumoController::class, 'index']);
