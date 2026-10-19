@@ -380,16 +380,19 @@ onMounted(() => {
           </button>
         </div>
 
+        <!-- Imprime lo que está en pantalla: el reporte del cierre o el historial -->
         <button
-          v-if="cierreActual && pestanaActiva === 'reporte'"
+          v-if="pestanaActiva === 'historial' ? listaHistorial.length > 0 : cierreActual"
           type="button"
           id="btn-imprimir-reporte"
           @click="imprimirReporte"
-          aria-label="Imprimir reporte"
+          :aria-label="pestanaActiva === 'historial' ? 'Imprimir historial' : 'Imprimir reporte'"
           class="flex h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#E5E0DB] bg-white px-3.5 text-xs font-bold text-[#3D3D3D] hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer shadow-xs"
         >
           <Printer :size="16" stroke-width="2.2" />
-          <span class="hidden sm:inline">Imprimir Reporte</span>
+          <span class="hidden sm:inline">
+            {{ pestanaActiva === 'historial' ? 'Imprimir Historial' : 'Imprimir Reporte' }}
+          </span>
         </button>
       </div>
     </header>
@@ -763,7 +766,7 @@ onMounted(() => {
             <button
               type="button"
               @click="cargarHistorial(paginaActual)"
-              class="text-xs font-semibold text-[#6B6B6B] hover:text-[#F26A21] flex items-center gap-1 cursor-pointer"
+              class="text-xs font-semibold text-[#6B6B6B] hover:text-[#F26A21] flex items-center gap-1 cursor-pointer print:hidden"
             >
               <RefreshCw :size="13" :class="{ 'animate-spin': cargandoHistorial }" />
               Actualizar
@@ -792,7 +795,7 @@ onMounted(() => {
                   <th class="p-3.5 text-right">Venta del Día</th>
                   <th class="p-3.5 text-right">Saldo Final</th>
                   <th class="p-3.5 text-center">Cuadre</th>
-                  <th class="p-3.5 text-center">Acción</th>
+                  <th class="p-3.5 text-center print:hidden">Acción</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-[#E5E0DB]">
@@ -824,7 +827,7 @@ onMounted(() => {
                       {{ Number(cierre.diferencia) === 0 ? 'Exacto' : formatearDiferencia(cierre.diferencia) }}
                     </span>
                   </td>
-                  <td class="p-3.5 text-center">
+                  <td class="p-3.5 text-center print:hidden">
                     <button
                       type="button"
                       @click="verDetalleCierre(cierre)"
@@ -841,7 +844,7 @@ onMounted(() => {
           <!-- Paginación -->
           <div v-if="totalPaginas > 1" class="p-3.5 border-t border-[#E5E0DB] flex items-center justify-between text-xs text-[#6B6B6B]">
             <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 print:hidden">
               <button
                 type="button"
                 :disabled="paginaActual <= 1"
