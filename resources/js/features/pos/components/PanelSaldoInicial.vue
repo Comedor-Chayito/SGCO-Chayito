@@ -30,7 +30,10 @@ function onAperturaRegistrada(apertura) {
 
 <template>
   <Sheet v-model:open="abierto">
-    <SheetContent side="right" class="w-full sm:max-w-md p-0 flex flex-col bg-[#FAF7F4] border-l border-[#E5E0DB]">
+    <SheetContent
+      side="right"
+      class="data-[side=right]:w-full data-[side=right]:sm:max-w-md p-0 flex flex-col bg-[#FAF7F4] border-l border-[#E5E0DB]"
+    >
       <SheetTitle class="sr-only">Saldo Inicial de Caja</SheetTitle>
       <SheetDescription class="sr-only">
         Formulario para contar billetes y monedas y registrar el saldo inicial del turno.

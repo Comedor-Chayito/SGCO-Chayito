@@ -239,13 +239,13 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full bg-[#FAF7F4] text-[#111111] overflow-hidden" id="formulario-saldo-inicial">
-    <!-- Header del formulario -->
-    <header class="p-4 border-b border-[#E5E0DB] bg-white flex items-center justify-between shrink-0">
-      <div class="flex items-center gap-2.5">
-        <div class="w-10 h-10 rounded-xl bg-[#F26A21]/10 text-[#C24E12] flex items-center justify-center font-bold">
+    <!-- Header del formulario (pr-14 deja libre la X del panel lateral, que va en posición absoluta) -->
+    <header class="p-4 pr-14 border-b border-[#E5E0DB] bg-white flex items-center justify-between gap-3 shrink-0">
+      <div class="flex min-w-0 items-center gap-2.5">
+        <div class="w-10 h-10 shrink-0 rounded-xl bg-[#F26A21]/10 text-[#C24E12] flex items-center justify-center font-bold">
           <DollarSign :size="22" stroke-width="2.5" />
         </div>
-        <div>
+        <div class="min-w-0">
           <h2 class="text-base font-bold text-[#3D3D3D] leading-tight">Saldo Inicial de Caja</h2>
           <p class="text-xs text-[#6B6B6B]">Apertura de turno por denominación</p>
         </div>
@@ -254,7 +254,7 @@ onMounted(() => {
       <div
         v-if="aperturaExistente && cajaCerrada"
         id="estado-caja"
-        class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-[#C62828] border border-rose-200 text-xs font-semibold"
+        class="flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full bg-rose-50 text-[#C62828] border border-rose-200 text-xs font-semibold"
       >
         <Lock :size="13" stroke-width="2.5" />
         <span>Caja Cerrada</span>
@@ -262,7 +262,7 @@ onMounted(() => {
       <div
         v-else-if="aperturaExistente"
         id="estado-caja"
-        class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-[#2E7D4F] border border-emerald-200 text-xs font-semibold"
+        class="flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full bg-emerald-50 text-[#2E7D4F] border border-emerald-200 text-xs font-semibold"
       >
         <LockOpen :size="13" stroke-width="2.5" />
         <span>Caja Abierta</span>
