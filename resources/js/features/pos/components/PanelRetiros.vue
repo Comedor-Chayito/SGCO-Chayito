@@ -92,13 +92,17 @@ watch(abierto, (estaAbierto) => {
 
 <template>
   <Sheet v-model:open="abierto">
-    <SheetContent side="right" class="w-full sm:max-w-md p-0 flex flex-col bg-[#FAF7F4]">
+    <SheetContent
+      side="right"
+      class="data-[side=right]:w-full data-[side=right]:sm:max-w-md p-0 flex flex-col bg-[#FAF7F4]"
+    >
       <SheetTitle class="sr-only">Retiros del turno</SheetTitle>
       <SheetDescription class="sr-only">
         Registra un retiro de efectivo y revisa los retiros del día.
       </SheetDescription>
 
-      <div class="flex-1 overflow-y-auto p-4 space-y-5">
+      <!-- pt-14 deja libre la X del panel lateral, que va en posición absoluta -->
+      <div class="flex-1 overflow-y-auto p-4 pt-14 space-y-5">
         <FormularioRetiro @retiro-registrado="agregarRetiro" />
 
         <!-- Retiros del turno -->

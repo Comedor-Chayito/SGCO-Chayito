@@ -631,6 +631,7 @@ const formularioValido = computed(() =>
 
 /* ─── Select ─── */
 .formulario-retiro-select-trigger {
+  width: 100%;
   min-height: 44px;
   border: 1.5px solid var(--color-borde);
   border-radius: 0.75rem;
