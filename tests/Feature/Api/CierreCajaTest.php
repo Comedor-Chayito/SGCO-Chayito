@@ -10,6 +10,7 @@ use App\Models\RetiroParcial;
 use App\Models\User;
 use App\Models\Venta;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Spatie\Permission\Models\Role;
@@ -776,5 +777,39 @@ class CierreCajaTest extends TestCase
             ->assertStatus(404)
             ->assertJsonPath('status', 'error')
             ->assertJsonStructure(['status', 'message', 'data']);
+    }
+
+    /**
+     * Valida que de noche el cierre usa la fecha de El Salvador y no la de UTC:
+     * a las 7:30 p. m. del 19 se puede cerrar el 19 y el 20 sigue siendo fecha futura.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
+     *
+     * @return void
+     */
+    public function test_cierre_nocturno_usa_la_fecha_local(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-19 19:30:00', 'America/El_Salvador'));
+
+        $this->crearDatosDia('2026-10-19', [[12.00, 'efectivo']], [], '19:00:00');
+
+        $this->postJson('/api/cierres-caja', [
+            'fecha'         => '2026-10-20',
+            'saldo_inicial' => 100.00,
+            'saldo_final'   => 112.00,
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors(['fecha']);
+
+        $this->postJson('/api/cierres-caja', [
+            'fecha'         => '2026-10-19',
+            'saldo_inicial' => 100.00,
+            'saldo_final'   => 112.00,
+        ])->assertStatus(201)
+            ->assertJsonPath('data.total_ventas_efectivo', '12.00')
+            ->assertJsonPath('data.diferencia', '0.00');
+
+        Carbon::setTestNow();
     }
 }

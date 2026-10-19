@@ -43,8 +43,13 @@ const router = useRouter();
 // Estado de navegación entre pestañas: 'reporte' | 'historial'
 const pestanaActiva = ref('reporte');
 
-// Fecha actual en formato ISO (YYYY-MM-DD)
-const fechaHoy = new Date().toISOString().slice(0, 10);
+// Fecha actual (YYYY-MM-DD) en la zona horaria local; toISOString() la daría en UTC
+const ahora = new Date();
+const fechaHoy = [
+  ahora.getFullYear(),
+  String(ahora.getMonth() + 1).padStart(2, '0'),
+  String(ahora.getDate()).padStart(2, '0'),
+].join('-');
 const fechaSeleccionada = ref(fechaHoy);
 
 // Datos del cierre activo mostrado
