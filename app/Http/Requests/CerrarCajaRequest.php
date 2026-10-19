@@ -23,7 +23,8 @@ class CerrarCajaRequest extends FormRequest
 
     /**
      * Reglas de validación para el cierre de caja.
-     * Los totales de ventas y retiros se calculan en el servicio, no se reciben del frontend.
+     * Los totales de ventas y retiros se calculan en el servicio, no se reciben del frontend,
+     * y el saldo inicial se toma de la apertura del día, que debe existir (CC-39).
      *
      * @autor  Jeferson De La Cruz
      *
@@ -36,8 +37,14 @@ class CerrarCajaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'fecha' => ['required', 'date', 'before_or_equal:today', 'unique:cierres_caja,fecha'],
-            'saldo_inicial' => ['required', 'numeric', 'min:0'],
+            'fecha' => [
+                'bail',
+                'required',
+                'date',
+                'before_or_equal:today',
+                'unique:cierres_caja,fecha',
+                'exists:aperturas_caja,fecha',
+            ],
             'saldo_final' => ['required', 'numeric', 'min:0'],
             'observaciones' => ['nullable', 'string', 'max:500'],
         ];
@@ -61,9 +68,7 @@ class CerrarCajaRequest extends FormRequest
             'fecha.date' => 'La fecha debe tener un formato válido.',
             'fecha.before_or_equal' => 'No se puede registrar un cierre para una fecha futura.',
             'fecha.unique' => 'Ya existe un cierre registrado para esta fecha.',
-            'saldo_inicial.required' => 'El saldo inicial es obligatorio.',
-            'saldo_inicial.numeric' => 'El saldo inicial debe ser un valor numérico.',
-            'saldo_inicial.min' => 'El saldo inicial no puede ser negativo.',
+            'fecha.exists' => 'Debes registrar la apertura de caja de esta fecha antes de cerrarla.',
             'saldo_final.required' => 'El saldo final es obligatorio.',
             'saldo_final.numeric' => 'El saldo final debe ser un valor numérico.',
             'saldo_final.min' => 'El saldo final no puede ser negativo.',

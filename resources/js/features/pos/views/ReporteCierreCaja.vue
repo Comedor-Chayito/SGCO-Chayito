@@ -25,6 +25,7 @@ import {
   RefreshCw,
   Receipt,
   Scale,
+  Landmark,
   CreditCard,
   Banknote,
   ArrowDownCircle,
@@ -57,12 +58,11 @@ const cierreActual = ref(null);
 const cargando = ref(true);
 const procesandoCierre = ref(false);
 
-// Datos de la apertura de caja del día para precargar saldo inicial
+// Apertura de caja del día: de ella sale el saldo inicial y sin ella no se puede cerrar
 const aperturaHoy = ref(null);
 
 // Formulario de cierre si la caja aún no ha sido cerrada hoy
 const formCierre = ref({
-  saldo_inicial: 0,
   saldo_final: '',
   observaciones: '',
 });
@@ -86,6 +86,22 @@ const totalPaginas = ref(1);
 function formatearMoneda(valor) {
   const num = Number(valor) || 0;
   return `$${num.toFixed(2)}`;
+}
+
+/**
+ * Formatea la diferencia del cuadre con su signo delante: +$2.00 sobrante, −$2.00 faltante.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-19
+ * @módulo POS – US-POS-04 / RF-POS-002 (CC-42)
+ *
+ * @param   {number|string} valor Diferencia del cuadre.
+ * @returns {string} Diferencia con signo y formato de moneda.
+ */
+function formatearDiferencia(valor) {
+  const num = Number(valor) || 0;
+  const signo = num > 0 ? '+' : num < 0 ? '−' : '';
+  return `${signo}${formatearMoneda(Math.abs(num))}`;
 }
 
 /**
@@ -142,7 +158,7 @@ async function cargarCierre(fecha = fechaSeleccionada.value) {
 }
 
 /**
- * Consulta la apertura del turno de hoy para precargar el saldo inicial.
+ * Consulta la apertura del turno de hoy, de la que sale el saldo inicial del cierre.
  *
  * @autor  Cristian Alexis
  * @fecha  2026-10-15
@@ -150,13 +166,8 @@ async function cargarCierre(fecha = fechaSeleccionada.value) {
  */
 async function cargarAperturaHoy() {
   try {
-    const apertura = await obtenerAperturaTurno(fechaHoy);
-    aperturaHoy.value = apertura;
-    if (apertura?.saldo_inicial) {
-      formCierre.value.saldo_inicial = Number(apertura.saldo_inicial);
-    }
+    aperturaHoy.value = await obtenerAperturaTurno(fechaHoy);
   } catch {
-    // Si no hay apertura registrada, el cajero puede ingresar el saldo inicial manualmente
     aperturaHoy.value = null;
   }
 }
@@ -169,6 +180,11 @@ async function cargarAperturaHoy() {
  * @módulo POS – US-POS-04 / RF-POS-002 (CC-42)
  */
 async function procesarNuevoCierre() {
+  if (!aperturaHoy.value) {
+    toast.error('Primero registra la apertura de caja del día.');
+    return;
+  }
+
   if (formCierre.value.saldo_final === '' || formCierre.value.saldo_final === null) {
     toast.error('Debes ingresar el saldo final contado en caja.');
     return;
@@ -184,7 +200,6 @@ async function procesarNuevoCierre() {
   try {
     const nuevoCierre = await cerrarCaja({
       fecha: fechaHoy,
-      saldo_inicial: Number(formCierre.value.saldo_inicial) || 0,
       saldo_final: saldoFinalNum,
       observaciones: formCierre.value.observaciones?.trim() || null,
     });
@@ -248,8 +263,31 @@ function imprimirReporte() {
 }
 
 /**
+ * Total vendido en el día sumando los tres métodos de pago.
+ */
+const totalVendidoDia = computed(() => {
+  if (!cierreActual.value) return 0;
+  const c = cierreActual.value;
+  return Number(c.total_ventas_efectivo || 0)
+    + Number(c.total_ventas_tarjeta || 0)
+    + Number(c.total_ventas_transferencia || 0);
+});
+
+/**
+ * Efectivo que debía haber en la gaveta: saldo inicial + ventas en efectivo − retiros.
+ */
+const efectivoEsperado = computed(() => {
+  if (!cierreActual.value) return 0;
+  const c = cierreActual.value;
+  return Number(c.saldo_inicial || 0)
+    + Number(c.total_ventas_efectivo || 0)
+    - Number(c.total_retiros || 0);
+});
+
+/**
  * Estado y color del cuadre según la diferencia calculada.
- * Fórmula: diferencia = total_ventas_efectivo - venta_del_dia
+ * Fórmula: diferencia = venta_del_dia - total_ventas_efectivo (contado − esperado),
+ * positivo = sobrante, negativo = faltante.
  */
 const estadoCuadre = computed(() => {
   if (!cierreActual.value) return null;
@@ -291,39 +329,39 @@ onMounted(() => {
     <Toaster richColors position="top-center" />
 
     <!-- Barra superior de navegación (oculta al imprimir) -->
-    <header class="sticky top-0 z-30 flex items-center justify-between border-b border-[#E5E0DB] bg-white px-4 py-3 shadow-xs print:hidden">
-      <div class="flex items-center gap-3">
+    <header class="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-2 border-b border-[#E5E0DB] bg-white px-4 py-3 shadow-xs print:hidden">
+      <div class="flex min-w-0 items-center gap-3">
         <button
           type="button"
           id="btn-regresar-caja"
           @click="router.push('/caja')"
-          class="flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] text-[#3D3D3D] hover:bg-zinc-100 active:scale-95 transition-all cursor-pointer"
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] text-[#3D3D3D] hover:bg-zinc-100 active:scale-95 transition-all cursor-pointer"
           title="Regresar a Caja"
         >
           <ArrowLeft :size="20" stroke-width="2" />
         </button>
-        <div class="flex items-center gap-2.5">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F26A21] text-white shadow-xs">
+        <div class="flex min-w-0 items-center gap-2.5">
+          <div class="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F26A21] text-white shadow-xs">
             <Scale :size="20" stroke-width="2" />
           </div>
-          <div>
-            <h1 class="text-lg font-bold leading-tight text-[#3D3D3D]">Cierre Diario y Cuadre de Caja</h1>
-            <p class="text-xs text-[#6B6B6B]">Comedor Chayito · Módulo POS</p>
+          <div class="min-w-0">
+            <h1 class="text-base sm:text-lg font-bold leading-tight text-[#3D3D3D]">Cierre Diario y Cuadre de Caja</h1>
+            <p class="hidden sm:block text-xs text-[#6B6B6B]">Comedor Chayito · Módulo POS</p>
           </div>
         </div>
       </div>
 
-      <!-- Selector de pestañas y botones de acción -->
-      <div class="flex items-center gap-2">
-        <div class="flex items-center rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] p-1 text-xs font-semibold">
+      <!-- Selector de pestañas y botones de acción (en móvil bajan a su propia fila) -->
+      <div class="flex w-full sm:w-auto items-center gap-2">
+        <div class="flex flex-1 sm:flex-none items-center rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] p-1 text-xs font-semibold">
           <button
             type="button"
             id="tab-reporte"
             @click="pestanaActiva = 'reporte'"
-            class="rounded-lg px-3 py-1.5 transition-all cursor-pointer"
+            class="flex-1 sm:flex-none min-h-11 rounded-lg px-3 transition-all cursor-pointer"
             :class="pestanaActiva === 'reporte' ? 'bg-white text-[#3D3D3D] shadow-xs font-bold' : 'text-[#6B6B6B] hover:text-[#3D3D3D]'"
           >
-            <span class="flex items-center gap-1.5">
+            <span class="flex items-center justify-center gap-1.5">
               <FileText :size="15" />
               Reporte
             </span>
@@ -332,10 +370,10 @@ onMounted(() => {
             type="button"
             id="tab-historial"
             @click="() => { pestanaActiva = 'historial'; cargarHistorial(1); }"
-            class="rounded-lg px-3 py-1.5 transition-all cursor-pointer"
+            class="flex-1 sm:flex-none min-h-11 rounded-lg px-3 transition-all cursor-pointer"
             :class="pestanaActiva === 'historial' ? 'bg-white text-[#3D3D3D] shadow-xs font-bold' : 'text-[#6B6B6B] hover:text-[#3D3D3D]'"
           >
-            <span class="flex items-center gap-1.5">
+            <span class="flex items-center justify-center gap-1.5">
               <History :size="15" />
               Historial
             </span>
@@ -347,7 +385,8 @@ onMounted(() => {
           type="button"
           id="btn-imprimir-reporte"
           @click="imprimirReporte"
-          class="flex h-10 items-center gap-2 rounded-xl border border-[#E5E0DB] bg-white px-3.5 text-xs font-bold text-[#3D3D3D] hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer shadow-xs"
+          aria-label="Imprimir reporte"
+          class="flex h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#E5E0DB] bg-white px-3.5 text-xs font-bold text-[#3D3D3D] hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer shadow-xs"
         >
           <Printer :size="16" stroke-width="2.2" />
           <span class="hidden sm:inline">Imprimir Reporte</span>
@@ -445,11 +484,63 @@ onMounted(() => {
 
           <!-- Cuadrícula de Métricas Contables (Fórmula del negocio) -->
           <div class="p-5 sm:p-6 space-y-6">
+            <!-- Ventas del día por método de pago -->
             <h3 class="text-xs font-bold uppercase tracking-wider text-[#6B6B6B]">
-              Resumen Financiero del Día
+              Ventas del Día por Método de Pago
             </h3>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <!-- Ventas Efectivo -->
+              <div class="p-4 rounded-xl border border-[#E5E0DB] bg-emerald-50/40 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-xs text-emerald-800 mb-1">
+                  <span class="font-semibold">Efectivo</span>
+                  <Banknote :size="16" class="text-[#2E7D4F]" />
+                </div>
+                <div id="total-ventas-efectivo" class="text-xl font-black text-[#2E7D4F]">
+                  {{ formatearMoneda(cierreActual.total_ventas_efectivo) }}
+                </div>
+                <p class="text-[11px] text-[#2E7D4F]/80 mt-1">Cobrado en billete y moneda</p>
+              </div>
+
+              <!-- Ventas Tarjeta -->
+              <div class="p-4 rounded-xl border border-[#E5E0DB] bg-blue-50/40 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-xs text-blue-800 mb-1">
+                  <span class="font-semibold">Tarjeta</span>
+                  <CreditCard :size="16" class="text-[#2B6CB0]" />
+                </div>
+                <div id="total-ventas-tarjeta" class="text-xl font-black text-[#2B6CB0]">
+                  {{ formatearMoneda(cierreActual.total_ventas_tarjeta) }}
+                </div>
+                <p class="text-[11px] text-[#2B6CB0]/80 mt-1">No entra a la gaveta</p>
+              </div>
+
+              <!-- Ventas Transferencia -->
+              <div class="p-4 rounded-xl border border-[#E5E0DB] bg-blue-50/40 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-xs text-blue-800 mb-1">
+                  <span class="font-semibold">Transferencia</span>
+                  <Landmark :size="16" class="text-[#2B6CB0]" />
+                </div>
+                <div id="total-ventas-transferencia" class="text-xl font-black text-[#2B6CB0]">
+                  {{ formatearMoneda(cierreActual.total_ventas_transferencia) }}
+                </div>
+                <p class="text-[11px] text-[#2B6CB0]/80 mt-1">No entra a la gaveta</p>
+              </div>
+            </div>
+
+            <!-- Total vendido: suma de los tres métodos -->
+            <div class="flex items-center justify-between p-4 rounded-xl border-2 border-[#F26A21]/30 bg-orange-50/30">
+              <span class="text-sm font-bold text-[#C24E12]">Total vendido del día</span>
+              <span id="total-vendido-dia" class="text-2xl font-black text-[#C24E12]">
+                {{ formatearMoneda(totalVendidoDia) }}
+              </span>
+            </div>
+
+            <!-- Cuadre de efectivo: solo el efectivo físico de la gaveta -->
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#6B6B6B]">
+              Cuadre de Efectivo en Caja
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
               <!-- Saldo Inicial -->
               <div class="p-4 rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] flex flex-col justify-between">
                 <div class="flex items-center justify-between text-xs text-[#6B6B6B] mb-1">
@@ -459,31 +550,7 @@ onMounted(() => {
                 <div class="text-xl font-black text-[#3D3D3D]">
                   {{ formatearMoneda(cierreActual.saldo_inicial) }}
                 </div>
-                <p class="text-[11px] text-[#6B6B6B] mt-1">Efectivo base al abrir turno</p>
-              </div>
-
-              <!-- Ventas Efectivo -->
-              <div class="p-4 rounded-xl border border-[#E5E0DB] bg-emerald-50/40 flex flex-col justify-between">
-                <div class="flex items-center justify-between text-xs text-emerald-800 mb-1">
-                  <span class="font-semibold">Ventas en Efectivo</span>
-                  <Banknote :size="16" class="text-[#2E7D4F]" />
-                </div>
-                <div class="text-xl font-black text-[#2E7D4F]">
-                  {{ formatearMoneda(cierreActual.total_ventas_efectivo) }}
-                </div>
-                <p class="text-[11px] text-[#2E7D4F]/80 mt-1">Ingresos cobrados en billete/moneda</p>
-              </div>
-
-              <!-- Ventas Transferencia -->
-              <div class="p-4 rounded-xl border border-[#E5E0DB] bg-blue-50/40 flex flex-col justify-between">
-                <div class="flex items-center justify-between text-xs text-blue-800 mb-1">
-                  <span class="font-semibold">Ventas Electrónicas</span>
-                  <CreditCard :size="16" class="text-[#2B6CB0]" />
-                </div>
-                <div class="text-xl font-black text-[#2B6CB0]">
-                  {{ formatearMoneda(cierreActual.total_ventas_transferencia) }}
-                </div>
-                <p class="text-[11px] text-[#2B6CB0]/80 mt-1">Transferencias bancarias del día</p>
+                <p class="text-[11px] text-[#6B6B6B] mt-1">Según la apertura de caja</p>
               </div>
 
               <!-- Retiros Parciales -->
@@ -511,12 +578,12 @@ onMounted(() => {
               </div>
 
               <!-- Venta del Día (Fórmula del negocio) -->
-              <div class="p-4 rounded-xl border-2 border-[#F26A21]/30 bg-orange-50/30 flex flex-col justify-between">
+              <div class="p-4 rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] flex flex-col justify-between">
                 <div class="flex items-center justify-between text-xs text-[#C24E12] mb-1">
                   <span class="font-bold">Venta Calculada del Día</span>
                   <Scale :size="16" class="text-[#F26A21]" />
                 </div>
-                <div class="text-xl font-black text-[#F26A21]">
+                <div class="text-xl font-black text-[#C24E12]">
                   {{ formatearMoneda(cierreActual.venta_del_dia) }}
                 </div>
                 <p class="text-[11px] text-[#6B6B6B] mt-1">(Retiros + Saldo Final) − Saldo Inicial</p>
@@ -527,8 +594,9 @@ onMounted(() => {
             <div class="p-4 sm:p-5 rounded-2xl border border-[#E5E0DB] bg-[#FAF7F4] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h4 class="text-sm font-bold text-[#3D3D3D]">Resultado del Cuadre de Caja</h4>
-                <p class="text-xs text-[#6B6B6B] mt-0.5">
-                  Diferencia = Total Ventas Efectivo ({{ formatearMoneda(cierreActual.total_ventas_efectivo) }}) − Venta del Día ({{ formatearMoneda(cierreActual.venta_del_dia) }})
+                <p id="detalle-cuadre" class="text-xs text-[#6B6B6B] mt-0.5">
+                  Esperado en caja {{ formatearMoneda(efectivoEsperado) }}
+                  · Contado {{ formatearMoneda(cierreActual.saldo_final) }}
                 </p>
                 <p class="text-xs font-medium text-[#3D3D3D] mt-1.5" v-if="estadoCuadre">
                   {{ estadoCuadre.descripcion }}
@@ -540,7 +608,7 @@ onMounted(() => {
                   class="text-2xl font-black"
                   :class="Number(cierreActual.diferencia) === 0 ? 'text-[#2E7D4F]' : (Number(cierreActual.diferencia) > 0 ? 'text-[#E0A800]' : 'text-[#C62828]')"
                 >
-                  {{ Number(cierreActual.diferencia) > 0 ? '+' : '' }}{{ formatearMoneda(cierreActual.diferencia) }}
+                  {{ formatearDiferencia(cierreActual.diferencia) }}
                 </div>
                 <span class="text-[11px] font-bold uppercase tracking-wider text-[#6B6B6B]">Diferencia de Cuadre</span>
               </div>
@@ -577,33 +645,47 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Info de saldo inicial detectado en apertura -->
-          <div class="mb-5 p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-start gap-3">
-            <CheckCircle2 :size="18" class="text-[#2E7D4F] shrink-0 mt-0.5" />
+          <!-- Sin apertura no hay saldo inicial confiable: se pide abrir la caja primero -->
+          <div
+            v-if="!aperturaHoy"
+            id="aviso-sin-apertura"
+            class="mb-5 p-3.5 rounded-xl border border-amber-200 bg-amber-50/60 flex items-start gap-3"
+          >
+            <AlertTriangle :size="18" class="text-[#E0A800] shrink-0 mt-0.5" />
             <div class="text-xs">
-              <span class="font-bold text-[#2E7D4F]">Saldo Inicial del Turno:</span>
-              <p class="text-emerald-950 mt-0.5">
-                {{ aperturaHoy ? `Registrado en la apertura matutina: ${formatearMoneda(formCierre.saldo_inicial)}` : 'No se detectó registro previo de apertura. Ingrese el saldo base.' }}
+              <span class="font-bold text-[#3D3D3D]">No hay apertura de caja registrada hoy.</span>
+              <p class="text-[#3D3D3D] mt-0.5">
+                El saldo inicial sale del conteo de la apertura. Regístrala antes de cerrar.
               </p>
+              <button
+                type="button"
+                id="btn-ir-apertura"
+                @click="router.push('/caja/apertura')"
+                class="mt-2 min-h-11 px-4 rounded-xl bg-[#F26A21] text-xs font-bold text-white hover:bg-[#FF8C42] cursor-pointer"
+              >
+                Registrar apertura de caja
+              </button>
             </div>
           </div>
 
           <form @submit.prevent="procesarNuevoCierre" class="space-y-4">
-            <!-- Saldo Inicial -->
-            <div>
-              <label class="block text-xs font-bold text-[#3D3D3D] uppercase tracking-wider mb-1">
+            <!-- Saldo Inicial: solo lectura, viene de la apertura -->
+            <div v-if="aperturaHoy">
+              <span class="block text-xs font-bold text-[#3D3D3D] uppercase tracking-wider mb-1">
                 Saldo Inicial ($)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                id="input-saldo-inicial-cierre"
-                v-model.number="formCierre.saldo_inicial"
-                required
-                class="w-full rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] px-4 py-2.5 text-base font-bold text-[#3D3D3D] focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#F26A21]/40"
-              />
-              <span class="text-[11px] text-[#6B6B6B]">Fondo con el que inició la caja este turno.</span>
+              </span>
+              <div
+                id="saldo-inicial-cierre"
+                class="flex items-center justify-between w-full rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] px-4 py-2.5"
+              >
+                <span class="text-base font-bold text-[#3D3D3D]">
+                  {{ formatearMoneda(aperturaHoy.saldo_inicial) }}
+                </span>
+                <Lock :size="15" class="text-[#6B6B6B]" />
+              </div>
+              <span class="text-[11px] text-[#6B6B6B]">
+                Registrado en la apertura de caja; no se puede modificar al cerrar.
+              </span>
             </div>
 
             <!-- Saldo Final Contado en Gaveta -->
@@ -643,7 +725,7 @@ onMounted(() => {
             <button
               type="submit"
               id="btn-confirmar-cierre"
-              :disabled="procesandoCierre"
+              :disabled="procesandoCierre || !aperturaHoy"
               class="w-full flex items-center justify-center gap-2 rounded-xl bg-[#F26A21] py-3 text-sm font-bold text-white shadow-xs hover:bg-[#FF8C42] active:scale-98 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Lock :size="17" />
@@ -739,7 +821,7 @@ onMounted(() => {
                       class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold"
                       :class="Number(cierre.diferencia) === 0 ? 'bg-emerald-100 text-[#2E7D4F]' : (Number(cierre.diferencia) > 0 ? 'bg-amber-100 text-[#E0A800]' : 'bg-rose-100 text-[#C62828]')"
                     >
-                      {{ Number(cierre.diferencia) === 0 ? 'Exacto' : (Number(cierre.diferencia) > 0 ? `+${formatearMoneda(cierre.diferencia)}` : formatearMoneda(cierre.diferencia)) }}
+                      {{ Number(cierre.diferencia) === 0 ? 'Exacto' : formatearDiferencia(cierre.diferencia) }}
                     </span>
                   </td>
                   <td class="p-3.5 text-center">

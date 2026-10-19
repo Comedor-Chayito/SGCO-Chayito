@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\AperturaCaja;
 use App\Models\CierreCaja;
 use App\Models\Comanda;
 use App\Models\Mesa;
@@ -126,6 +127,32 @@ class CierreCajaTest extends TestCase
     }
 
     /**
+     * Registra la apertura de caja de una fecha con el saldo inicial indicado.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
+     *
+     * @param  string  $fecha  Fecha en formato Y-m-d.
+     * @param  float  $saldoInicial  Saldo inicial contado en la apertura.
+     * @return void
+     */
+    private function abrirCaja(string $fecha, float $saldoInicial = 100.00): void
+    {
+        AperturaCaja::create([
+            'usuario_id'     => $this->cajero->id,
+            'fecha'          => $fecha,
+            'saldo_inicial'  => $saldoInicial,
+            'denominaciones' => [[
+                'denominacion' => $saldoInicial,
+                'tipo'         => 'billete',
+                'cantidad'     => 1,
+                'subtotal'     => $saldoInicial,
+            ]],
+        ]);
+    }
+
+    /**
      * Valida que un cierre de caja se procesa correctamente con ventas y retiros del día.
      *
      * @autor  Jeferson De La Cruz
@@ -144,13 +171,13 @@ class CierreCajaTest extends TestCase
             [50.00, 'efectivo'],
             [20.00, 'transferencia'],
         ], [30.00]);
+        $this->abrirCaja($fecha, 100.00);
 
-        // Saldo inicial: $100, Saldo final: $120
+        // Saldo inicial (apertura): $100, Saldo final: $120
         // Venta del día = (30 + 120) − 100 = 50
-        // Diferencia = 50 (efectivo) − 50 (venta_del_dia) = 0
+        // Diferencia = 50 (venta_del_dia) − 50 (efectivo) = 0
         $payload = [
             'fecha' => $fecha,
-            'saldo_inicial' => 100.00,
             'saldo_final' => 120.00,
         ];
 
@@ -194,9 +221,9 @@ class CierreCajaTest extends TestCase
 
         // Sin ventas ni retiros; saldo inicial = saldo final = 100
         // Venta del día = (0 + 100) − 100 = 0
+        $this->abrirCaja($fecha, 100.00);
         $payload = [
             'fecha' => $fecha,
-            'saldo_inicial' => 100.00,
             'saldo_final' => 100.00,
         ];
 
@@ -226,6 +253,7 @@ class CierreCajaTest extends TestCase
     public function test_cierre_rechaza_fecha_duplicada(): void
     {
         $fecha = '2026-09-21';
+        $this->abrirCaja($fecha);
 
         CierreCaja::create([
             'usuario_id' => $this->cajero->id,
@@ -241,7 +269,6 @@ class CierreCajaTest extends TestCase
 
         $payload = [
             'fecha' => $fecha,
-            'saldo_inicial' => 100.00,
             'saldo_final' => 100.00,
         ];
 
@@ -269,7 +296,6 @@ class CierreCajaTest extends TestCase
 
         $payload = [
             'fecha' => $fechaFutura,
-            'saldo_inicial' => 100.00,
             'saldo_final' => 100.00,
         ];
 
@@ -295,12 +321,13 @@ class CierreCajaTest extends TestCase
         // Ventas en efectivo: $50
         $this->crearDatosDia($fecha, [[50.00, 'efectivo']]);
 
-        // Saldo inicial: $100, Saldo final: $160 (hay $10 de más en caja)
+        $this->abrirCaja($fecha, 100.00);
+
+        // Esperado en caja: 100 + 50 = 150; contado: 160 (hay $10 de más)
         // Venta del día = (0 + 160) − 100 = 60
-        // Diferencia = 50 − 60 = −10 (negativo = sobrante)
+        // Diferencia = 60 − 50 = +10 (positivo = sobrante)
         $payload = [
             'fecha' => $fecha,
-            'saldo_inicial' => 100.00,
             'saldo_final' => 160.00,
         ];
 
@@ -310,13 +337,13 @@ class CierreCajaTest extends TestCase
             ->assertJson([
                 'data' => [
                     'venta_del_dia' => '60.00',
-                    'diferencia' => '-10.00',
+                    'diferencia' => '10.00',
                 ],
             ]);
     }
 
     /**
-     * Valida que cuando falta efectivo se refleja como diferencia positiva (faltante).
+     * Valida que cuando falta efectivo se refleja como diferencia negativa (faltante).
      *
      * @autor  Jeferson De La Cruz
      *
@@ -331,12 +358,13 @@ class CierreCajaTest extends TestCase
         // Ventas en efectivo: $50
         $this->crearDatosDia($fecha, [[50.00, 'efectivo']]);
 
-        // Saldo inicial: $100, Saldo final: $140 (faltan $10)
+        $this->abrirCaja($fecha, 100.00);
+
+        // Esperado en caja: 100 + 50 = 150; contado: 140 (faltan $10)
         // Venta del día = (0 + 140) − 100 = 40
-        // Diferencia = 50 − 40 = 10 (positivo = faltante: vendió $50 y solo hay $40 extra)
+        // Diferencia = 40 − 50 = −10 (negativo = faltante)
         $payload = [
             'fecha' => $fecha,
-            'saldo_inicial' => 100.00,
             'saldo_final' => 140.00,
         ];
 
@@ -346,7 +374,7 @@ class CierreCajaTest extends TestCase
             ->assertJson([
                 'data' => [
                     'venta_del_dia' => '40.00',
-                    'diferencia' => '10.00',
+                    'diferencia' => '-10.00',
                 ],
             ]);
     }
@@ -363,10 +391,10 @@ class CierreCajaTest extends TestCase
     public function test_cierre_registra_auditoria(): void
     {
         $fecha = '2026-09-21';
+        $this->abrirCaja($fecha);
 
         $payload = [
             'fecha' => $fecha,
-            'saldo_inicial' => 100.00,
             'saldo_final' => 100.00,
         ];
 
@@ -499,7 +527,6 @@ class CierreCajaTest extends TestCase
 
         $this->postJson('/api/cierres-caja', [
             'fecha'         => '2026-09-21',
-            'saldo_inicial' => 100.00,
             'saldo_final'   => 100.00,
         ])->assertStatus(401)->assertJsonPath('status', 'error');
 
@@ -546,7 +573,6 @@ class CierreCajaTest extends TestCase
 
         $this->postJson('/api/cierres-caja', [
             'fecha'         => '2026-09-21',
-            'saldo_inicial' => 100.00,
             'saldo_final'   => 100.00,
         ])->assertStatus(403)->assertJsonPath('status', 'error');
 
@@ -569,10 +595,10 @@ class CierreCajaTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('administrador');
         Sanctum::actingAs($admin);
+        $this->abrirCaja('2026-09-21');
 
         $this->postJson('/api/cierres-caja', [
             'fecha'         => '2026-09-21',
-            'saldo_inicial' => 100.00,
             'saldo_final'   => 100.00,
         ])->assertStatus(201)
             ->assertJsonPath('data.usuario.id', $admin->id);
@@ -590,16 +616,18 @@ class CierreCajaTest extends TestCase
     public function test_cierre_queda_a_nombre_del_usuario_autenticado(): void
     {
         User::factory()->create();
+        $this->abrirCaja('2026-09-21');
 
         $response = $this->postJson('/api/cierres-caja', [
             'fecha'         => '2026-09-21',
-            'saldo_inicial' => 100.00,
             'saldo_final'   => 100.00,
         ]);
 
         $response->assertStatus(201)
             ->assertJsonPath('data.usuario.id', $this->cajero->id)
-            ->assertJsonPath('data.usuario.name', $this->cajero->name);
+            ->assertJsonPath('data.usuario.name', $this->cajero->name)
+            ->assertJsonMissingPath('data.usuario.roles')
+            ->assertJsonMissingPath('data.usuario.permisos');
 
         $this->assertDatabaseHas('auditorias', [
             'usuario_id' => $this->cajero->id,
@@ -624,11 +652,11 @@ class CierreCajaTest extends TestCase
         $this->crearDatosDia('2026-09-21', [[10.00, 'efectivo']], [5.00], '00:00:00');
         $this->crearDatosDia('2026-09-21', [[15.00, 'efectivo']], [5.00], '23:59:59');
         $this->crearDatosDia('2026-09-22', [[77.00, 'efectivo']], [60.00], '00:00:00');
+        $this->abrirCaja('2026-09-21', 100.00);
 
         // Venta del día = (10 + 115) − 100 = 25; diferencia = 25 − 25 = 0
         $this->postJson('/api/cierres-caja', [
             'fecha'         => '2026-09-21',
-            'saldo_inicial' => 100.00,
             'saldo_final'   => 115.00,
         ])->assertStatus(201)
             ->assertJsonPath('data.total_ventas_efectivo', '25.00')
@@ -638,7 +666,8 @@ class CierreCajaTest extends TestCase
     }
 
     /**
-     * Valida que las ventas con tarjeta no se mezclan con el efectivo del cuadre.
+     * Valida que el cierre registra lo vendido por cada método de pago y que solo
+     * el efectivo entra al cuadre de caja.
      *
      * @autor  manuelmv15
      * @fecha  2026-10-19
@@ -646,24 +675,33 @@ class CierreCajaTest extends TestCase
      *
      * @return void
      */
-    public function test_ventas_con_tarjeta_no_afectan_el_cuadre_en_efectivo(): void
+    public function test_cierre_registra_ventas_por_metodo_de_pago(): void
     {
         $fecha = '2026-09-21';
 
         $this->crearDatosDia($fecha, [
             [50.00, 'efectivo'],
             [30.00, 'tarjeta'],
+            [12.50, 'tarjeta'],
+            [20.00, 'transferencia'],
         ]);
+        $this->abrirCaja($fecha, 100.00);
 
+        // Solo los $50 en efectivo entran a la gaveta: esperado 150, contado 150
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => $fecha,
-            'saldo_inicial' => 100.00,
-            'saldo_final'   => 150.00,
+            'fecha'       => $fecha,
+            'saldo_final' => 150.00,
         ])->assertStatus(201)
             ->assertJsonPath('data.total_ventas_efectivo', '50.00')
-            ->assertJsonPath('data.total_ventas_transferencia', '0.00')
+            ->assertJsonPath('data.total_ventas_tarjeta', '42.50')
+            ->assertJsonPath('data.total_ventas_transferencia', '20.00')
             ->assertJsonPath('data.venta_del_dia', '50.00')
             ->assertJsonPath('data.diferencia', '0.00');
+
+        $this->assertDatabaseHas('cierres_caja', [
+            'fecha'                => $fecha,
+            'total_ventas_tarjeta' => 42.50,
+        ]);
     }
 
     /**
@@ -684,11 +722,11 @@ class CierreCajaTest extends TestCase
             [20.20, 'efectivo'],
             [0.70, 'efectivo'],
         ], [0.10, 0.20]);
+        $this->abrirCaja($fecha, 100.00);
 
         // Venta del día = (0.30 + 130.70) − 100.00 = 31.00
         $this->postJson('/api/cierres-caja', [
             'fecha'         => $fecha,
-            'saldo_inicial' => 100.00,
             'saldo_final'   => 130.70,
         ])->assertStatus(201)
             ->assertJsonPath('data.total_ventas_efectivo', '31.00')
@@ -711,18 +749,22 @@ class CierreCajaTest extends TestCase
         $this->postJson('/api/cierres-caja', [])
             ->assertStatus(422)
             ->assertJsonPath('status', 'error')
-            ->assertJsonValidationErrors(['fecha', 'saldo_inicial', 'saldo_final']);
+            ->assertJsonValidationErrors(['fecha', 'saldo_final']);
 
         $this->postJson('/api/cierres-caja', [
             'fecha'         => '2026-09-21',
-            'saldo_inicial' => -1,
             'saldo_final'   => 'cien',
         ])->assertStatus(422)
-            ->assertJsonValidationErrors(['saldo_inicial', 'saldo_final']);
+            ->assertJsonValidationErrors(['saldo_final']);
+
+        $this->postJson('/api/cierres-caja', [
+            'fecha'       => '2026-09-21',
+            'saldo_final' => -1,
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors(['saldo_final']);
 
         $this->postJson('/api/cierres-caja', [
             'fecha'         => '2026-09-21',
-            'saldo_inicial' => 100.00,
             'saldo_final'   => 100.00,
             'observaciones' => str_repeat('a', 501),
         ])->assertStatus(422)
@@ -743,10 +785,10 @@ class CierreCajaTest extends TestCase
     public function test_bitacora_de_cierre_es_inalterable(): void
     {
         $fecha = '2026-09-21';
+        $this->abrirCaja($fecha);
 
         $this->postJson('/api/cierres-caja', [
             'fecha'         => $fecha,
-            'saldo_inicial' => 100.00,
             'saldo_final'   => 100.00,
         ])->assertStatus(201);
 
@@ -794,22 +836,71 @@ class CierreCajaTest extends TestCase
         Carbon::setTestNow(Carbon::parse('2026-10-19 19:30:00', 'America/El_Salvador'));
 
         $this->crearDatosDia('2026-10-19', [[12.00, 'efectivo']], [], '19:00:00');
+        $this->abrirCaja('2026-10-19', 100.00);
 
         $this->postJson('/api/cierres-caja', [
             'fecha'         => '2026-10-20',
-            'saldo_inicial' => 100.00,
             'saldo_final'   => 112.00,
         ])->assertStatus(422)
             ->assertJsonValidationErrors(['fecha']);
 
         $this->postJson('/api/cierres-caja', [
             'fecha'         => '2026-10-19',
-            'saldo_inicial' => 100.00,
             'saldo_final'   => 112.00,
         ])->assertStatus(201)
             ->assertJsonPath('data.total_ventas_efectivo', '12.00')
             ->assertJsonPath('data.diferencia', '0.00');
 
         Carbon::setTestNow();
+    }
+
+    /**
+     * Valida que el saldo inicial del cierre es el de la apertura, aunque se envíe otro.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
+     *
+     * @return void
+     */
+    public function test_cierre_toma_el_saldo_inicial_de_la_apertura(): void
+    {
+        $fecha = '2026-09-21';
+
+        $this->crearDatosDia($fecha, [[20.00, 'efectivo']]);
+        $this->abrirCaja($fecha, 80.00);
+
+        // Un saldo inicial enviado desde el cliente se ignora: no puede maquillar el cuadre
+        $this->postJson('/api/cierres-caja', [
+            'fecha'         => $fecha,
+            'saldo_inicial' => 999.00,
+            'saldo_final'   => 100.00,
+        ])->assertStatus(201)
+            ->assertJsonPath('data.saldo_inicial', '80.00')
+            ->assertJsonPath('data.venta_del_dia', '20.00')
+            ->assertJsonPath('data.diferencia', '0.00');
+    }
+
+    /**
+     * Valida que no se puede cerrar la caja de un día que no tuvo apertura.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
+     *
+     * @return void
+     */
+    public function test_cierre_sin_apertura_es_rechazado(): void
+    {
+        $this->postJson('/api/cierres-caja', [
+            'fecha'       => '2026-09-21',
+            'saldo_final' => 100.00,
+        ])->assertStatus(422)
+            ->assertJsonPath('status', 'error')
+            ->assertJsonFragment([
+                'fecha' => ['Debes registrar la apertura de caja de esta fecha antes de cerrarla.'],
+            ]);
+
+        $this->assertDatabaseCount('cierres_caja', 0);
     }
 }

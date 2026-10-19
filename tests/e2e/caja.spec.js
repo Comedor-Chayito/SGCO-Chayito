@@ -70,15 +70,18 @@ test.describe('Caja - retiros y métodos de pago', () => {
     await page.locator('#btn-abrir-saldo-inicial').click();
     await expect(page.locator('#formulario-saldo-inicial')).toBeVisible();
 
+    // Esperar a que el panel termine de consultar la apertura: muestra el conteo o la caja abierta
+    const cajaAbiertaBadge = page.getByText('Caja Abierta').first();
+    const btnInc20 = page.locator('#btn-incrementar-20');
+    await expect(cajaAbiertaBadge.or(btnInc20)).toBeVisible();
+
     // Si ya existe apertura del día, el formulario muestra la información de apertura inalterable
-    const cajaAbiertaBadge = page.getByText('Caja Abierta');
     if (await cajaAbiertaBadge.isVisible()) {
       await expect(page.getByText('Desglose de Denominaciones Registrado')).toBeVisible();
       return;
     }
 
     // Probar incremento de billetes de $20 y $10
-    const btnInc20 = page.locator('#btn-incrementar-20');
     await btnInc20.click();
     await btnInc20.click(); // 2 * $20 = $40
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AperturaCaja;
 use App\Models\CierreCaja;
 use App\Models\RetiroParcial;
 use App\Models\Venta;
@@ -27,10 +28,11 @@ class CierreCajaService
 
     /**
      * Ejecuta el cierre diario de caja: consolida ventas, retiros y calcula el cuadre.
-     * La bitácora generada es inalterable una vez creada.
+     * El saldo inicial se toma de la apertura del día. La bitácora es inalterable una vez creada.
      *
      * Fórmula: Venta del Día = (Suma de Retiros + Saldo Final) − Saldo Inicial
-     * Diferencia: total_ventas_efectivo − venta_del_dia (positivo = sobrante, negativo = faltante)
+     * Diferencia: venta_del_dia − total_ventas_efectivo, que equivale a efectivo contado menos
+     * efectivo esperado en caja (positivo = sobrante, negativo = faltante).
      *
      * @autor  Jeferson De La Cruz
      *
@@ -38,7 +40,7 @@ class CierreCajaService
      *
      * @módulo POS – RF-POS-002 / CC-41
      *
-     * @param  array  $datos  Datos validados: fecha, saldo_inicial, saldo_final, observaciones.
+     * @param  array  $datos  Datos validados: fecha, saldo_final, observaciones.
      * @param  int  $usuarioId  ID del cajero/administrador que realiza el cierre.
      * @return CierreCaja Registro de cierre con la relación de usuario cargada.
      *
@@ -58,6 +60,7 @@ class CierreCajaService
                 ->pluck('total_metodo', 'metodo_pago');
 
             $totalVentasEfectivo = round((float) ($ventasPorMetodo['efectivo'] ?? 0), 2);
+            $totalVentasTarjeta = round((float) ($ventasPorMetodo['tarjeta'] ?? 0), 2);
             $totalVentasTransferencia = round((float) ($ventasPorMetodo['transferencia'] ?? 0), 2);
 
             // Consolidar retiros parciales del día
@@ -66,20 +69,25 @@ class CierreCajaService
                 2
             );
 
-            $saldoInicial = round((float) $datos['saldo_inicial'], 2);
+            // El saldo inicial es el registrado en la apertura (CC-39), no uno digitado al cerrar
+            $saldoInicial = round(
+                (float) AperturaCaja::whereDate('fecha', $fecha)->value('saldo_inicial'),
+                2
+            );
             $saldoFinal = round((float) $datos['saldo_final'], 2);
 
             // Fórmula del negocio (CLAUDE.md §8)
             $ventaDelDia = round(($totalRetiros + $saldoFinal) - $saldoInicial, 2);
 
-            // Diferencia contra ventas en efectivo (sobrante positivo, faltante negativo)
-            $diferencia = round($totalVentasEfectivo - $ventaDelDia, 2);
+            // Contado menos esperado: sobrante positivo, faltante negativo
+            $diferencia = round($ventaDelDia - $totalVentasEfectivo, 2);
 
             $cierre = CierreCaja::create([
                 'usuario_id' => $usuarioId,
                 'fecha' => $datos['fecha'],
                 'saldo_inicial' => $saldoInicial,
                 'total_ventas_efectivo' => $totalVentasEfectivo,
+                'total_ventas_tarjeta' => $totalVentasTarjeta,
                 'total_ventas_transferencia' => $totalVentasTransferencia,
                 'total_retiros' => $totalRetiros,
                 'saldo_final' => $saldoFinal,
@@ -96,7 +104,7 @@ class CierreCajaService
                 $cierre->toArray(),
             );
 
-            return $cierre->load('usuario:id,name');
+            return $this->soloNombreDeUsuario($cierre->load('usuario:id,name'));
         });
     }
 
@@ -116,9 +124,11 @@ class CierreCajaService
      */
     public function obtenerCierre(string $fecha): CierreCaja
     {
-        return CierreCaja::with('usuario:id,name')
-            ->where('fecha', $fecha)
-            ->firstOrFail();
+        return $this->soloNombreDeUsuario(
+            CierreCaja::with('usuario:id,name')
+                ->where('fecha', $fecha)
+                ->firstOrFail()
+        );
     }
 
     /**
@@ -135,8 +145,29 @@ class CierreCajaService
      */
     public function listarCierres(int $porPagina = 15): LengthAwarePaginator
     {
-        return CierreCaja::with('usuario:id,name')
+        $cierres = CierreCaja::with('usuario:id,name')
             ->orderByDesc('fecha')
             ->paginate($porPagina);
+
+        $cierres->getCollection()->each(fn (CierreCaja $cierre) => $this->soloNombreDeUsuario($cierre));
+
+        return $cierres;
+    }
+
+    /**
+     * Deja en el usuario del cierre solo su id y nombre, sin roles ni permisos.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo POS – US-POS-04 / RF-POS-002 (CC-41)
+     *
+     * @param  CierreCaja  $cierre  Cierre con la relación de usuario cargada.
+     * @return CierreCaja El mismo cierre, listo para serializar.
+     */
+    private function soloNombreDeUsuario(CierreCaja $cierre): CierreCaja
+    {
+        $cierre->usuario?->setAppends([]);
+
+        return $cierre;
     }
 }
