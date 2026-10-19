@@ -70,13 +70,14 @@ test.describe('Caja - retiros y métodos de pago', () => {
     await page.locator('#btn-abrir-saldo-inicial').click();
     await expect(page.locator('#formulario-saldo-inicial')).toBeVisible();
 
-    // Esperar a que el panel termine de consultar la apertura: muestra el conteo o la caja abierta
-    const cajaAbiertaBadge = page.getByText('Caja Abierta').first();
+    // Esperar a que el panel termine de consultar la apertura: muestra el conteo o el estado
+    const estadoCaja = page.locator('#estado-caja');
     const btnInc20 = page.locator('#btn-incrementar-20');
-    await expect(cajaAbiertaBadge.or(btnInc20)).toBeVisible();
+    await expect(estadoCaja.or(btnInc20)).toBeVisible();
 
     // Si ya existe apertura del día, el formulario muestra la información de apertura inalterable
-    if (await cajaAbiertaBadge.isVisible()) {
+    if (await estadoCaja.isVisible()) {
+      await expect(estadoCaja).toHaveText(/Caja (Abierta|Cerrada)/);
       await expect(page.getByText('Desglose de Denominaciones Registrado')).toBeVisible();
       return;
     }

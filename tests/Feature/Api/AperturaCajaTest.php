@@ -186,8 +186,52 @@ class AperturaCajaTest extends TestCase
                     'id'            => $apertura->id,
                     'saldo_inicial' => '150.00',
                     'observaciones' => 'Turno mañana',
+                    'caja_cerrada'  => false,
                 ],
             ]);
+    }
+
+    /**
+     * Valida que la apertura consultada indica que la caja ya se cerró cuando existe
+     * el cierre del día, para que el panel no muestre "Caja Abierta".
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
+     *
+     * @return void
+     */
+    public function test_apertura_indica_caja_cerrada_tras_el_cierre(): void
+    {
+        $hoy = today()->toDateString();
+
+        AperturaCaja::create([
+            'usuario_id'     => $this->cajero->id,
+            'fecha'          => $hoy,
+            'saldo_inicial'  => 50.00,
+            'denominaciones' => [
+                ['denominacion' => 50, 'tipo' => 'billete', 'cantidad' => 1, 'subtotal' => 50.00],
+            ],
+        ]);
+
+        $this->getJson('/api/aperturas-caja/turno')
+            ->assertStatus(200)
+            ->assertJsonPath('data.caja_cerrada', false);
+
+        CierreCaja::create([
+            'usuario_id'            => $this->cajero->id,
+            'fecha'                 => $hoy,
+            'saldo_inicial'         => 50.00,
+            'total_ventas_efectivo' => 0.00,
+            'total_retiros'         => 0.00,
+            'saldo_final'           => 50.00,
+            'venta_del_dia'         => 0.00,
+            'diferencia'            => 0.00,
+        ]);
+
+        $this->getJson('/api/aperturas-caja/turno')
+            ->assertStatus(200)
+            ->assertJsonPath('data.caja_cerrada', true);
     }
 
     /**

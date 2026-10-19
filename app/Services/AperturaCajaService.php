@@ -105,14 +105,23 @@ class AperturaCajaService
      * @módulo POS – RF-POS-002 / US-POS-04 (CC-39)
      *
      * @param  string|null  $fecha  Fecha en formato Y-m-d (por defecto hoy).
-     * @return AperturaCaja|null Registro de apertura si existe, o null.
+     * @return AperturaCaja|null Registro de apertura si existe, con 'caja_cerrada' indicando
+     *                           si ya se registró el cierre de esa fecha; o null.
      */
     public function obtenerAperturaPorFecha(?string $fecha = null): ?AperturaCaja
     {
         $fechaConsulta = $fecha ?? today()->toDateString();
 
-        return AperturaCaja::with('usuario:id,name')
+        $apertura = AperturaCaja::with('usuario:id,name')
             ->whereDate('fecha', $fechaConsulta)
             ->first();
+
+        // El panel de apertura debe distinguir un turno activo de uno ya cerrado
+        $apertura?->setAttribute(
+            'caja_cerrada',
+            CierreCaja::whereDate('fecha', $fechaConsulta)->exists()
+        );
+
+        return $apertura;
     }
 }

@@ -20,6 +20,7 @@ import {
   RotateCcw,
   Loader2,
   Lock,
+  LockOpen,
   Calendar,
   User,
   DollarSign,
@@ -58,6 +59,9 @@ const observaciones = ref('');
 const cargando = ref(false);
 const guardando = ref(false);
 const aperturaExistente = ref(null);
+
+// La apertura sigue existiendo después del cierre: el backend indica si el turno ya cerró
+const cajaCerrada = computed(() => Boolean(aperturaExistente.value?.caja_cerrada));
 const pestanaActiva = ref('todos'); // 'todos' | 'billetes' | 'monedas'
 
 /**
@@ -247,8 +251,20 @@ onMounted(() => {
         </div>
       </div>
 
-      <div v-if="aperturaExistente" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-[#2E7D4F] border border-emerald-200 text-xs font-semibold">
+      <div
+        v-if="aperturaExistente && cajaCerrada"
+        id="estado-caja"
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-[#C62828] border border-rose-200 text-xs font-semibold"
+      >
         <Lock :size="13" stroke-width="2.5" />
+        <span>Caja Cerrada</span>
+      </div>
+      <div
+        v-else-if="aperturaExistente"
+        id="estado-caja"
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-[#2E7D4F] border border-emerald-200 text-xs font-semibold"
+      >
+        <LockOpen :size="13" stroke-width="2.5" />
         <span>Caja Abierta</span>
       </div>
     </header>
@@ -268,7 +284,7 @@ onMounted(() => {
             <span>{{ aperturaExistente.fecha }}</span>
           </div>
           <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#FAF7F4] border border-[#E5E0DB] text-[#3D3D3D]">
-            Turno activo
+            {{ cajaCerrada ? 'Turno cerrado' : 'Turno activo' }}
           </span>
         </div>
 
