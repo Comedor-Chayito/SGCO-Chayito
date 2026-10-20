@@ -12,15 +12,30 @@ use Illuminate\Support\Facades\DB;
 class ComandaService
 {
     /**
+     * Inicializa el servicio de comandas con la deducción automática de inventario.
+     *
+     * @autor  Alexis
+     *
+     * @fecha  2026-10-19
+     *
+     * @módulo Inventario – RF-INV-003 / CC-47
+     *
+     * @param  DeduccionInventarioService  $deduccionInventarioService  Servicio de consumo por receta.
+     */
+    public function __construct(private readonly DeduccionInventarioService $deduccionInventarioService) {}
+
+    /**
      * Registra una nueva comanda en estado "pendiente" dentro de una transacción.
      * Calcula el subtotal como suma de (cantidad × precio_unitario) de cada ítem.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-09-18
+     *
      * @módulo POS – RF-POS-001
      *
-     * @param  RegistrarComandaRequest $request   Datos validados de la solicitud.
-     * @param  int                    $usuarioId  ID del usuario que registra la comanda.
+     * @param  RegistrarComandaRequest  $request  Datos validados de la solicitud.
+     * @param  int  $usuarioId  ID del usuario que registra la comanda.
      * @return Comanda La comanda creada con sus detalles cargados.
      *
      * @throws \Throwable Si falla la transacción de base de datos.
@@ -28,16 +43,16 @@ class ComandaService
     public function registrar(RegistrarComandaRequest $request, int $usuarioId): Comanda
     {
         return DB::transaction(function () use ($request, $usuarioId) {
-            $items     = $request->validated()['items'];
-            $subtotal  = $this->calcularSubtotal($items);
+            $items = $request->validated()['items'];
+            $subtotal = $this->calcularSubtotal($items);
 
             $comanda = Comanda::create([
-                'mesa_id'       => $request->validated()['mesa_id'] ?? null,
-                'usuario_id'    => $usuarioId,
-                'canal'         => $request->validated()['canal'],
-                'estado'        => 'pendiente',
+                'mesa_id' => $request->validated()['mesa_id'] ?? null,
+                'usuario_id' => $usuarioId,
+                'canal' => $request->validated()['canal'],
+                'estado' => 'pendiente',
                 'observaciones' => $request->validated()['observaciones'] ?? null,
-                'subtotal'      => $subtotal,
+                'subtotal' => $subtotal,
             ]);
 
             // Si es comanda de mesa, marcar la mesa como ocupada (CC-34)
@@ -50,10 +65,10 @@ class ComandaService
                 $platillo = Platillo::findOrFail($item['platillo_id']);
 
                 $comanda->detalles()->create([
-                    'platillo_id'    => $platillo->id,
-                    'cantidad'       => $item['cantidad'],
+                    'platillo_id' => $platillo->id,
+                    'cantidad' => $item['cantidad'],
                     'precio_unitario' => $platillo->precio_unitario,
-                    'observaciones'  => $item['observaciones'] ?? null,
+                    'observaciones' => $item['observaciones'] ?? null,
                 ]);
             }
 
@@ -65,7 +80,9 @@ class ComandaService
      * Retorna todos los platillos marcados como disponibles en el menú del día.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-09-18
+     *
      * @módulo POS – RF-POS-001
      *
      * @return Collection<int, Platillo>
@@ -81,7 +98,9 @@ class ComandaService
      * Retorna todas las mesas del comedor con su estado actual.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-09-18
+     *
      * @módulo POS – RF-POS-001
      *
      * @return Collection<int, Mesa>
@@ -96,10 +115,12 @@ class ComandaService
      * Retorna las comandas activas para la cola de cocina en orden de llegada (FIFO).
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
-     * @param  string|null $filtroEstado Estado opcional para filtrar ('pendiente', 'en_preparacion').
+     * @param  string|null  $filtroEstado  Estado opcional para filtrar ('pendiente', 'en_preparacion').
      * @return Collection<int, Comanda> Colección de comandas ordenadas por llegada.
      */
     public function listarColaCocina(?string $filtroEstado = null): Collection
@@ -121,16 +142,22 @@ class ComandaService
      * Actualiza el estado operativo de una comanda.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
-     * @param  Comanda $comanda     Instancia de la comanda a modificar.
-     * @param  string  $nuevoEstado Nuevo valor para el campo estado.
+     * @param  Comanda  $comanda  Instancia de la comanda a modificar.
+     * @param  string  $nuevoEstado  Nuevo valor para el campo estado.
      * @return Comanda Comanda actualizada con relaciones cargadas.
      */
     public function actualizarEstado(Comanda $comanda, string $nuevoEstado): Comanda
     {
         return DB::transaction(function () use ($comanda, $nuevoEstado) {
+            if ($nuevoEstado === 'pagada') {
+                $this->deduccionInventarioService->descontarPorComanda($comanda);
+            }
+
             $comanda->update(['estado' => $nuevoEstado]);
 
             // Si pasa a pagada y tiene mesa, verificar liberación de mesa (CC-34)
@@ -154,10 +181,12 @@ class ComandaService
      * las más recientes primero, para que cocina sepa qué órdenes ya despachó.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
-     * @param  int $limite Cantidad máxima de comandas a retornar.
+     * @param  int  $limite  Cantidad máxima de comandas a retornar.
      * @return Collection<int, Comanda>
      */
     public function listarCompletadasRecientes(int $limite = 20): Collection
@@ -174,22 +203,24 @@ class ComandaService
      * Obtiene el precio directamente del platillo en BD, no del payload del cliente.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-09-18
+     *
      * @módulo POS – RF-POS-001
      *
-     * @param  array<int, array{platillo_id: int, cantidad: int}> $items Ítems validados.
+     * @param  array<int, array{platillo_id: int, cantidad: int}>  $items  Ítems validados.
      * @return float Subtotal redondeado a 2 decimales.
      */
     private function calcularSubtotal(array $items): float
     {
-        $platilloIds  = array_column($items, 'platillo_id');
-        $precios      = Platillo::whereIn('id', $platilloIds)
+        $platilloIds = array_column($items, 'platillo_id');
+        $precios = Platillo::whereIn('id', $platilloIds)
             ->pluck('precio_unitario', 'id');
 
         $subtotal = 0.0;
 
         foreach ($items as $item) {
-            $precio    = (float) ($precios[$item['platillo_id']] ?? 0);
+            $precio = (float) ($precios[$item['platillo_id']] ?? 0);
             $subtotal += $precio * $item['cantidad'];
         }
 
@@ -201,10 +232,12 @@ class ComandaService
      * Permite filtrar por estado (ej. "pendiente", "lista") y carga relaciones.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
-     * @param  string|null $estado Filtro opcional por estado de comanda.
+     * @param  string|null  $estado  Filtro opcional por estado de comanda.
      * @return Collection<int, Comanda>
      */
     public function listarComandas(?string $estado = null): Collection
