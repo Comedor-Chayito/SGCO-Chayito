@@ -24,14 +24,14 @@ export const useInventarioStore = defineStore('inventario', () => {
   // ─── Getters ───────────────────────────────────────────────────────────────
 
   /**
-   * Insumos con stock por debajo del mínimo (alerta de quiebre de stock).
+   * Insumos en alerta de quiebre de stock, según el estado_stock que evalúa el backend.
    *
    * @autor  Jeferson De La Cruz
    * @fecha  2026-10-13
-   * @módulo Inventario – RF-INV-003
+   * @módulo Inventario – RF-INV-004 / CC-57
    */
   const insumosConAlerta = computed(() =>
-    insumos.value.filter((i) => parseFloat(i.stock_actual) <= parseFloat(i.stock_minimo))
+    insumos.value.filter((i) => i.estado_stock !== 'normal')
   );
 
   // ─── Acciones ──────────────────────────────────────────────────────────────

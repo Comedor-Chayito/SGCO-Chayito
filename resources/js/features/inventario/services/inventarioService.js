@@ -72,7 +72,23 @@ export async function eliminarInsumo(id) {
   await api.delete(`/insumos/${id}`);
 }
 
-// ─── CC-46: Recetas (ingredientes por platillo) ────────────────────────────────
+// ─── CC-57: Alertas de quiebre de stock ────────────────────────────────────────
+
+/**
+ * Obtiene los insumos con stock en o por debajo del mínimo, agotados primero.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-19
+ * @módulo Inventario – RF-INV-004 / CC-57
+ *
+ * @returns {Promise<Array>} Insumos en alerta con estado_stock ('bajo' | 'agotado').
+ */
+export async function obtenerAlertasStock() {
+  const respuesta = await api.get('/insumos/alertas');
+  return respuesta.data.data;
+}
+
+// ─── CC-46: Recetas (ingredientes por platillo)────────────────────────────────
 
 /**
  * Obtiene la lista de ingredientes (receta) de un platillo específico.

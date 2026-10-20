@@ -153,22 +153,24 @@ async function buscar() {
   await store.cargarInsumos(busqueda.value.trim());
 }
 
+const CLASES_ESTADO_STOCK = {
+  agotado: 'bg-[#C62828] text-white',
+  bajo: 'bg-[#E0A800] text-zinc-900',
+  normal: 'bg-[#2E7D4F] text-white',
+};
+
 /**
- * Devuelve la clase de color del badge de stock.
+ * Devuelve la clase de color del badge de stock según el estado_stock del backend.
  *
  * @autor  Jeferson De La Cruz
  * @fecha  2026-10-13
- * @módulo Inventario – RF-INV-003
+ * @módulo Inventario – RF-INV-004 / CC-57
  *
- * @param   {Object} insumo Insumo a evaluar.
+ * @param   {Object} insumo Insumo con estado_stock.
  * @returns {string} Clase Tailwind de color.
  */
 function claseStock(insumo) {
-  const actual = parseFloat(insumo.stock_actual);
-  const minimo = parseFloat(insumo.stock_minimo);
-  if (actual <= 0) return 'bg-[#C62828] text-white';
-  if (actual <= minimo) return 'bg-[#E0A800] text-zinc-900';
-  return 'bg-[#2E7D4F] text-white';
+  return CLASES_ESTADO_STOCK[insumo.estado_stock] ?? CLASES_ESTADO_STOCK.normal;
 }
 </script>
 

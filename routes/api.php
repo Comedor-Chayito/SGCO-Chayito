@@ -83,6 +83,11 @@ Route::patch('/comandas/{comanda}/estado',  [ComandaController::class, 'actualiz
 // Módulo Inventario — CC-45: CRUD de insumos con unidad de medida (US-INV-01 / RF-INV-003)
 Route::get('/insumos',           [InsumoController::class, 'index']);
 Route::post('/insumos',          [InsumoController::class, 'store']);
+
+// CC-57: Alertas de quiebre de stock (US-INV-03 / RF-INV-004)
+// IMPORTANTE: /insumos/alertas debe ir antes de /insumos/{insumo} para evitar conflicto de rutas
+Route::get('/insumos/alertas',   [InsumoController::class, 'alertas']);
+
 Route::get('/insumos/{insumo}',  [InsumoController::class, 'show']);
 Route::put('/insumos/{insumo}',  [InsumoController::class, 'update']);
 Route::delete('/insumos/{insumo}', [InsumoController::class, 'destroy']);

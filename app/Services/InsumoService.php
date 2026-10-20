@@ -15,6 +15,74 @@ use Illuminate\Validation\ValidationException;
  */
 class InsumoService
 {
+    public const ESTADO_STOCK_NORMAL = 'normal';
+    public const ESTADO_STOCK_BAJO = 'bajo';
+    public const ESTADO_STOCK_AGOTADO = 'agotado';
+
+    /**
+     * Evalúa las existencias de un insumo contra su stock mínimo.
+     * Un stock igual al mínimo ya se considera en alerta.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-004 / CC-57
+     *
+     * @param  Insumo $insumo Insumo a evaluar.
+     * @return string Uno de los estados ESTADO_STOCK_*.
+     */
+    public function evaluarExistencias(Insumo $insumo): string
+    {
+        // Comparación en centavos para no arrastrar errores de punto flotante.
+        $actual = (int) round((float) $insumo->stock_actual * 100);
+        $minimo = (int) round((float) $insumo->stock_minimo * 100);
+
+        if ($actual <= 0) {
+            return self::ESTADO_STOCK_AGOTADO;
+        }
+
+        if ($actual <= $minimo) {
+            return self::ESTADO_STOCK_BAJO;
+        }
+
+        return self::ESTADO_STOCK_NORMAL;
+    }
+
+    /**
+     * Lista los insumos en alerta (stock en o por debajo del mínimo), agotados primero.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-004 / CC-57
+     *
+     * @return Collection<int, Insumo> Insumos en alerta con el atributo estado_stock.
+     */
+    public function listarAlertas(): Collection
+    {
+        $insumos = Insumo::query()
+            ->whereColumn('stock_actual', '<=', 'stock_minimo')
+            ->orWhere('stock_actual', '<=', 0)
+            ->orderByRaw('stock_actual <= 0 DESC')
+            ->orderBy('nombre', 'asc')
+            ->get();
+
+        return $insumos->each(fn (Insumo $insumo) => $this->adjuntarEstadoStock($insumo));
+    }
+
+    /**
+     * Agrega al insumo el atributo calculado estado_stock para la respuesta de la API.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-004 / CC-57
+     *
+     * @param  Insumo $insumo Insumo a etiquetar.
+     * @return Insumo El mismo insumo con estado_stock.
+     */
+    private function adjuntarEstadoStock(Insumo $insumo): Insumo
+    {
+        return $insumo->setAttribute('estado_stock', $this->evaluarExistencias($insumo));
+    }
+
     /**
      * Lista todos los insumos, con filtro opcional por nombre.
      *
@@ -34,7 +102,7 @@ class InsumoService
             $query->where('nombre', 'like', $termino);
         }
 
-        return $query->get();
+        return $query->get()->each(fn (Insumo $insumo) => $this->adjuntarEstadoStock($insumo));
     }
 
     /**
@@ -49,12 +117,14 @@ class InsumoService
      */
     public function crear(array $datos): Insumo
     {
-        return Insumo::create([
+        $insumo = Insumo::create([
             'nombre'        => trim($datos['nombre']),
             'unidad_medida' => trim($datos['unidad_medida']),
             'stock_actual'  => $datos['stock_actual'] ?? 0,
             'stock_minimo'  => $datos['stock_minimo'] ?? 0,
         ]);
+
+        return $this->adjuntarEstadoStock($insumo);
     }
 
     /**
@@ -77,7 +147,7 @@ class InsumoService
             'stock_minimo'  => $datos['stock_minimo'],
         ]);
 
-        return $insumo->fresh();
+        return $this->adjuntarEstadoStock($insumo->fresh());
     }
 
     /**
