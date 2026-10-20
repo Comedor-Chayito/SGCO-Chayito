@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Models\Comanda;
 use App\Models\ComandaDetalle;
+use App\Models\Insumo;
 use App\Models\Platillo;
 use App\Models\Receta;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Servicio de lógica de negocio para la deducción automatizada de stock por receta estándar (US-INV-01).
- * Implementa el cálculo de porciones requeridas según las unidades vendidas en comandas (CC-48).
+ * Implementa el cálculo de porciones (CC-48) y el descuento de existencias en bodega (CC-49).
  *
  * @autor  kristiankovic
  * @fecha  2026-10-19
@@ -178,5 +180,129 @@ class DeduccionStockService
         }
 
         return $this->calcularPorcionesPorDetalles($detallesSimulados);
+    }
+
+    /**
+     * Descuenta del stock centralizado de bodega las porciones calculadas para una comanda.
+     * Ejecuta la operación dentro de una transacción de BD con bloqueo para consistencia concurrente.
+     *
+     * @autor  kristiankovic
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-003
+     *
+     * @param  Comanda $comanda Comanda cuyos platillos vendidos se deducirán de bodega.
+     * @return array<int, array{
+     *     insumo_id: int,
+     *     nombre: string,
+     *     unidad_medida: string,
+     *     stock_anterior: float,
+     *     cantidad_descontada: float,
+     *     stock_actual: float,
+     *     stock_minimo: float,
+     *     alerta_stock_bajo: bool
+     * }>
+     *
+     * @throws \Throwable Si ocurre un error durante la transacción de BD.
+     */
+    public function descontarStockPorComanda(Comanda $comanda): array
+    {
+        $consumos = $this->calcularPorcionesPorComanda($comanda);
+
+        return $this->descontarStockPorConsumos($consumos);
+    }
+
+    /**
+     * Descuenta las existencias en bodega a partir de un listado de consumos calculados.
+     * Actualiza el stock_actual de cada insumo dentro de una transacción atómica.
+     *
+     * @autor  kristiankovic
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-003
+     *
+     * @param  array<int, array{insumo_id: int, total_a_descontar: float}> $consumos Lista de consumos calculados.
+     * @return array<int, array{
+     *     insumo_id: int,
+     *     nombre: string,
+     *     unidad_medida: string,
+     *     stock_anterior: float,
+     *     cantidad_descontada: float,
+     *     stock_actual: float,
+     *     stock_minimo: float,
+     *     alerta_stock_bajo: bool
+     * }>
+     *
+     * @throws \Throwable Si ocurre un error durante la transacción de BD.
+     */
+    public function descontarStockPorConsumos(array $consumos): array
+    {
+        if (empty($consumos)) {
+            return [];
+        }
+
+        return DB::transaction(function () use ($consumos) {
+            $descontados = [];
+
+            foreach ($consumos as $consumo) {
+                $insumoId = (int) $consumo['insumo_id'];
+                $cantidadADescontar = (float) $consumo['total_a_descontar'];
+
+                if ($cantidadADescontar <= 0) {
+                    continue;
+                }
+
+                $insumo = Insumo::lockForUpdate()->find($insumoId);
+                if (! $insumo) {
+                    continue;
+                }
+
+                $stockAnterior = (float) $insumo->stock_actual;
+                $stockNuevo = round($stockAnterior - $cantidadADescontar, 2);
+
+                $insumo->update([
+                    'stock_actual' => $stockNuevo,
+                ]);
+
+                $descontados[] = [
+                    'insumo_id'           => $insumo->id,
+                    'nombre'              => $insumo->nombre,
+                    'unidad_medida'       => $insumo->unidad_medida,
+                    'stock_anterior'      => $stockAnterior,
+                    'cantidad_descontada' => $cantidadADescontar,
+                    'stock_actual'        => $stockNuevo,
+                    'stock_minimo'        => (float) $insumo->stock_minimo,
+                    'alerta_stock_bajo'   => $stockNuevo <= (float) $insumo->stock_minimo,
+                ];
+            }
+
+            return $descontados;
+        });
+    }
+
+    /**
+     * Descuenta del inventario a partir de una lista cruda de ítems (platillo_id y cantidad).
+     *
+     * @autor  kristiankovic
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-003
+     *
+     * @param  array<int, array{platillo_id: int, cantidad: int}> $items Arreglo de platillos y cantidades.
+     * @return array<int, array{
+     *     insumo_id: int,
+     *     nombre: string,
+     *     unidad_medida: string,
+     *     stock_anterior: float,
+     *     cantidad_descontada: float,
+     *     stock_actual: float,
+     *     stock_minimo: float,
+     *     alerta_stock_bajo: bool
+     * }>
+     *
+     * @throws \Throwable Si ocurre un error durante la transacción de BD.
+     */
+    public function descontarStockPorItems(array $items): array
+    {
+        $consumos = $this->calcularPorcionesPorItems($items);
+
+        return $this->descontarStockPorConsumos($consumos);
     }
 }

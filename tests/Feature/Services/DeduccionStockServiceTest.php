@@ -271,4 +271,147 @@ class DeduccionStockServiceTest extends TestCase
         // Tomate: 0.10 * 10 = 1.00 lb
         $this->assertEquals(1.00, $consumosPorId[$this->tomate->id]['total_a_descontar']);
     }
+
+    /**
+     * Prueba que descuenta correctamente las existencias de la bodega para una comanda (CC-49).
+     *
+     * @autor  kristiankovic
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-003
+     *
+     * @return void
+     */
+    public function test_descuenta_stock_en_bodega_correctamente_por_comanda(): void
+    {
+        $comanda = Comanda::create([
+            'usuario_id' => $this->usuario->id,
+            'canal'      => 'mesa',
+            'estado'     => 'pendiente',
+            'subtotal'   => 14.00,
+        ]);
+
+        // 4 hamburguesas (1 lb carne, 4 panes, 0.40 lb tomate)
+        $comanda->detalles()->create([
+            'platillo_id'     => $this->hamburguesa->id,
+            'cantidad'        => 4,
+            'precio_unitario' => 3.50,
+        ]);
+
+        $resultado = $this->service->descontarStockPorComanda($comanda);
+
+        $this->assertCount(3, $resultado);
+
+        // Verificar persistencia en base de datos
+        // Carne: 50.00 - 1.00 = 49.00
+        $this->assertEquals(49.00, (float) $this->carne->fresh()->stock_actual);
+        // Pan: 100.00 - 4.00 = 96.00
+        $this->assertEquals(96.00, (float) $this->pan->fresh()->stock_actual);
+        // Tomate: 30.00 - 0.40 = 29.60
+        $this->assertEquals(29.60, (float) $this->tomate->fresh()->stock_actual);
+
+        // Verificar el retorno del método
+        $resultadoPorId = collect($resultado)->keyBy('insumo_id');
+
+        $this->assertEquals(50.00, $resultadoPorId[$this->carne->id]['stock_anterior']);
+        $this->assertEquals(1.00, $resultadoPorId[$this->carne->id]['cantidad_descontada']);
+        $this->assertEquals(49.00, $resultadoPorId[$this->carne->id]['stock_actual']);
+        $this->assertFalse($resultadoPorId[$this->carne->id]['alerta_stock_bajo']);
+    }
+
+    /**
+     * Prueba que detecta alerta de stock bajo cuando el stock resultante alcanza o baja del mínimo (CC-49).
+     *
+     * @autor  kristiankovic
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-003
+     *
+     * @return void
+     */
+    public function test_activa_alerta_cuando_stock_queda_menor_o_igual_al_minimo(): void
+    {
+        // Forzar stock bajo en tomate: stock 3.20, mínimo 3.00
+        $this->tomate->update([
+            'stock_actual' => 3.20,
+            'stock_minimo' => 3.00,
+        ]);
+
+        $comanda = Comanda::create([
+            'usuario_id' => $this->usuario->id,
+            'canal'      => 'mesa',
+            'estado'     => 'pendiente',
+            'subtotal'   => 2.00,
+        ]);
+
+        // 1 ensalada consume 0.35 lb de tomate -> stock queda en 2.85 (menor al mínimo de 3.00)
+        $comanda->detalles()->create([
+            'platillo_id'     => $this->ensalada->id,
+            'cantidad'        => 1,
+            'precio_unitario' => 2.00,
+        ]);
+
+        $resultado = $this->service->descontarStockPorComanda($comanda);
+        $resultadoTomate = collect($resultado)->firstWhere('insumo_id', $this->tomate->id);
+
+        $this->assertNotNull($resultadoTomate);
+        $this->assertEquals(2.85, $resultadoTomate['stock_actual']);
+        $this->assertTrue($resultadoTomate['alerta_stock_bajo']);
+        $this->assertEquals(2.85, (float) $this->tomate->fresh()->stock_actual);
+    }
+
+    /**
+     * Prueba que descontar por comanda sin recetas no altera stock en BD y retorna vacío (CC-49).
+     *
+     * @autor  kristiankovic
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-003
+     *
+     * @return void
+     */
+    public function test_descontar_comanda_sin_recetas_retorna_vacio(): void
+    {
+        $comanda = Comanda::create([
+            'usuario_id' => $this->usuario->id,
+            'canal'      => 'para_llevar',
+            'estado'     => 'pendiente',
+            'subtotal'   => 2.00,
+        ]);
+
+        $comanda->detalles()->create([
+            'platillo_id'     => $this->refresco->id,
+            'cantidad'        => 2,
+            'precio_unitario' => 1.00,
+        ]);
+
+        $resultado = $this->service->descontarStockPorComanda($comanda);
+
+        $this->assertEmpty($resultado);
+        // Ningún insumo debe haber cambiado
+        $this->assertEquals(50.00, (float) $this->carne->fresh()->stock_actual);
+        $this->assertEquals(100.00, (float) $this->pan->fresh()->stock_actual);
+        $this->assertEquals(30.00, (float) $this->tomate->fresh()->stock_actual);
+    }
+
+    /**
+     * Prueba que descuenta existencias mediante lista directa de ítems (CC-49).
+     *
+     * @autor  kristiankovic
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-003
+     *
+     * @return void
+     */
+    public function test_descuenta_stock_por_items_directos(): void
+    {
+        $items = [
+            ['platillo_id' => $this->hamburguesa->id, 'cantidad' => 2],
+        ];
+
+        $resultado = $this->service->descontarStockPorItems($items);
+
+        $this->assertCount(3, $resultado);
+        // 2 hamburguesas = 0.50 lb carne, 2 panes, 0.20 lb tomate
+        $this->assertEquals(49.50, (float) $this->carne->fresh()->stock_actual);
+        $this->assertEquals(98.00, (float) $this->pan->fresh()->stock_actual);
+        $this->assertEquals(29.80, (float) $this->tomate->fresh()->stock_actual);
+    }
 }
