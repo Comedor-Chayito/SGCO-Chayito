@@ -15,7 +15,6 @@ import {
   Plus,
   Pencil,
   Trash2,
-  TriangleAlert,
   X,
   Check,
   Search,
@@ -219,18 +218,6 @@ function claseStock(insumo) {
       >
         Buscar
       </button>
-    </div>
-
-    <!-- Alerta de insumos críticos -->
-    <div
-      v-if="store.insumosConAlerta.length > 0"
-      class="mb-4 flex items-center gap-3 rounded-xl border border-[#E0A800]/40 bg-[#E0A800]/10 px-4 py-3"
-    >
-      <TriangleAlert class="shrink-0 text-[#E0A800]" :size="18" />
-      <p class="text-sm text-[#3D3D3D]">
-        <strong>{{ store.insumosConAlerta.length }} insumo(s)</strong> con stock por debajo
-        del mínimo.
-      </p>
     </div>
 
     <!-- Estado de carga -->

@@ -1,13 +1,14 @@
 <script setup>
 /**
  * Vista central del módulo de Inventario.
- * Integra las pestañas: Insumos (CC-45) y Recetas por platillo (CC-46).
+ * Integra las pestañas: Insumos (CC-45) y Recetas por platillo (CC-46),
+ * con el panel de quiebre de stock (CC-58) visible sobre ambas.
  *
  * @autor  Jeferson De La Cruz
  * @fecha  2026-10-13
  * @módulo Inventario – US-INV-01 / RF-INV-003
  */
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useSesionStore } from '@/stores/sesion.js';
 import { Package, ArrowLeft, LogOut, ShieldCheck, FlaskConical } from '@lucide/vue';
@@ -16,9 +17,14 @@ import { Badge } from '@/components/ui/badge';
 
 import Insumos from '@/features/inventario/views/Insumos.vue';
 import RecetaPlatillo from '@/features/inventario/views/RecetaPlatillo.vue';
+import AlertaStock from '@/features/inventario/components/AlertaStock.vue';
+import { useInventarioStore } from '@/features/inventario/stores/useInventarioStore.js';
 
 const router = useRouter();
 const sesion = useSesionStore();
+const inventario = useInventarioStore();
+
+onMounted(() => inventario.cargarAlertas());
 
 const pestanaActiva = ref('insumos');
 
@@ -107,6 +113,14 @@ async function cerrarSesion() {
         </button>
       </div>
     </nav>
+
+    <!-- Panel de quiebre de stock (CC-58) -->
+    <div
+      v-if="inventario.alertas.length > 0 || inventario.errorAlertas"
+      class="px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8"
+    >
+      <AlertaStock :alertas="inventario.alertas" :error="inventario.errorAlertas" />
+    </div>
 
     <!-- Contenido de la pestaña activa -->
     <div class="flex-1">
