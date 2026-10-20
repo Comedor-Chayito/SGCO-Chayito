@@ -109,7 +109,7 @@ class InsumoController extends Controller
         return response()->json([
             'status'  => 'ok',
             'message' => 'Detalle del insumo obtenido.',
-            'data'    => $insumo,
+            'data'    => $this->insumoService->detalle($insumo),
         ]);
     }
 

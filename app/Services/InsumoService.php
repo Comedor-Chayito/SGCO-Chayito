@@ -32,9 +32,9 @@ class InsumoService
      */
     public function evaluarExistencias(Insumo $insumo): string
     {
-        // Comparación en centavos para no arrastrar errores de punto flotante.
-        $actual = (int) round((float) $insumo->stock_actual * 100);
-        $minimo = (int) round((float) $insumo->stock_minimo * 100);
+        // Comparación en milésimas (precisión de la columna) para no arrastrar errores de punto flotante.
+        $actual = (int) round((float) $insumo->stock_actual * 1000);
+        $minimo = (int) round((float) $insumo->stock_minimo * 1000);
 
         if ($actual <= 0) {
             return self::ESTADO_STOCK_AGOTADO;
@@ -81,6 +81,21 @@ class InsumoService
     private function adjuntarEstadoStock(Insumo $insumo): Insumo
     {
         return $insumo->setAttribute('estado_stock', $this->evaluarExistencias($insumo));
+    }
+
+    /**
+     * Devuelve el detalle de un insumo con su estado de stock evaluado.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-004 / CC-46
+     *
+     * @param  Insumo $insumo Insumo a consultar.
+     * @return Insumo El insumo con estado_stock.
+     */
+    public function detalle(Insumo $insumo): Insumo
+    {
+        return $this->adjuntarEstadoStock($insumo);
     }
 
     /**

@@ -9,6 +9,7 @@
  */
 import { computed } from 'vue';
 import { OctagonAlert } from '@lucide/vue';
+import { useCantidad } from '@/shared/composables/useCantidad.js';
 
 const props = defineProps({
   alertas: { type: Array, required: true },
@@ -20,23 +21,11 @@ const ETIQUETAS_ESTADO = {
   bajo: { texto: 'Bajo mínimo', clase: 'border border-[#C62828] bg-white text-[#C62828]' },
 };
 
+const { formatearCantidad } = useCantidad();
+
 const totalAgotados = computed(
   () => props.alertas.filter((i) => i.estado_stock === 'agotado').length
 );
-
-/**
- * Formatea una cantidad de stock a dos decimales.
- *
- * @autor  manuelmv15
- * @fecha  2026-10-19
- * @módulo Inventario – RF-INV-004 / CC-58
- *
- * @param   {string|number} cantidad Cantidad devuelta por la API.
- * @returns {string} Cantidad con dos decimales.
- */
-function formatearCantidad(cantidad) {
-  return parseFloat(cantidad).toFixed(2);
-}
 </script>
 
 <template>

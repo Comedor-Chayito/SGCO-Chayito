@@ -9,6 +9,7 @@
  */
 import { ref, onMounted } from 'vue';
 import { useInventarioStore } from '@/features/inventario/stores/useInventarioStore.js';
+import { useCantidad } from '@/shared/composables/useCantidad.js';
 import { Toaster, toast } from 'vue-sonner';
 import {
   PackageSearch,
@@ -21,6 +22,7 @@ import {
 } from '@lucide/vue';
 
 const store = useInventarioStore();
+const { formatearCantidad } = useCantidad();
 
 // ─── Estado del modal ───────────────────────────────────────────────────────
 const modalAbierto = ref(false);
@@ -271,11 +273,11 @@ function claseStock(insumo) {
                 class="inline-block rounded-full px-2.5 py-0.5 text-xs font-bold"
                 :class="claseStock(insumo)"
               >
-                {{ parseFloat(insumo.stock_actual).toFixed(2) }}
+                {{ formatearCantidad(insumo.stock_actual) }}
               </span>
             </td>
             <td class="px-3 py-3.5 text-right text-[#6B6B6B]">
-              {{ parseFloat(insumo.stock_minimo).toFixed(2) }}
+              {{ formatearCantidad(insumo.stock_minimo) }}
             </td>
             <td class="py-3.5 pl-3 pr-5 text-right">
               <div class="inline-flex gap-2">
@@ -378,7 +380,7 @@ function claseStock(insumo) {
                   v-model="form.stock_actual"
                   type="number"
                   min="0"
-                  step="0.01"
+                  step="0.001"
                   class="h-10 w-full rounded-lg border border-[#E5E0DB] bg-[#FAF7F4] px-3 text-sm text-[#111111] outline-none transition-all focus:border-[#F26A21] focus:ring-2 focus:ring-[#F26A21]/20"
                 />
               </div>
@@ -391,7 +393,7 @@ function claseStock(insumo) {
                   v-model="form.stock_minimo"
                   type="number"
                   min="0"
-                  step="0.01"
+                  step="0.001"
                   class="h-10 w-full rounded-lg border border-[#E5E0DB] bg-[#FAF7F4] px-3 text-sm text-[#111111] outline-none transition-all focus:border-[#F26A21] focus:ring-2 focus:ring-[#F26A21]/20"
                 />
               </div>

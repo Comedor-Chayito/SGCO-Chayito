@@ -40,9 +40,9 @@ export const useInventarioStore = defineStore('inventario', () => {
 
     try {
       alertas.value = await obtenerAlertasStock();
-    } catch (err) {
-      errorAlertas.value = err?.response?.data?.message
-        ?? 'No se pudieron consultar las alertas de stock.';
+    } catch {
+      // No se muestra el mensaje del backend: con APP_DEBUG expone el SQL al usuario.
+      errorAlertas.value = 'No se pudieron consultar las alertas de stock. Intenta de nuevo.';
     }
   }
 

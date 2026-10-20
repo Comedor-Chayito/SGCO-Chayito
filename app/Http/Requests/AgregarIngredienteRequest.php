@@ -32,7 +32,7 @@ class AgregarIngredienteRequest extends FormRequest
     {
         return [
             'insumo_id'            => ['required', 'integer', 'exists:insumos,id'],
-            'cantidad_por_porcion' => ['required', 'numeric', 'min:0.01'],
+            'cantidad_por_porcion' => ['required', 'numeric', 'min:0.001'],
         ];
     }
 

@@ -91,6 +91,20 @@ export async function obtenerAlertasStock() {
 // ─── CC-46: Recetas (ingredientes por platillo)────────────────────────────────
 
 /**
+ * Obtiene los platillos del menú para configurar su receta.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-19
+ * @módulo Inventario – RF-INV-003 / CC-46
+ *
+ * @returns {Promise<Array>} Platillos con id, nombre, precio_unitario y disponible.
+ */
+export async function obtenerPlatillos() {
+  const respuesta = await api.get('/platillos');
+  return respuesta.data.data ?? [];
+}
+
+/**
  * Obtiene la lista de ingredientes (receta) de un platillo específico.
  *
  * @autor  Jeferson De La Cruz

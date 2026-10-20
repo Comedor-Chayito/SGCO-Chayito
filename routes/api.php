@@ -93,8 +93,11 @@ Route::put('/insumos/{insumo}',  [InsumoController::class, 'update']);
 Route::delete('/insumos/{insumo}', [InsumoController::class, 'destroy']);
 
 // Módulo Inventario — CC-46: Vincular ingredientes a platillos (US-INV-01 / RF-INV-003)
-Route::get('/platillos/{platillo}/recetas',                        [RecetaController::class, 'index']);
-Route::post('/platillos/{platillo}/recetas',                       [RecetaController::class, 'store']);
-Route::put('/platillos/{platillo}/recetas/{receta}',               [RecetaController::class, 'update']);
-Route::delete('/platillos/{platillo}/recetas/{receta}',            [RecetaController::class, 'destroy']);
+// scopeBindings: el renglón {receta} debe pertenecer al {platillo} de la URL, si no responde 404
+Route::scopeBindings()->group(function () {
+    Route::get('/platillos/{platillo}/recetas',                        [RecetaController::class, 'index']);
+    Route::post('/platillos/{platillo}/recetas',                       [RecetaController::class, 'store']);
+    Route::put('/platillos/{platillo}/recetas/{receta}',               [RecetaController::class, 'update']);
+    Route::delete('/platillos/{platillo}/recetas/{receta}',            [RecetaController::class, 'destroy']);
+});
 
