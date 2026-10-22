@@ -32,5 +32,8 @@ class DatabaseSeeder extends Seeder
 
         // Datos del módulo POS: mesas y platillos del menú diario
         $this->call(PosSeeder::class);
+
+        // Datos ficticios del módulo Inventario: insumos de bodega y recetas por platillo
+        $this->call(InventarioSeeder::class);
     }
 }

@@ -66,9 +66,16 @@ return Application::configure(basePath: dirname(__DIR__))
 
             $codigo = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
 
+            // Los mensajes internos (SQL, nombres de clases) no se exponen al cliente; quedan en el log.
+            $mensaje = match (true) {
+                $codigo === 404 => 'El recurso solicitado no existe.',
+                $codigo >= 500  => 'Ocurrió un error inesperado.',
+                default         => $e->getMessage() ?: 'Solicitud no válida.',
+            };
+
             return response()->json([
                 'status'  => 'error',
-                'message' => $e->getMessage() ?: 'Ocurrió un error inesperado.',
+                'message' => $mensaje,
                 'data'    => null,
             ], $codigo);
         });

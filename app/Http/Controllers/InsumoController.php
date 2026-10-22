@@ -54,6 +54,26 @@ class InsumoController extends Controller
     }
 
     /**
+     * Lista los insumos cuyo stock está en o por debajo del mínimo (quiebre de stock).
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-19
+     * @módulo Inventario – RF-INV-004 / CC-57
+     *
+     * @return JsonResponse Insumos en alerta con su estado_stock, agotados primero.
+     */
+    public function alertas(): JsonResponse
+    {
+        $insumos = $this->insumoService->listarAlertas();
+
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'Alertas de stock obtenidas correctamente.',
+            'data'    => $insumos,
+        ]);
+    }
+
+    /**
      * Registra un nuevo insumo en el catálogo de bodega.
      *
      * @autor  Jeferson De La Cruz
@@ -89,7 +109,7 @@ class InsumoController extends Controller
         return response()->json([
             'status'  => 'ok',
             'message' => 'Detalle del insumo obtenido.',
-            'data'    => $insumo,
+            'data'    => $this->insumoService->detalle($insumo),
         ]);
     }
 

@@ -14,12 +14,13 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { Toaster, toast } from 'vue-sonner';
 import {
   obtenerInsumos,
+  obtenerPlatillos,
   obtenerRecetaPlatillo,
   agregarIngrediente,
   actualizarIngrediente,
   eliminarIngrediente,
 } from '@/features/inventario/services/inventarioService.js';
-import api from '@/services/api.js';
+import { useCantidad } from '@/shared/composables/useCantidad.js';
 import {
   ChefHat,
   Plus,
@@ -145,6 +146,8 @@ function convertir(cantidad, desde, hasta) {
   return (cantidad * fDesde) / fHasta;
 }
 
+const { formatearCantidad } = useCantidad();
+
 // ─── Estado general ──────────────────────────────────────────────────────────
 const platillos = ref([]);
 const platilloSeleccionado = ref(null);
@@ -246,10 +249,10 @@ onMounted(async () => {
   cargando.value = true;
   try {
     const [resPlatillos, resInsumos] = await Promise.all([
-      api.get('/platillos'),
+      obtenerPlatillos(),
       obtenerInsumos(),
     ]);
-    platillos.value = resPlatillos.data.data ?? [];
+    platillos.value = resPlatillos;
     insumosCatalogo.value = resInsumos;
   } catch {
     toast.error('Error al cargar los datos iniciales.');
@@ -564,7 +567,8 @@ function etiquetaCantidad(renglon) {
                 {{ etiquetaCantidad(renglon) }}
               </td>
               <td class="px-3 py-3.5 text-right text-[#6B6B6B]">
-                {{ renglon.insumo?.stock_actual ?? '—' }}
+                {{ formatearCantidad(renglon.insumo?.stock_actual) }}
+                {{ renglon.insumo?.unidad_medida }}
               </td>
               <td class="py-3.5 pl-3 pr-5 text-right">
                 <div class="inline-flex gap-2">

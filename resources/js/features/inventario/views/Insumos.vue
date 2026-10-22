@@ -9,19 +9,20 @@
  */
 import { ref, onMounted } from 'vue';
 import { useInventarioStore } from '@/features/inventario/stores/useInventarioStore.js';
+import { useCantidad } from '@/shared/composables/useCantidad.js';
 import { Toaster, toast } from 'vue-sonner';
 import {
   PackageSearch,
   Plus,
   Pencil,
   Trash2,
-  TriangleAlert,
   X,
   Check,
   Search,
 } from '@lucide/vue';
 
 const store = useInventarioStore();
+const { formatearCantidad } = useCantidad();
 
 // ─── Estado del modal ───────────────────────────────────────────────────────
 const modalAbierto = ref(false);
@@ -153,22 +154,24 @@ async function buscar() {
   await store.cargarInsumos(busqueda.value.trim());
 }
 
+const CLASES_ESTADO_STOCK = {
+  agotado: 'bg-[#C62828] text-white',
+  bajo: 'bg-[#E0A800] text-zinc-900',
+  normal: 'bg-[#2E7D4F] text-white',
+};
+
 /**
- * Devuelve la clase de color del badge de stock.
+ * Devuelve la clase de color del badge de stock según el estado_stock del backend.
  *
  * @autor  Jeferson De La Cruz
  * @fecha  2026-10-13
- * @módulo Inventario – RF-INV-003
+ * @módulo Inventario – RF-INV-004 / CC-57
  *
- * @param   {Object} insumo Insumo a evaluar.
+ * @param   {Object} insumo Insumo con estado_stock.
  * @returns {string} Clase Tailwind de color.
  */
 function claseStock(insumo) {
-  const actual = parseFloat(insumo.stock_actual);
-  const minimo = parseFloat(insumo.stock_minimo);
-  if (actual <= 0) return 'bg-[#C62828] text-white';
-  if (actual <= minimo) return 'bg-[#E0A800] text-zinc-900';
-  return 'bg-[#2E7D4F] text-white';
+  return CLASES_ESTADO_STOCK[insumo.estado_stock] ?? CLASES_ESTADO_STOCK.normal;
 }
 </script>
 
@@ -217,18 +220,6 @@ function claseStock(insumo) {
       >
         Buscar
       </button>
-    </div>
-
-    <!-- Alerta de insumos críticos -->
-    <div
-      v-if="store.insumosConAlerta.length > 0"
-      class="mb-4 flex items-center gap-3 rounded-xl border border-[#E0A800]/40 bg-[#E0A800]/10 px-4 py-3"
-    >
-      <TriangleAlert class="shrink-0 text-[#E0A800]" :size="18" />
-      <p class="text-sm text-[#3D3D3D]">
-        <strong>{{ store.insumosConAlerta.length }} insumo(s)</strong> con stock por debajo
-        del mínimo.
-      </p>
     </div>
 
     <!-- Estado de carga -->
@@ -282,11 +273,11 @@ function claseStock(insumo) {
                 class="inline-block rounded-full px-2.5 py-0.5 text-xs font-bold"
                 :class="claseStock(insumo)"
               >
-                {{ parseFloat(insumo.stock_actual).toFixed(2) }}
+                {{ formatearCantidad(insumo.stock_actual) }}
               </span>
             </td>
             <td class="px-3 py-3.5 text-right text-[#6B6B6B]">
-              {{ parseFloat(insumo.stock_minimo).toFixed(2) }}
+              {{ formatearCantidad(insumo.stock_minimo) }}
             </td>
             <td class="py-3.5 pl-3 pr-5 text-right">
               <div class="inline-flex gap-2">
@@ -389,7 +380,7 @@ function claseStock(insumo) {
                   v-model="form.stock_actual"
                   type="number"
                   min="0"
-                  step="0.01"
+                  step="0.001"
                   class="h-10 w-full rounded-lg border border-[#E5E0DB] bg-[#FAF7F4] px-3 text-sm text-[#111111] outline-none transition-all focus:border-[#F26A21] focus:ring-2 focus:ring-[#F26A21]/20"
                 />
               </div>
@@ -402,7 +393,7 @@ function claseStock(insumo) {
                   v-model="form.stock_minimo"
                   type="number"
                   min="0"
-                  step="0.01"
+                  step="0.001"
                   class="h-10 w-full rounded-lg border border-[#E5E0DB] bg-[#FAF7F4] px-3 text-sm text-[#111111] outline-none transition-all focus:border-[#F26A21] focus:ring-2 focus:ring-[#F26A21]/20"
                 />
               </div>
