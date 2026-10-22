@@ -98,18 +98,21 @@ class DeduccionStockServiceTest extends TestCase
             'platillo_id'          => $this->hamburguesa->id,
             'insumo_id'            => $this->carne->id,
             'cantidad_por_porcion' => 0.25,
+            'unidad_consumo'       => 'lb',
         ]);
 
         Receta::create([
             'platillo_id'          => $this->hamburguesa->id,
             'insumo_id'            => $this->pan->id,
             'cantidad_por_porcion' => 1.00,
+            'unidad_consumo'       => 'unidad',
         ]);
 
         Receta::create([
             'platillo_id'          => $this->hamburguesa->id,
             'insumo_id'            => $this->tomate->id,
             'cantidad_por_porcion' => 0.10,
+            'unidad_consumo'       => 'lb',
         ]);
 
         // Ensalada: 0.35 lb tomate
@@ -117,6 +120,7 @@ class DeduccionStockServiceTest extends TestCase
             'platillo_id'          => $this->ensalada->id,
             'insumo_id'            => $this->tomate->id,
             'cantidad_por_porcion' => 0.35,
+            'unidad_consumo'       => 'lb',
         ]);
     }
 

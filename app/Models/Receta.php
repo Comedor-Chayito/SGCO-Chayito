@@ -19,6 +19,19 @@ class Receta extends Model
     ];
 
     /**
+     * Inicializa eventos del modelo. Si no se indica unidad_consumo,
+     * asume por defecto la unidad de medida del insumo asociado.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Receta $receta) {
+            if (empty($receta->unidad_consumo) && $receta->insumo_id) {
+                $receta->unidad_consumo = $receta->insumo?->unidad_medida ?? 'unidad';
+            }
+        });
+    }
+
+    /**
      * Obtiene el platillo al que pertenece este renglón de receta.
      *
      * @autor  manuelmv15
