@@ -90,8 +90,8 @@ const routes = [
   {
     path: '/reportes',
     name: 'reportes',
-    component: () => import('@/views/Reportes.vue'),
-    meta: { roles: ['contadora', 'administrador'] },
+    component: () => import('@/features/reportes/views/DashboardGerencial.vue'),
+    meta: { roles: ['socio', 'administrador'] },
   },
   {
     path: '/admin',
@@ -124,6 +124,8 @@ export function obtenerRutaInicioPorRol(rol) {
       return { name: 'cocina' };
     case 'contadora':
       return { name: 'contabilidad' };
+    case 'socio':
+      return { name: 'reportes' };
     case 'mesero':
     case 'cajero':
     case 'administrador':

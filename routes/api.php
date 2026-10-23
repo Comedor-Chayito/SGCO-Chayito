@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\DashboardGerencialController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\RecetaController;
 use App\Http\Controllers\RequisicionController;
@@ -111,4 +112,9 @@ Route::middleware(['auth:sanctum', 'role:administrador'])->group(function () {
 Route::middleware(['auth:sanctum', 'role:contadora|administrador'])->group(function () {
     Route::get('/compras', [CompraController::class, 'index']);
     Route::post('/compras', [CompraController::class, 'store']);
+});
+
+// Módulo Reportes — CC-75 / CC-76: KPIs financieros exclusivos de socios y administración
+Route::middleware(['auth:sanctum', 'role:socio|administrador'])->group(function () {
+    Route::get('/reportes/dashboard', [DashboardGerencialController::class, 'index']);
 });
