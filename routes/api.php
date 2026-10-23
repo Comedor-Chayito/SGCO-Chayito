@@ -7,6 +7,7 @@ use App\Http\Controllers\ComandaController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\RecetaController;
 use App\Http\Controllers\RetiroController;
+use App\Http\Controllers\SubcategoriaEgresoController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Http\Request;
@@ -63,6 +64,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cierres-caja',        [CierreCajaController::class, 'cerrar']);
         Route::get('/cierres-caja',         [CierreCajaController::class, 'historial']);
         Route::get('/cierres-caja/{fecha}', [CierreCajaController::class, 'mostrar']);
+    });
+
+    // Módulo Contabilidad — RF-CON-005 (Egresos): solo contadora y administrador (CLAUDE.md §9)
+    Route::middleware('role:contadora|administrador')->group(function () {
+        // Catálogo para clasificar facturas en el formulario rápido (CC-62 / US-CON-01)
+        Route::get('/subcategorias-egreso', [SubcategoriaEgresoController::class, 'index']);
     });
 });
 

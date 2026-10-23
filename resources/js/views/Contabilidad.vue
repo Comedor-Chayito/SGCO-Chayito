@@ -9,9 +9,10 @@
  */
 import { useRouter } from 'vue-router';
 import { useSesionStore } from '@/stores/sesion.js';
-import { Landmark, ArrowLeft, LogOut, ShieldCheck, Clock } from '@lucide/vue';
+import { Landmark, ArrowLeft, LogOut, ShieldCheck } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import FormularioEgreso from '@/features/contabilidad/components/FormularioEgreso.vue';
 
 const router = useRouter();
 const sesion = useSesionStore();
@@ -73,16 +74,8 @@ async function cerrarSesion() {
         </div>
       </header>
 
-      <!-- Contenido en construcción -->
-      <section class="bg-white rounded-2xl border border-[#EBE6DF] p-8 sm:p-12 text-center shadow-sm space-y-4">
-        <div class="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto">
-          <Clock :size="32" />
-        </div>
-        <h2 class="text-xl font-bold text-zinc-900">Módulo de Contabilidad en Construcción</h2>
-        <p class="text-sm text-zinc-500 max-w-md mx-auto">
-          El registro de facturas de proveedores, cálculo de IVA crédito fiscal y cortes de caja Z se implementará en la siguiente fase (US-CON-01 / RF-CON-005).
-        </p>
-      </section>
+      <!-- Carga rápida de facturas de proveedores (CC-62 / US-CON-01) -->
+      <FormularioEgreso />
 
     </div>
   </main>
