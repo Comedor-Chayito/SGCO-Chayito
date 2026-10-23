@@ -4,6 +4,7 @@ use App\Http\Controllers\AperturaCajaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
+use App\Http\Controllers\EgresoController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\RecetaController;
 use App\Http\Controllers\RetiroController;
@@ -70,6 +71,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:contadora|administrador')->group(function () {
         // Catálogo para clasificar facturas en el formulario rápido (CC-62 / US-CON-01)
         Route::get('/subcategorias-egreso', [SubcategoriaEgresoController::class, 'index']);
+
+        // Registro de facturas con correlativo único (CC-63 / US-CON-01)
+        Route::post('/egresos', [EgresoController::class, 'store']);
     });
 });
 

@@ -238,7 +238,10 @@ async function manejarRegistro() {
       errores.value = Object.fromEntries(
         CAMPOS.map((campo) => [campo, erroresApi[campo]?.[0] ?? ''])
       );
-      errorGeneral.value = err.response.data?.message ?? '';
+
+      // El mensaje general repite el primer error; solo se muestra si ninguno tiene campo propio
+      const hayErrorDeCampo = Object.values(errores.value).some((mensaje) => mensaje);
+      errorGeneral.value = hayErrorDeCampo ? '' : (err.response.data?.message ?? '');
     } else {
       errorGeneral.value = err.response?.data?.message
         ?? 'No se pudo registrar la factura. Intenta de nuevo.';
