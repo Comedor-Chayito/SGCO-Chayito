@@ -84,7 +84,7 @@ const routes = [
   {
     path: '/contabilidad',
     name: 'contabilidad',
-    component: () => import('@/views/Contabilidad.vue'),
+    component: () => import('@/features/contabilidad/views/ComprasIva.vue'),
     meta: { roles: ['contadora', 'administrador'] },
   },
   {
