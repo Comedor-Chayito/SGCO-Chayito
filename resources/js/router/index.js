@@ -76,6 +76,12 @@ const routes = [
     meta: { roles: ['cocinero', 'administrador'] },
   },
   {
+    path: '/requisiciones',
+    name: 'gestion-requisiciones',
+    component: () => import('@/features/inventario/views/GestionRequisiciones.vue'),
+    meta: { roles: ['administrador'] },
+  },
+  {
     path: '/contabilidad',
     name: 'contabilidad',
     component: () => import('@/views/Contabilidad.vue'),

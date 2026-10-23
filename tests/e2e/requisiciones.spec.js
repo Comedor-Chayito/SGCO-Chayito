@@ -122,3 +122,117 @@ test.describe('CC-52 - Formulario de requisiciones', () => {
     await page.screenshot({ path: 'test-results/requisicion-movil.png', fullPage: true });
   });
 });
+
+/**
+ * Prepara una sesión de administrador para acceder a la bandeja de bodega.
+ *
+ * @autor  Alexis
+ * @fecha  2026-10-22
+ * @módulo Inventario – RF-INV-004 / CC-53 / CC-54
+ *
+ * @param {import('@playwright/test').Page} page Página que ejecuta la prueba.
+ * @returns {Promise<void>}
+ */
+async function prepararSesionAdministrador(page) {
+  await page.addInitScript(() => {
+    localStorage.setItem('sgco_token', 'token-e2e-bodega');
+    localStorage.setItem('sgco_usuario', JSON.stringify({
+      id: 2,
+      name: 'Administradora de bodega',
+      rol: 'administrador',
+    }));
+  });
+}
+
+/**
+ * Intercepta el ciclo administrativo de una requisición sin modificar la base real.
+ *
+ * @autor  Alexis
+ * @fecha  2026-10-22
+ * @módulo Inventario – RF-INV-004 / CC-53 / CC-54
+ *
+ * @param {import('@playwright/test').Page} page Página que ejecuta la prueba.
+ * @param {(payload: object) => void} alResolver Callback con las cantidades aprobadas.
+ * @returns {Promise<void>}
+ */
+async function interceptarGestionRequisiciones(page, alResolver) {
+  const requisicion = {
+    id: 15,
+    area_solicitante: 'cocina',
+    estado: 'pendiente',
+    observaciones: 'Preparación de almuerzo.',
+    fecha_resolucion: null,
+    usuario_solicita: { id: 1, name: 'Cocinero de prueba' },
+    usuario_aprueba: null,
+    detalles: [
+      {
+        id: 31,
+        cantidad_solicitada: '4.00',
+        cantidad_aprobada: null,
+        insumo: { id: 1, nombre: 'Arroz', unidad_medida: 'kg', stock_actual: '20.000000' },
+      },
+    ],
+  };
+
+  await page.route('**/api/requisiciones', async (route) => {
+    if (route.request().method() !== 'GET') return route.fallback();
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'ok', message: 'Requisiciones obtenidas.', data: [requisicion] }),
+    });
+  });
+
+  await page.route('**/api/requisiciones/15/resolucion', async (route) => {
+    const payload = route.request().postDataJSON();
+    alResolver(payload);
+    requisicion.estado = 'aprobada';
+    requisicion.fecha_resolucion = '2026-10-22T12:00:00.000000Z';
+    requisicion.usuario_aprueba = { id: 2, name: 'Administradora de bodega' };
+    requisicion.detalles[0].cantidad_aprobada = String(payload.detalles[0].cantidad_aprobada.toFixed(2));
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'ok', message: 'Requisición aprobada correctamente.', data: requisicion }),
+    });
+  });
+
+  await page.route('**/api/requisiciones/15/transferir', async (route) => {
+    requisicion.estado = 'transferida';
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'ok', message: 'Stock transferido.', data: requisicion }),
+    });
+  });
+}
+
+test.describe('CC-53 y CC-54 - Gestión de requisiciones', () => {
+  test('aprueba una cantidad parcial y transfiere la requisición a cocina', async ({ page }) => {
+    let payloadResolucion;
+    await interceptarGestionRequisiciones(page, (payload) => {
+      payloadResolucion = payload;
+    });
+    await prepararSesionAdministrador(page);
+
+    await page.goto('/requisiciones');
+    await expect(page.locator('#vista-gestion-requisiciones')).toBeVisible();
+    await page.locator('#btn-revisar-requisicion-15').click();
+    await page.locator('#input-cantidad-aprobada-31').fill('2.5');
+    await page.locator('#btn-aprobar-requisicion-15').click();
+
+    await expect(page.getByText('Requisición aprobada. Ya está disponible para transferir.')).toBeVisible();
+    expect(payloadResolucion).toEqual({
+      estado: 'aprobada',
+      detalles: [{ id: 31, cantidad_aprobada: 2.5 }],
+    });
+    await expect(page.locator('#btn-transferir-requisicion-15')).toBeVisible();
+
+    await page.locator('#btn-transferir-requisicion-15').click();
+    await expect(page.getByText('Stock transferido al área de Cocina.')).toBeVisible();
+    await expect(page.getByText('Stock transferido al área operativa.')).toBeVisible();
+  });
+});

@@ -6,7 +6,7 @@ import api from '@/services/api.js';
  *
  * @autor  Jeferson De La Cruz
  * @fecha  2026-10-13
- * @módulo Inventario – RF-INV-003 / RF-INV-004 / CC-45 / CC-46 / CC-52
+ * @módulo Inventario – RF-INV-003 / RF-INV-004 / CC-45 / CC-46 / CC-52 / CC-53 / CC-54
  */
 
 // ─── CC-45: Insumos ────────────────────────────────────────────────────────────
@@ -151,5 +151,52 @@ export async function eliminarIngrediente(platilloId, recetaId) {
  */
 export async function crearRequisicion(payload) {
   const respuesta = await api.post('/requisiciones', payload);
+  return respuesta.data.data;
+}
+
+// ─── CC-53 / CC-54: Gestión de bodega ───────────────────────────────────────
+
+/**
+ * Obtiene las requisiciones para que el administrador las apruebe y transfiera.
+ *
+ * @autor  Alexis
+ * @fecha  2026-10-22
+ * @módulo Inventario – RF-INV-004 / CC-53 / CC-54
+ *
+ * @returns {Promise<Array>} Requisiciones con solicitante, detalles e insumos.
+ */
+export async function obtenerRequisiciones() {
+  const respuesta = await api.get('/requisiciones');
+  return respuesta.data.data;
+}
+
+/**
+ * Aprueba cantidades por detalle o rechaza una requisición pendiente.
+ *
+ * @autor  Alexis
+ * @fecha  2026-10-22
+ * @módulo Inventario – RF-INV-004 / CC-53
+ *
+ * @param {number} requisicionId Identificador de la requisición.
+ * @param {{ estado: 'aprobada'|'rechazada', detalles?: Array<{ id: number, cantidad_aprobada: number }> }} payload Resolución.
+ * @returns {Promise<Object>} Requisición resuelta.
+ */
+export async function resolverRequisicion(requisicionId, payload) {
+  const respuesta = await api.patch(`/requisiciones/${requisicionId}/resolucion`, payload);
+  return respuesta.data.data;
+}
+
+/**
+ * Transfiere el stock aprobado de bodega general al área de la requisición.
+ *
+ * @autor  Alexis
+ * @fecha  2026-10-22
+ * @módulo Inventario – RF-INV-004 / CC-54
+ *
+ * @param {number} requisicionId Identificador de la requisición aprobada.
+ * @returns {Promise<Object>} Requisición marcada como transferida.
+ */
+export async function transferirRequisicion(requisicionId) {
+  const respuesta = await api.post(`/requisiciones/${requisicionId}/transferir`);
   return respuesta.data.data;
 }

@@ -98,3 +98,10 @@ Route::delete('/platillos/{platillo}/recetas/{receta}',            [RecetaContro
 Route::middleware(['auth:sanctum', 'role:cocinero|administrador'])->group(function () {
     Route::post('/requisiciones', [RequisicionController::class, 'store']);
 });
+
+// Módulo Inventario — CC-53 / CC-54: aprobación y transferencia de requisiciones
+Route::middleware(['auth:sanctum', 'role:administrador'])->group(function () {
+    Route::get('/requisiciones', [RequisicionController::class, 'index']);
+    Route::patch('/requisiciones/{requisicion}/resolucion', [RequisicionController::class, 'resolver']);
+    Route::post('/requisiciones/{requisicion}/transferir', [RequisicionController::class, 'transferir']);
+});
