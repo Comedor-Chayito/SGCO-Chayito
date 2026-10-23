@@ -8,9 +8,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Requisicion extends Model
 {
+    /**
+     * Tabla física de requisiciones internas.
+     *
+     * El plural automático en inglés no coincide con el nombre español de la tabla.
+     *
+     * @var string
+     */
+    protected $table = 'requisiciones';
+
     protected $fillable = [
         'usuario_solicita_id',
         'usuario_aprueba_id',
+        'area_solicitante',
         'estado',
         'observaciones',
         'fecha_resolucion',

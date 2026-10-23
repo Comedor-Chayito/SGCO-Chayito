@@ -6,6 +6,7 @@ use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\RecetaController;
+use App\Http\Controllers\RequisicionController;
 use App\Http\Controllers\RetiroController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
@@ -93,3 +94,7 @@ Route::post('/platillos/{platillo}/recetas',                       [RecetaContro
 Route::put('/platillos/{platillo}/recetas/{receta}',               [RecetaController::class, 'update']);
 Route::delete('/platillos/{platillo}/recetas/{receta}',            [RecetaController::class, 'destroy']);
 
+// Módulo Inventario — CC-52: Solicitudes internas por área (US-INV-02 / RF-INV-004)
+Route::middleware(['auth:sanctum', 'role:cocinero|administrador'])->group(function () {
+    Route::post('/requisiciones', [RequisicionController::class, 'store']);
+});

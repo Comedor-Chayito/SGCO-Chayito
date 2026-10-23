@@ -2,11 +2,11 @@ import api from '@/services/api.js';
 
 /**
  * Servicio HTTP del módulo Inventario.
- * Centraliza todas las llamadas al backend para insumos y recetas de platillos.
+ * Centraliza las llamadas para insumos, recetas y requisiciones internas.
  *
  * @autor  Jeferson De La Cruz
  * @fecha  2026-10-13
- * @módulo Inventario – RF-INV-003 / CC-45 / CC-46
+ * @módulo Inventario – RF-INV-003 / RF-INV-004 / CC-45 / CC-46 / CC-52
  */
 
 // ─── CC-45: Insumos ────────────────────────────────────────────────────────────
@@ -135,4 +135,21 @@ export async function actualizarIngrediente(platilloId, recetaId, payload) {
  */
 export async function eliminarIngrediente(platilloId, recetaId) {
   await api.delete(`/platillos/${platilloId}/recetas/${recetaId}`);
+}
+
+// ─── CC-52: Requisiciones internas ──────────────────────────────────────────
+
+/**
+ * Envía una requisición de insumos para aprobación de bodega.
+ *
+ * @autor  Jeferson De La Cruz
+ * @fecha  2026-10-22
+ * @módulo Inventario – RF-INV-004 / CC-52
+ *
+ * @param   {{ area_solicitante: string, observaciones?: string, detalles: Array<{ insumo_id: number, cantidad_solicitada: number }> }} payload
+ * @returns {Promise<Object>} Requisición pendiente creada con sus detalles.
+ */
+export async function crearRequisicion(payload) {
+  const respuesta = await api.post('/requisiciones', payload);
+  return respuesta.data.data;
 }
