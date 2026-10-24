@@ -192,7 +192,7 @@ class RequisicionTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.estado', 'aprobada')
             ->assertJsonPath('data.usuario_aprueba_id', $this->administrador->id)
-            ->assertJsonPath('data.detalles.0.cantidad_aprobada', '3.50');
+            ->assertJsonPath('data.detalles.0.cantidad_aprobada', '3.500');
 
         $this->assertDatabaseHas('requisiciones', [
             'id' => $requisicion->id,
