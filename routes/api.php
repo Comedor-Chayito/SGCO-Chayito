@@ -6,6 +6,7 @@ use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\RecetaController;
+use App\Http\Controllers\RequisicionController;
 use App\Http\Controllers\RetiroController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
@@ -101,3 +102,14 @@ Route::scopeBindings()->group(function () {
     Route::delete('/platillos/{platillo}/recetas/{receta}',            [RecetaController::class, 'destroy']);
 });
 
+// Módulo Inventario — CC-52: Solicitudes internas por área (US-INV-02 / RF-INV-004)
+Route::middleware(['auth:sanctum', 'role:cocinero|administrador'])->group(function () {
+    Route::post('/requisiciones', [RequisicionController::class, 'store']);
+});
+
+// Módulo Inventario — CC-53 / CC-54: aprobación y transferencia de requisiciones
+Route::middleware(['auth:sanctum', 'role:administrador'])->group(function () {
+    Route::get('/requisiciones', [RequisicionController::class, 'index']);
+    Route::patch('/requisiciones/{requisicion}/resolucion', [RequisicionController::class, 'resolver']);
+    Route::post('/requisiciones/{requisicion}/transferir', [RequisicionController::class, 'transferir']);
+});

@@ -50,4 +50,18 @@ class Insumo extends Model
     {
         return $this->hasMany(RequisicionDetalle::class);
     }
+
+    /**
+     * Obtiene existencias de este insumo en las áreas operativas.
+     *
+     * @autor  Alexis
+     * @fecha  2026-10-22
+     * @módulo Inventario – RF-INV-004 / CC-54
+     *
+     * @return HasMany<ExistenciaAreaOperativa>
+     */
+    public function existenciasAreaOperativa(): HasMany
+    {
+        return $this->hasMany(ExistenciaAreaOperativa::class);
+    }
 }
