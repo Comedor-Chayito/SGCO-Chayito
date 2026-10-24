@@ -88,6 +88,20 @@ async function cerrarSesion() {
           </Button>
         </RouterLink>
 
+        <!-- Requisiciones internas (Cocina, Admin) -->
+        <RouterLink v-if="puedeVer(['cocinero', 'cocinera', 'administrador'])" to="/requisiciones/nueva">
+          <Button class="w-full min-h-[44px] bg-[#F26A21] hover:bg-[#FF8C42] text-white font-bold px-5 rounded-xl cursor-pointer">
+            Solicitar insumos a bodega
+          </Button>
+        </RouterLink>
+
+        <!-- Aprobación y transferencia de requisiciones (Exclusivo Administrador) -->
+        <RouterLink v-if="puedeVer(['administrador'])" to="/requisiciones">
+          <Button class="w-full min-h-[44px] bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-5 rounded-xl cursor-pointer">
+            Gestionar requisiciones de bodega
+          </Button>
+        </RouterLink>
+
         <!-- Contabilidad (Contadora, Admin) -->
         <RouterLink v-if="puedeVer(['contadora', 'administrador'])" to="/contabilidad">
           <Button variant="outline" class="w-full min-h-[44px] border-[#E5E0DB] text-[#3D3D3D] hover:bg-zinc-50 font-semibold px-5 rounded-xl cursor-pointer">
