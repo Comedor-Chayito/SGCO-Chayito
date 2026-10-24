@@ -14,7 +14,7 @@ class Receta extends Model
     ];
 
     protected $casts = [
-        'cantidad_por_porcion' => 'decimal:2',
+        'cantidad_por_porcion' => 'decimal:3',
     ];
 
     /**

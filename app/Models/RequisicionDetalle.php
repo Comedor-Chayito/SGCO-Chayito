@@ -15,8 +15,8 @@ class RequisicionDetalle extends Model
     ];
 
     protected $casts = [
-        'cantidad_solicitada' => 'decimal:2',
-        'cantidad_aprobada' => 'decimal:2',
+        'cantidad_solicitada' => 'decimal:3',
+        'cantidad_aprobada' => 'decimal:3',
     ];
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Valida los datos de entrada para actualizar un insumo de bodega existente.
@@ -31,7 +32,12 @@ class ActualizarInsumoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre'        => ['required', 'string', 'max:100'],
+            'nombre'        => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('insumos', 'nombre')->ignore($this->route('insumo')),
+            ],
             'unidad_medida' => ['required', 'string', 'max:20'],
             'stock_actual'  => ['required', 'numeric', 'min:0'],
             'stock_minimo'  => ['required', 'numeric', 'min:0'],
@@ -48,6 +54,7 @@ class ActualizarInsumoRequest extends FormRequest
         return [
             'nombre.required'        => 'El nombre del insumo es obligatorio.',
             'nombre.max'             => 'El nombre del insumo no puede superar los 100 caracteres.',
+            'nombre.unique'          => 'Ya existe un insumo con ese nombre.',
             'unidad_medida.required' => 'La unidad de medida es obligatoria (ej: kg, lt, unidad).',
             'unidad_medida.max'      => 'La unidad de medida no puede superar los 20 caracteres.',
             'stock_actual.required'  => 'El stock actual es obligatorio.',

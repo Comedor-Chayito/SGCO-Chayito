@@ -4,9 +4,11 @@ use App\Http\Controllers\AperturaCajaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
+use App\Http\Controllers\EgresoController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\RecetaController;
 use App\Http\Controllers\RetiroController;
+use App\Http\Controllers\SubcategoriaEgresoController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Http\Request;
@@ -64,6 +66,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/cierres-caja',         [CierreCajaController::class, 'historial']);
         Route::get('/cierres-caja/{fecha}', [CierreCajaController::class, 'mostrar']);
     });
+
+    // Módulo Contabilidad — RF-CON-005 (Egresos): solo contadora y administrador (CLAUDE.md §9)
+    Route::middleware('role:contadora|administrador')->group(function () {
+        // Catálogo para clasificar facturas en el formulario rápido (CC-62 / US-CON-01)
+        Route::get('/subcategorias-egreso', [SubcategoriaEgresoController::class, 'index']);
+
+        // Registro de facturas con correlativo único (CC-63 / US-CON-01)
+        Route::post('/egresos', [EgresoController::class, 'store']);
+    });
 });
 
 // Módulo POS — RF-POS-001 (Comandas)
@@ -83,13 +94,21 @@ Route::patch('/comandas/{comanda}/estado',  [ComandaController::class, 'actualiz
 // Módulo Inventario — CC-45: CRUD de insumos con unidad de medida (US-INV-01 / RF-INV-003)
 Route::get('/insumos',           [InsumoController::class, 'index']);
 Route::post('/insumos',          [InsumoController::class, 'store']);
+
+// CC-57: Alertas de quiebre de stock (US-INV-03 / RF-INV-004)
+// IMPORTANTE: /insumos/alertas debe ir antes de /insumos/{insumo} para evitar conflicto de rutas
+Route::get('/insumos/alertas',   [InsumoController::class, 'alertas']);
+
 Route::get('/insumos/{insumo}',  [InsumoController::class, 'show']);
 Route::put('/insumos/{insumo}',  [InsumoController::class, 'update']);
 Route::delete('/insumos/{insumo}', [InsumoController::class, 'destroy']);
 
 // Módulo Inventario — CC-46: Vincular ingredientes a platillos (US-INV-01 / RF-INV-003)
-Route::get('/platillos/{platillo}/recetas',                        [RecetaController::class, 'index']);
-Route::post('/platillos/{platillo}/recetas',                       [RecetaController::class, 'store']);
-Route::put('/platillos/{platillo}/recetas/{receta}',               [RecetaController::class, 'update']);
-Route::delete('/platillos/{platillo}/recetas/{receta}',            [RecetaController::class, 'destroy']);
+// scopeBindings: el renglón {receta} debe pertenecer al {platillo} de la URL, si no responde 404
+Route::scopeBindings()->group(function () {
+    Route::get('/platillos/{platillo}/recetas',                        [RecetaController::class, 'index']);
+    Route::post('/platillos/{platillo}/recetas',                       [RecetaController::class, 'store']);
+    Route::put('/platillos/{platillo}/recetas/{receta}',               [RecetaController::class, 'update']);
+    Route::delete('/platillos/{platillo}/recetas/{receta}',            [RecetaController::class, 'destroy']);
+});
 

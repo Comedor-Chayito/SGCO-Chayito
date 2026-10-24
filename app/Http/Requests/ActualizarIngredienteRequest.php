@@ -31,7 +31,7 @@ class ActualizarIngredienteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cantidad_por_porcion' => ['required', 'numeric', 'min:0.01'],
+            'cantidad_por_porcion' => ['required', 'numeric', 'min:0.001'],
         ];
     }
 

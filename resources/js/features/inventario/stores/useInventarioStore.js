@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import {
   obtenerInsumos,
+  obtenerAlertasStock,
   crearInsumo,
   actualizarInsumo,
   eliminarInsumo,
@@ -20,21 +21,30 @@ export const useInventarioStore = defineStore('inventario', () => {
   const insumos = ref([]);
   const cargando = ref(false);
   const error = ref(null);
-
-  // ─── Getters ───────────────────────────────────────────────────────────────
-
-  /**
-   * Insumos con stock por debajo del mínimo (alerta de quiebre de stock).
-   *
-   * @autor  Jeferson De La Cruz
-   * @fecha  2026-10-13
-   * @módulo Inventario – RF-INV-003
-   */
-  const insumosConAlerta = computed(() =>
-    insumos.value.filter((i) => parseFloat(i.stock_actual) <= parseFloat(i.stock_minimo))
-  );
+  const alertas = ref([]);
+  const errorAlertas = ref(null);
 
   // ─── Acciones ──────────────────────────────────────────────────────────────
+
+  /**
+   * Carga los insumos en quiebre de stock, independiente del filtro de búsqueda.
+   *
+   * @autor  manuelmv15
+   * @fecha  2026-10-19
+   * @módulo Inventario – RF-INV-004 / CC-58
+   *
+   * @returns {Promise<void>}
+   */
+  async function cargarAlertas() {
+    errorAlertas.value = null;
+
+    try {
+      alertas.value = await obtenerAlertasStock();
+    } catch {
+      // No se muestra el mensaje del backend: con APP_DEBUG expone el SQL al usuario.
+      errorAlertas.value = 'No se pudieron consultar las alertas de stock. Intenta de nuevo.';
+    }
+  }
 
   /**
    * Carga todos los insumos desde el backend, con búsqueda opcional.
@@ -76,6 +86,7 @@ export const useInventarioStore = defineStore('inventario', () => {
       const nuevo = await crearInsumo(datos);
       insumos.value.push(nuevo);
       insumos.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
+      await cargarAlertas();
       return nuevo;
     } catch (err) {
       error.value = err?.response?.data?.message
@@ -103,6 +114,7 @@ export const useInventarioStore = defineStore('inventario', () => {
       const actualizado = await actualizarInsumo(id, datos);
       const idx = insumos.value.findIndex((i) => i.id === id);
       if (idx !== -1) insumos.value[idx] = actualizado;
+      await cargarAlertas();
       return actualizado;
     } catch (err) {
       error.value = err?.response?.data?.message
@@ -128,6 +140,7 @@ export const useInventarioStore = defineStore('inventario', () => {
     try {
       await eliminarInsumo(id);
       insumos.value = insumos.value.filter((i) => i.id !== id);
+      await cargarAlertas();
       return true;
     } catch (err) {
       error.value = err?.response?.data?.message
@@ -141,7 +154,9 @@ export const useInventarioStore = defineStore('inventario', () => {
     insumos,
     cargando,
     error,
-    insumosConAlerta,
+    alertas,
+    errorAlertas,
+    cargarAlertas,
     cargarInsumos,
     guardarInsumo,
     editarInsumo,

@@ -31,7 +31,7 @@ class CrearInsumoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre'        => ['required', 'string', 'max:100'],
+            'nombre'        => ['required', 'string', 'max:100', 'unique:insumos,nombre'],
             'unidad_medida' => ['required', 'string', 'max:20'],
             'stock_actual'  => ['nullable', 'numeric', 'min:0'],
             'stock_minimo'  => ['nullable', 'numeric', 'min:0'],
@@ -48,6 +48,7 @@ class CrearInsumoRequest extends FormRequest
         return [
             'nombre.required'        => 'El nombre del insumo es obligatorio.',
             'nombre.max'             => 'El nombre del insumo no puede superar los 100 caracteres.',
+            'nombre.unique'          => 'Ya existe un insumo con ese nombre.',
             'unidad_medida.required' => 'La unidad de medida es obligatoria (ej: kg, lt, unidad).',
             'unidad_medida.max'      => 'La unidad de medida no puede superar los 20 caracteres.',
             'stock_actual.numeric'   => 'El stock actual debe ser un número.',

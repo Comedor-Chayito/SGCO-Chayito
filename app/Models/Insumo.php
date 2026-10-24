@@ -15,8 +15,8 @@ class Insumo extends Model
     ];
 
     protected $casts = [
-        'stock_actual' => 'decimal:2',
-        'stock_minimo' => 'decimal:2',
+        'stock_actual' => 'decimal:3',
+        'stock_minimo' => 'decimal:3',
     ];
 
     /**
