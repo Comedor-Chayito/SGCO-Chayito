@@ -16,7 +16,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('recetas', function (Blueprint $table) {
-            $table->decimal('cantidad_por_porcion', 10, 3)->change();
+            $table->decimal('cantidad_por_porcion', 14, 6)->change();
         });
     }
 

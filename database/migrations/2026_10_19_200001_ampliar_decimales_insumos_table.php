@@ -17,8 +17,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('insumos', function (Blueprint $table) {
-            $table->decimal('stock_actual', 10, 3)->default(0)->change();
-            $table->decimal('stock_minimo', 10, 3)->default(0)->change();
+            $table->decimal('stock_actual', 14, 6)->default(0)->change();
+            $table->decimal('stock_minimo', 14, 6)->default(0)->change();
             $table->unique('nombre');
         });
     }
