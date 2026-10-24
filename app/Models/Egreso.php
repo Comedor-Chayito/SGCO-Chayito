@@ -21,7 +21,7 @@ class Egreso extends Model
     ];
 
     protected $casts = [
-        'fecha_comprobante' => 'date',
+        'fecha_comprobante' => 'date:Y-m-d',
         'monto_total' => 'decimal:2',
     ];
 
