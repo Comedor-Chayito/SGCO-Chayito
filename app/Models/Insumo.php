@@ -15,15 +15,17 @@ class Insumo extends Model
     ];
 
     protected $casts = [
-        'stock_actual' => 'decimal:3',
-        'stock_minimo' => 'decimal:3',
+        'stock_actual' => 'decimal:6',
+        'stock_minimo' => 'decimal:6',
     ];
 
     /**
      * Obtiene los renglones de receta donde se usa este insumo.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-003
      *
      * @return HasMany<Receta>
@@ -37,7 +39,9 @@ class Insumo extends Model
      * Obtiene los renglones de requisición donde se solicita este insumo.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-004
      *
      * @return HasMany<RequisicionDetalle>

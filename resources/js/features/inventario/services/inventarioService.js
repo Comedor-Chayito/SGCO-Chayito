@@ -127,7 +127,7 @@ export async function obtenerRecetaPlatillo(platilloId) {
  * @módulo Inventario – RF-INV-003
  *
  * @param   {number} platilloId Identificador del platillo.
- * @param   {{ insumo_id: number, cantidad_por_porcion: number }} payload Datos del ingrediente.
+ * @param   {{ insumo_id: number, cantidad_por_porcion: number, unidad_consumo: string }} payload Datos del ingrediente.
  * @returns {Promise<Object>} Renglón de receta creado.
  */
 export async function agregarIngrediente(platilloId, payload) {
@@ -144,7 +144,7 @@ export async function agregarIngrediente(platilloId, payload) {
  *
  * @param   {number} platilloId Identificador del platillo.
  * @param   {number} recetaId   Identificador del renglón de receta.
- * @param   {{ cantidad_por_porcion: number }} payload Nueva porción.
+ * @param   {{ cantidad_por_porcion: number, unidad_consumo: string }} payload Porción y unidad actualizadas.
  * @returns {Promise<Object>} Renglón de receta actualizado.
  */
 export async function actualizarIngrediente(platilloId, recetaId, payload) {
