@@ -110,7 +110,7 @@ class RolePermissionSeeder extends Seeder
         );
         $admin->syncRoles(['administrador']);
 
-        // 5. Crear usuarios de muestra con otros roles para visualización en el panel
+        // 5. Crear usuarios ficticios para probar cada rol en desarrollo local
         $cajero = User::updateOrCreate(
             ['email' => 'cajero@sgco-chayito.local'],
             [
@@ -130,5 +130,45 @@ class RolePermissionSeeder extends Seeder
             ]
         );
         $mesero->syncRoles(['mesero']);
+
+        $cocinero = User::updateOrCreate(
+            ['email' => 'cocinero@sgco-chayito.local'],
+            [
+                'name'     => 'Roberto Cocinero',
+                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
+                'activo'   => true,
+            ]
+        );
+        $cocinero->syncRoles(['cocinero']);
+
+        $cocinera = User::updateOrCreate(
+            ['email' => 'cocinera@sgco-chayito.local'],
+            [
+                'name'     => 'Marta Cocinera',
+                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
+                'activo'   => true,
+            ]
+        );
+        $cocinera->syncRoles(['cocinera']);
+
+        $contadora = User::updateOrCreate(
+            ['email' => 'contadora@sgco-chayito.local'],
+            [
+                'name'     => 'Elena Contadora',
+                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
+                'activo'   => true,
+            ]
+        );
+        $contadora->syncRoles(['contadora']);
+
+        $socio = User::updateOrCreate(
+            ['email' => 'socio@sgco-chayito.local'],
+            [
+                'name'     => 'Andrea Socia',
+                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
+                'activo'   => true,
+            ]
+        );
+        $socio->syncRoles(['socio']);
     }
 }
