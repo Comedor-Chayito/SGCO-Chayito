@@ -204,6 +204,98 @@ class DashboardGerencialTest extends TestCase
     }
 
     /**
+     * Verifica que el periodo se rechaza si llega solo una de las dos fechas, porque el
+     * inicio por defecto podría quedar posterior al fin solicitado.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Reportes – RF-REP-007 / CC-72
+     */
+    public function test_dashboard_exige_ambas_fechas_del_periodo(): void
+    {
+        $fecha = now()->subMonth()->toDateString();
+        Sanctum::actingAs($this->administrador);
+
+        $this->getJson("/api/reportes/dashboard?fecha_hasta={$fecha}")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['fecha_desde' => 'Indica la fecha inicial del periodo.']);
+
+        $this->getJson("/api/reportes/dashboard?fecha_desde={$fecha}")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['fecha_hasta' => 'Indica la fecha final del periodo.']);
+    }
+
+    /**
+     * Verifica que el periodo rechaza rangos invertidos y fechas futuras.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Reportes – RF-REP-007 / CC-72
+     */
+    public function test_dashboard_rechaza_rangos_invertidos_y_fechas_futuras(): void
+    {
+        $hoy = now()->toDateString();
+        $ayer = now()->subDay()->toDateString();
+        $manana = now()->addDay()->toDateString();
+        Sanctum::actingAs($this->administrador);
+
+        $this->getJson("/api/reportes/dashboard?fecha_desde={$hoy}&fecha_hasta={$ayer}")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['fecha_hasta']);
+
+        $this->getJson("/api/reportes/dashboard?fecha_desde={$hoy}&fecha_hasta={$manana}")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['fecha_hasta']);
+    }
+
+    /**
+     * Verifica que sin fechas se consulta desde el primer día del mes hasta hoy.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Reportes – RF-REP-007 / CC-72
+     */
+    public function test_dashboard_sin_fechas_usa_el_mes_en_curso(): void
+    {
+        Sanctum::actingAs($this->administrador);
+
+        $this->getJson('/api/reportes/dashboard')
+            ->assertOk()
+            ->assertJsonPath('data.periodo.fecha_desde', now()->startOfMonth()->toDateString())
+            ->assertJsonPath('data.periodo.fecha_hasta', now()->toDateString());
+    }
+
+    /**
+     * Verifica que la serie de ventas mensuales termina en el mes de la fecha final filtrada.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Reportes – RF-REP-007 / CC-72
+     */
+    public function test_ventas_mensuales_terminan_en_el_mes_del_periodo_filtrado(): void
+    {
+        $finPeriodo = now()->subMonths(3)->endOfMonth();
+        $inicioPeriodo = $finPeriodo->copy()->startOfMonth();
+        $this->registrarVenta($this->administrador, 150, $inicioPeriodo->toDateString());
+        $this->registrarVenta($this->administrador, 70, now()->toDateString());
+        Sanctum::actingAs($this->administrador);
+
+        $this->getJson(
+            "/api/reportes/dashboard?fecha_desde={$inicioPeriodo->toDateString()}"
+            . "&fecha_hasta={$finPeriodo->toDateString()}"
+        )
+            ->assertOk()
+            ->assertJsonCount(6, 'data.graficos.ventas_mensuales')
+            ->assertJsonPath('data.graficos.ventas_mensuales.5.periodo', $finPeriodo->format('Y-m'))
+            ->assertJsonPath('data.graficos.ventas_mensuales.5.total', 150)
+            ->assertJsonPath(
+                'data.graficos.ventas_mensuales.0.periodo',
+                $finPeriodo->copy()->startOfMonth()->subMonths(5)->format('Y-m'),
+            )
+            ->assertJsonMissing(['periodo' => now()->format('Y-m')]);
+    }
+
+    /**
      * Verifica que el rol Socio puede consultar los indicadores financieros.
      *
      * @autor  Jeferson De La Cruz

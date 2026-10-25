@@ -28,19 +28,26 @@ class ConsultarDashboardGerencialRequest extends FormRequest
     }
 
     /**
-     * Define las fechas opcionales para consultar un periodo financiero.
+     * Define las fechas opcionales para consultar un periodo financiero. Se envían ambas o
+     * ninguna: con una sola, el periodo por defecto podría quedar invertido.
      *
      * @autor  Jeferson De La Cruz
      * @fecha  2026-10-23
-     * @módulo Reportes – RF-REP-007 / CC-75
+     * @módulo Reportes – RF-REP-007 / CC-75 / CC-72
      *
      * @return array<string, mixed> Reglas del rango de fechas.
      */
     public function rules(): array
     {
         return [
-            'fecha_desde' => ['nullable', 'date', 'before_or_equal:today'],
-            'fecha_hasta' => ['nullable', 'date', 'after_or_equal:fecha_desde', 'before_or_equal:today'],
+            'fecha_desde' => ['nullable', 'required_with:fecha_hasta', 'date', 'before_or_equal:today'],
+            'fecha_hasta' => [
+                'nullable',
+                'required_with:fecha_desde',
+                'date',
+                'after_or_equal:fecha_desde',
+                'before_or_equal:today',
+            ],
         ];
     }
 
@@ -49,13 +56,15 @@ class ConsultarDashboardGerencialRequest extends FormRequest
      *
      * @autor  Jeferson De La Cruz
      * @fecha  2026-10-23
-     * @módulo Reportes – RF-REP-007 / CC-75
+     * @módulo Reportes – RF-REP-007 / CC-75 / CC-72
      *
      * @return array<string, string> Mensajes personalizados de validación.
      */
     public function messages(): array
     {
         return [
+            'fecha_desde.required_with' => 'Indica la fecha inicial del periodo.',
+            'fecha_hasta.required_with' => 'Indica la fecha final del periodo.',
             'fecha_desde.date' => 'La fecha inicial debe tener un formato válido.',
             'fecha_desde.before_or_equal' => 'La fecha inicial no puede ser futura.',
             'fecha_hasta.date' => 'La fecha final debe tener un formato válido.',

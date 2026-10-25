@@ -73,7 +73,7 @@ class DashboardGerencialService
                 'egresos_registrados' => (int) $gastos->cantidad,
             ],
             'graficos' => [
-                'ventas_mensuales' => $this->obtenerVentasMensuales(),
+                'ventas_mensuales' => $this->obtenerVentasMensuales($fin),
                 'rentabilidad_por_platillo' => $this->obtenerRentabilidadPorPlatillo(
                     $inicio,
                     $fin,
@@ -128,18 +128,20 @@ class DashboardGerencialService
     }
 
     /**
-     * Obtiene las ventas de los últimos seis meses, incluyendo meses sin movimientos.
+     * Obtiene las ventas de los seis meses que terminan en el mes de cierre del periodo
+     * consultado, incluyendo meses sin movimientos.
      *
      * @autor  Jeferson De La Cruz
      * @fecha  2026-10-23
-     * @módulo Reportes – RF-REP-007 / US-REP-01
+     * @módulo Reportes – RF-REP-007 / US-REP-01 / CC-72
      *
+     * @param  Carbon  $finPeriodo  Fin del periodo filtrado; su mes es el último de la serie.
      * @return array<int, array{periodo: string, etiqueta: string, total: float}> Serie mensual de ventas.
      */
-    private function obtenerVentasMensuales(): array
+    private function obtenerVentasMensuales(Carbon $finPeriodo): array
     {
-        $inicio = now()->startOfMonth()->subMonths(5);
-        $fin = now()->endOfMonth();
+        $inicio = $finPeriodo->copy()->startOfMonth()->subMonths(5);
+        $fin = $finPeriodo->copy()->endOfMonth();
         $meses = [];
 
         for ($indice = 0; $indice < 6; $indice++) {

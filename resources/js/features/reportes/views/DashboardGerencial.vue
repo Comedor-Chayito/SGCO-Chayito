@@ -14,51 +14,33 @@ import {
 import { Toaster, toast } from 'vue-sonner';
 import { useRouter } from 'vue-router';
 import { obtenerDashboardGerencial } from '@/features/reportes/services/dashboardGerencialService.js';
+import {
+  PERIODOS_PREDEFINIDOS, PERIODO_PREDETERMINADO, calcularPeriodo, fechaLocalIso, identificarPeriodo,
+} from '@/features/reportes/services/periodoDashboardService.js';
 
 const router = useRouter();
 const cargando = ref(true);
 const dashboard = ref(null);
-const filtros = ref(crearFiltrosIniciales());
+const filtros = ref(calcularPeriodo(PERIODO_PREDETERMINADO));
+const fechaMaxima = fechaLocalIso(new Date());
+const periodoActivo = computed(() => identificarPeriodo(filtros.value));
 const barraActiva = ref(null);
 const segmentoActivo = ref(null);
 
 const COLORES_GRAFICO = ['#2B6CB0', '#E05A1A', '#2E7D4F', '#7C3AED', '#C58B00', '#C2415A'];
 
 /**
- * Construye el rango predeterminado desde el primer día del mes hasta hoy.
+ * Aplica un periodo predefinido al formulario y recarga los indicadores.
  *
- * @autor  Jeferson De La Cruz
- * @fecha  2026-10-23
- * @módulo Reportes – RF-REP-007 / CC-75
+ * @autor  manuelmv15
+ * @fecha  2026-10-24
+ * @módulo Reportes – RF-REP-007 / CC-72
  *
- * @returns {{ fecha_desde: string, fecha_hasta: string }} Rango de fechas local en formato ISO.
+ * @param {string} clave Clave del periodo en PERIODOS_PREDEFINIDOS.
  */
-function crearFiltrosIniciales() {
-  const hoy = new Date();
-  const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-
-  return {
-    fecha_desde: fechaLocalIso(inicioMes),
-    fecha_hasta: fechaLocalIso(hoy),
-  };
-}
-
-/**
- * Convierte una fecha local a formato ISO sin desplazarla por zona horaria.
- *
- * @autor  Jeferson De La Cruz
- * @fecha  2026-10-23
- * @módulo Reportes – RF-REP-007 / CC-75
- *
- * @param {Date} fecha Fecha que se desea representar.
- * @returns {string} Fecha en formato YYYY-MM-DD.
- */
-function fechaLocalIso(fecha) {
-  const anio = fecha.getFullYear();
-  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-  const dia = String(fecha.getDate()).padStart(2, '0');
-
-  return `${anio}-${mes}-${dia}`;
+function aplicarPeriodo(clave) {
+  filtros.value = calcularPeriodo(clave);
+  cargarDashboard();
 }
 
 /**
@@ -356,6 +338,25 @@ onMounted(cargarDashboard);
       </header>
 
       <section class="rounded-2xl border border-[#E5E0DB] bg-white p-4 shadow-sm sm:p-5">
+        <div class="mb-3 flex flex-wrap gap-2" role="group" aria-label="Periodos predefinidos">
+          <button
+            v-for="periodo in PERIODOS_PREDEFINIDOS"
+            :id="`btn-periodo-${periodo.clave}`"
+            :key="periodo.clave"
+            type="button"
+            :aria-pressed="periodoActivo === periodo.clave"
+            :class="[
+              'inline-flex h-11 items-center rounded-xl border px-4 text-sm font-bold disabled:cursor-wait',
+              periodoActivo === periodo.clave
+                ? 'border-[#2B6CB0] bg-[#2B6CB0] text-white'
+                : 'border-[#E5E0DB] bg-white text-[#3D3D3D] hover:bg-[#FAF7F4]',
+            ]"
+            :disabled="cargando"
+            @click="aplicarPeriodo(periodo.clave)"
+          >
+            {{ periodo.etiqueta }}
+          </button>
+        </div>
         <form class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end" @submit.prevent="cargarDashboard">
           <label for="input-fecha-desde-dashboard" class="block text-sm font-bold text-[#3D3D3D]">
             Desde
@@ -363,6 +364,7 @@ onMounted(cargarDashboard);
               id="input-fecha-desde-dashboard"
               v-model="filtros.fecha_desde"
               type="date"
+              :max="filtros.fecha_hasta || fechaMaxima"
               required
               class="mt-1 h-11 w-full rounded-xl border border-[#E5E0DB] px-3 text-base font-normal outline-none focus:border-[#2B6CB0] focus:ring-2 focus:ring-[#2B6CB0]/20"
             >
@@ -373,6 +375,8 @@ onMounted(cargarDashboard);
               id="input-fecha-hasta-dashboard"
               v-model="filtros.fecha_hasta"
               type="date"
+              :min="filtros.fecha_desde"
+              :max="fechaMaxima"
               required
               class="mt-1 h-11 w-full rounded-xl border border-[#E5E0DB] px-3 text-base font-normal outline-none focus:border-[#2B6CB0] focus:ring-2 focus:ring-[#2B6CB0]/20"
             >
@@ -459,7 +463,9 @@ onMounted(cargarDashboard);
             <div class="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <h2 class="font-black text-[#3D3D3D]">Ventas mensuales</h2>
-                <p class="mt-1 text-xs text-[#6B6B6B]">Últimos seis meses. Selecciona una barra para inspeccionar el importe.</p>
+                <p class="mt-1 text-xs text-[#6B6B6B]">
+                  Seis meses hasta el final del periodo. Selecciona una barra para inspeccionar el importe.
+                </p>
               </div>
               <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-[#2B6CB0]">Interactivo</span>
             </div>
