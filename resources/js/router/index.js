@@ -94,6 +94,12 @@ const routes = [
     meta: { roles: ['socio', 'administrador'] },
   },
   {
+    path: '/reportes/exportar',
+    name: 'exportar-reportes',
+    component: () => import('@/features/reportes/views/ExportarReportes.vue'),
+    meta: { roles: ['contadora', 'socio', 'administrador'] },
+  },
+  {
     path: '/admin',
     name: 'admin',
     component: () => import('@/views/Admin.vue'),

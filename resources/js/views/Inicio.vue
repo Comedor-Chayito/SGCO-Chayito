@@ -116,6 +116,13 @@ async function cerrarSesion() {
           </Button>
         </RouterLink>
 
+        <!-- Exportación de reportes consolidados (Contadora, Socio, Admin) -->
+        <RouterLink v-if="puedeVer(['contadora', 'socio', 'administrador'])" to="/reportes/exportar">
+          <Button variant="outline" class="w-full min-h-[44px] border-[#E5E0DB] text-[#3D3D3D] hover:bg-zinc-50 font-semibold px-5 rounded-xl cursor-pointer">
+            Exportar reportes
+          </Button>
+        </RouterLink>
+
         <!-- Botón de Login si no está autenticado -->
         <RouterLink v-if="!sesion.autenticado" to="/login">
           <Button variant="outline" class="w-full min-h-[44px] border-[#E5E0DB] text-[#F26A21] hover:bg-orange-50 font-semibold px-5 rounded-xl cursor-pointer">
