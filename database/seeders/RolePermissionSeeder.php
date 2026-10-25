@@ -64,10 +64,12 @@ class RolePermissionSeeder extends Seeder
         $rolCocinero = Role::firstOrCreate(['name' => 'cocinero', 'guard_name' => 'web']);
         $rolCocinera = Role::firstOrCreate(['name' => 'cocinera', 'guard_name' => 'web']);
         $rolContadora = Role::firstOrCreate(['name' => 'contadora', 'guard_name' => 'web']);
+        $rolSocio = Role::firstOrCreate(['name' => 'socio', 'guard_name' => 'web']);
 
         // 3. Matriz de asignación de permisos
         // Administrador tiene acceso total a todos los permisos
         $rolAdmin->syncPermissions(Permission::all());
+        $rolSocio->syncPermissions(Permission::all());
 
         // Cajero
         $rolCajero->syncPermissions([
@@ -130,4 +132,3 @@ class RolePermissionSeeder extends Seeder
         $mesero->syncRoles(['mesero']);
     }
 }
-
