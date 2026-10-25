@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ListarEgresosRequest;
 use App\Http\Requests\RegistrarEgresoRequest;
 use App\Services\EgresoService;
 use Illuminate\Http\JsonResponse;
@@ -26,6 +27,25 @@ class EgresoController extends Controller
      */
     public function __construct(private readonly EgresoService $egresoService)
     {
+    }
+
+    /**
+     * Devuelve el historial de egresos paginado y los totales del filtro aplicado.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Contabilidad – RF-CON-006 (CC-69)
+     *
+     * @param  ListarEgresosRequest $request Filtros validados de fecha y subcategoría.
+     * @return JsonResponse Egresos paginados con su desglose de IVA y los totales.
+     */
+    public function index(ListarEgresosRequest $request): JsonResponse
+    {
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'Historial de egresos obtenido.',
+            'data'    => $this->egresoService->listar($request->validated()),
+        ]);
     }
 
     /**

@@ -1,11 +1,12 @@
 <script setup>
 /**
  * Tarjeta de confirmación del último egreso registrado.
- * Muestra el correlativo en grande para anotarlo en la factura física.
+ * Muestra el correlativo en grande para anotarlo en la factura física
+ * y el desglose de IVA crédito fiscal calculado al guardar.
  *
  * @autor  manuelmv15
- * @fecha  2026-10-23
- * @módulo Contabilidad – RF-CON-005 (CC-64)
+ * @fecha  2026-10-24
+ * @módulo Contabilidad – RF-CON-005 (CC-64) / RF-CON-006 (CC-69)
  */
 import { computed } from 'vue';
 import { CheckCircle2, X } from '@lucide/vue';
@@ -19,6 +20,8 @@ defineEmits(['cerrar']);
 const formatoMoneda = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 
 const montoFormateado = computed(() => formatoMoneda.format(Number(props.egreso.monto_total)));
+const costoNetoFormateado = computed(() => formatoMoneda.format(Number(props.egreso.costo_neto)));
+const ivaFormateado = computed(() => formatoMoneda.format(Number(props.egreso.iva_credito_fiscal)));
 
 // AAAA-MM-DD → DD/MM/AAAA sin pasar por Date, para no desplazar el día por zona horaria
 const fechaFormateada = computed(() =>
@@ -56,7 +59,7 @@ const fechaFormateada = computed(() =>
       </button>
     </div>
 
-    <dl class="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-5">
+    <dl class="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-4 lg:grid-cols-7">
       <div>
         <dt class="text-xs text-[#6B6B6B]">Proveedor</dt>
         <dd class="font-medium text-[#3D3D3D]">{{ egreso.proveedor }}</dd>
@@ -75,7 +78,15 @@ const fechaFormateada = computed(() =>
       </div>
       <div>
         <dt class="text-xs text-[#6B6B6B]">Monto total</dt>
-        <dd class="font-bold text-[#C24E12]">{{ montoFormateado }}</dd>
+        <dd class="font-bold text-[#111111]">{{ montoFormateado }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs text-[#6B6B6B]">Costo neto</dt>
+        <dd class="font-medium text-[#3D3D3D]">{{ costoNetoFormateado }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs text-[#6B6B6B]">IVA crédito fiscal</dt>
+        <dd class="font-bold text-[#C24E12]">{{ ivaFormateado }}</dd>
       </div>
     </dl>
   </section>

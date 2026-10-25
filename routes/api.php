@@ -75,6 +75,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Catálogo para clasificar facturas en el formulario rápido (CC-62 / US-CON-01)
         Route::get('/subcategorias-egreso', [SubcategoriaEgresoController::class, 'index']);
 
+        // Historial con desglose de IVA y totales del mes (CC-69 / US-CON-02)
+        Route::get('/egresos', [EgresoController::class, 'index']);
+
         // Registro de facturas con correlativo único (CC-63 / US-CON-01)
         Route::post('/egresos', [EgresoController::class, 'store']);
     });

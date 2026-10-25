@@ -16,17 +16,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import FormularioEgreso from '@/features/contabilidad/components/FormularioEgreso.vue';
 import ConfirmacionEgreso from '@/features/contabilidad/components/ConfirmacionEgreso.vue';
+import HistorialEgresos from '@/features/contabilidad/components/HistorialEgresos.vue';
 
 const router = useRouter();
 const sesion = useSesionStore();
 const ultimoEgreso = ref(null);
+const historialEgresos = ref(null);
 
 /**
- * Confirma el registro de un egreso con un aviso breve y la tarjeta con su correlativo.
+ * Confirma el registro de un egreso con un aviso breve y la tarjeta con su correlativo,
+ * y recarga el historial para que el egreso nuevo aparezca en la tabla y en los totales.
  *
  * @autor  manuelmv15
- * @fecha  2026-10-23
- * @módulo Contabilidad – RF-CON-005 (CC-64)
+ * @fecha  2026-10-24
+ * @módulo Contabilidad – RF-CON-005 (CC-64) / RF-CON-006 (CC-69)
  *
  * @param   {Object} egreso Egreso creado, con correlativo y subcategoría.
  * @returns {void}
@@ -34,6 +37,7 @@ const ultimoEgreso = ref(null);
 function confirmarEgreso(egreso) {
   ultimoEgreso.value = egreso;
   toast.success(`Egreso ${egreso.correlativo} registrado`);
+  historialEgresos.value?.recargar();
 }
 
 async function cerrarSesion() {
@@ -105,6 +109,9 @@ async function cerrarSesion() {
 
       <!-- Carga rápida de facturas de proveedores (CC-62 / US-CON-01) -->
       <FormularioEgreso @egreso-registrado="confirmarEgreso" />
+
+      <!-- Historial con desglose de IVA y totales del mes (CC-69 / US-CON-02) -->
+      <HistorialEgresos ref="historialEgresos" />
 
     </div>
   </main>
