@@ -4,10 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\Comanda;
 use App\Models\ComandaDetalle;
-use App\Models\Compra;
+use App\Models\Egreso;
 use App\Models\Platillo;
+use App\Models\SubcategoriaEgreso;
 use App\Models\User;
 use App\Models\Venta;
+use App\Services\EgresoService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -22,12 +24,13 @@ use Illuminate\Support\Facades\DB;
 class DashboardHistoricoSeeder extends Seeder
 {
     private const MARCADOR_DEMO = 'DEMO-DASHBOARD';
+    private const PROVEEDOR_DEMO = 'Proveedor de demostración';
 
     /**
-     * Inserta seis meses de ventas, platillos y compras ficticias para desarrollo local.
+     * Inserta seis meses de ventas, platillos y egresos ficticios para desarrollo local.
      *
      * El seeder no usa datos de personas ni proveedores reales. Puede ejecutarse varias veces:
-     * el marcador de cada comanda y la combinación de fecha/monto de cada compra evitan duplicados.
+     * el marcador de cada comanda y el número de comprobante de cada egreso evitan duplicados.
      *
      * @autor  Jeferson De La Cruz
      * @fecha  2026-10-23
@@ -40,6 +43,7 @@ class DashboardHistoricoSeeder extends Seeder
         $this->call([
             RolePermissionSeeder::class,
             PosSeeder::class,
+            SubcategoriaEgresoSeeder::class,
         ]);
 
         $administrador = User::query()
@@ -59,7 +63,7 @@ class DashboardHistoricoSeeder extends Seeder
                 );
             }
 
-            $this->registrarComprasHistoricas($administrador, $inicio, $ventasMensuales);
+            $this->registrarEgresosHistoricos($administrador, $inicio, $ventasMensuales);
         });
     }
 
@@ -136,40 +140,76 @@ class DashboardHistoricoSeeder extends Seeder
     }
 
     /**
-     * Registra una compra ficticia por mes para contextualizar gastos y margen bruto.
+     * Registra egresos ficticios por mes, repartidos entre subcategorías, para contextualizar
+     * gastos netos, margen bruto y el desglose de gastos del dashboard.
      *
-     * @autor  Jeferson De La Cruz
-     * @fecha  2026-10-23
-     * @módulo Reportes – RF-REP-007 / US-REP-01
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Reportes – RF-REP-007 / CC-71
      *
-     * @param  User  $administrador  Usuario técnico responsable de las compras de demostración.
+     * @param  User  $administrador  Usuario técnico responsable de los egresos de demostración.
      * @param  Carbon  $inicio  Primer mes de la serie histórica.
      * @param  array<int, float>  $ventasMensuales  Total de ventas generado por cada mes.
      * @return void
      */
-    private function registrarComprasHistoricas(
+    private function registrarEgresosHistoricos(
         User $administrador,
         Carbon $inicio,
         array $ventasMensuales,
     ): void {
-        foreach ($ventasMensuales as $indice => $totalVentas) {
-            $fechaCompra = $inicio->copy()->addMonths($indice)->addDays(5);
-            $costoNeto = round($totalVentas * 0.55, 2);
-            $montoTotal = round($costoNeto * 1.13, 2);
+        $egresoService = app(EgresoService::class);
+        $subcategorias = SubcategoriaEgreso::query()->pluck('id', 'nombre');
 
-            $compra = Compra::firstOrCreate(
-                [
-                    'usuario_id' => $administrador->id,
-                    'fecha_compra' => $fechaCompra->toDateString(),
-                    'monto_total' => $montoTotal,
-                ],
-                [
-                    'costo_neto' => $costoNeto,
-                    'iva_credito_fiscal' => round($montoTotal - $costoNeto, 2),
-                ],
-            );
-            $this->asignarFechaHistorica($compra, $fechaCompra->setTime(9, 0));
+        foreach ($ventasMensuales as $indice => $totalVentas) {
+            $fechaComprobante = $inicio->copy()->addMonths($indice)->addDays(5);
+
+            foreach ($this->obtenerRepartoEgresos() as $subcategoria => $proporcion) {
+                $numeroComprobante = sprintf(
+                    '%s-%s-%s',
+                    self::MARCADOR_DEMO,
+                    $fechaComprobante->format('Y-m'),
+                    $subcategorias[$subcategoria],
+                );
+                $yaRegistrado = Egreso::query()
+                    ->where('proveedor', self::PROVEEDOR_DEMO)
+                    ->where('numero_comprobante', $numeroComprobante)
+                    ->exists();
+
+                if ($yaRegistrado) {
+                    continue;
+                }
+
+                $costoNeto = round($totalVentas * $proporcion, 2);
+                $egreso = $egresoService->registrar([
+                    'subcategoria_egreso_id' => $subcategorias[$subcategoria],
+                    'proveedor' => self::PROVEEDOR_DEMO,
+                    'numero_comprobante' => $numeroComprobante,
+                    'fecha_comprobante' => $fechaComprobante->toDateString(),
+                    'monto_total' => round($costoNeto * 1.13, 2),
+                    'descripcion' => 'Dato ficticio para visualización del dashboard.',
+                ], $administrador);
+                $this->asignarFechaHistorica($egreso, $fechaComprobante->copy()->setTime(9, 0));
+            }
         }
+    }
+
+    /**
+     * Define qué fracción de las ventas del mes se gasta en cada subcategoría ficticia.
+     * La suma (0.55) mantiene el mismo gasto neto que tenía la demostración original.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Reportes – RF-REP-007 / CC-71
+     *
+     * @return array<string, float> Proporción de las ventas por nombre de subcategoría.
+     */
+    private function obtenerRepartoEgresos(): array
+    {
+        return [
+            'Aves' => 0.25,
+            'Carnes' => 0.18,
+            'Abarrotes' => 0.12,
+        ];
     }
 
     /**

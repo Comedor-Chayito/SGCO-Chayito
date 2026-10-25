@@ -432,7 +432,7 @@ onMounted(cargarDashboard);
               <ShoppingBag class="text-[#C24E12]" :size="22" />
             </div>
             <p class="mt-3 text-2xl font-black text-[#3D3D3D]">{{ formatearMoneda(dashboard.kpis.gastos_netos) }}</p>
-            <p class="mt-1 text-xs text-[#6B6B6B]">{{ dashboard.kpis.compras_registradas }} compras registradas</p>
+            <p class="mt-1 text-xs text-[#6B6B6B]">{{ dashboard.kpis.egresos_registrados }} egresos registrados</p>
           </article>
 
           <article class="rounded-2xl border border-[#E5E0DB] bg-white p-4 shadow-sm sm:p-5">

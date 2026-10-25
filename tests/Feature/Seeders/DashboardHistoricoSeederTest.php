@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Seeders;
 
-use App\Models\Compra;
+use App\Models\Egreso;
 use App\Models\User;
 use App\Models\Venta;
 use Database\Seeders\DashboardHistoricoSeeder;
@@ -34,22 +34,21 @@ class DashboardHistoricoSeederTest extends TestCase
 
         $this->assertDatabaseCount('ventas', 30);
         $this->assertDatabaseCount('comanda_detalles', 30);
-        $this->assertDatabaseCount('compras', 6);
+        $this->assertDatabaseCount('egresos', 18);
         $this->assertSame(6, Venta::query()
             ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") AS periodo')
             ->groupByRaw('DATE_FORMAT(created_at, "%Y-%m")')
             ->get()
             ->count());
-        $this->assertSame(6, Compra::query()
-            ->select('fecha_compra')
+        $this->assertSame(6, Egreso::query()
             ->distinct()
-            ->count('fecha_compra'));
+            ->count('fecha_comprobante'));
 
         $this->seed(DashboardHistoricoSeeder::class);
 
         $this->assertDatabaseCount('ventas', 30);
         $this->assertDatabaseCount('comanda_detalles', 30);
-        $this->assertDatabaseCount('compras', 6);
+        $this->assertDatabaseCount('egresos', 18);
     }
 
     /**
@@ -74,6 +73,7 @@ class DashboardHistoricoSeederTest extends TestCase
             ->assertJsonCount(6, 'data.graficos.ventas_mensuales')
             ->assertJsonPath('data.graficos.ventas_mensuales.5.total', 430)
             ->assertJsonCount(5, 'data.graficos.rentabilidad_por_platillo')
-            ->assertJsonFragment(['nombre' => 'Pollo Asado']);
+            ->assertJsonFragment(['nombre' => 'Pollo Asado'])
+            ->assertJsonCount(3, 'data.graficos.gastos_por_subcategoria');
     }
 }

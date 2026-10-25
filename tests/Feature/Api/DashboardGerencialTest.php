@@ -5,10 +5,13 @@ namespace Tests\Feature\Api;
 use App\Models\Comanda;
 use App\Models\ComandaDetalle;
 use App\Models\Compra;
+use App\Models\Egreso;
 use App\Models\Platillo;
+use App\Models\SubcategoriaEgreso;
 use App\Models\User;
 use App\Models\Venta;
 use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\SubcategoriaEgresoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\Sanctum;
@@ -41,7 +44,7 @@ class DashboardGerencialTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(RolePermissionSeeder::class);
+        $this->seed([RolePermissionSeeder::class, SubcategoriaEgresoSeeder::class]);
 
         $this->administrador = User::where('email', 'admin@sgco-chayito.local')->firstOrFail();
         $this->socio = User::factory()->create();
@@ -62,7 +65,7 @@ class DashboardGerencialTest extends TestCase
         $hoy = now()->toDateString();
         $this->registrarVenta($this->administrador, 113, $hoy);
         $this->registrarVenta($this->administrador, 113, $hoy);
-        $this->registrarCompra($this->administrador, 113, 100, $hoy);
+        $this->registrarEgreso($this->administrador, 113, 100, $hoy);
         Sanctum::actingAs($this->administrador);
 
         $this->getJson("/api/reportes/dashboard?fecha_desde={$hoy}&fecha_hasta={$hoy}")
@@ -71,14 +74,15 @@ class DashboardGerencialTest extends TestCase
             ->assertJsonPath('data.periodo.fecha_desde', $hoy)
             ->assertJsonPath('data.kpis.ingresos', 226)
             ->assertJsonPath('data.kpis.gastos_netos', 100)
+            ->assertJsonPath('data.kpis.iva_credito_fiscal', 13)
             ->assertJsonPath('data.kpis.utilidad_bruta', 126)
             ->assertJsonPath('data.kpis.margen_bruto_porcentaje', 55.75)
             ->assertJsonPath('data.kpis.ventas_registradas', 2)
-            ->assertJsonPath('data.kpis.compras_registradas', 1);
+            ->assertJsonPath('data.kpis.egresos_registrados', 1);
     }
 
     /**
-     * Verifica que el rango solicitado excluye ventas y compras fuera del periodo.
+     * Verifica que el rango solicitado excluye ventas y egresos fuera del periodo.
      *
      * @autor  Jeferson De La Cruz
      * @fecha  2026-10-23
@@ -90,8 +94,8 @@ class DashboardGerencialTest extends TestCase
         $fechaExcluida = now()->subMonths(2)->toDateString();
         $this->registrarVenta($this->administrador, 100, $fechaIncluida);
         $this->registrarVenta($this->administrador, 999, $fechaExcluida);
-        $this->registrarCompra($this->administrador, 56.5, 50, $fechaIncluida);
-        $this->registrarCompra($this->administrador, 113, 100, $fechaExcluida);
+        $this->registrarEgreso($this->administrador, 56.5, 50, $fechaIncluida);
+        $this->registrarEgreso($this->administrador, 113, 100, $fechaExcluida);
         Sanctum::actingAs($this->administrador);
 
         $this->getJson("/api/reportes/dashboard?fecha_desde={$fechaIncluida}&fecha_hasta={$fechaIncluida}")
@@ -124,7 +128,7 @@ class DashboardGerencialTest extends TestCase
         ]);
         $this->registrarVenta($this->administrador, 80, $hoy, $sopa, 2);
         $this->registrarVenta($this->administrador, 40, $hoy, $pollo);
-        $this->registrarCompra($this->administrador, 56.5, 50, $hoy);
+        $this->registrarEgreso($this->administrador, 56.5, 50, $hoy);
         Sanctum::actingAs($this->administrador);
 
         $this->getJson("/api/reportes/dashboard?fecha_desde={$hoy}&fecha_hasta={$hoy}")
@@ -140,6 +144,63 @@ class DashboardGerencialTest extends TestCase
             ->assertJsonPath('data.graficos.rentabilidad_por_platillo.0.utilidad_estimada', 46.67)
             ->assertJsonPath('data.graficos.rentabilidad_por_platillo.1.nombre', 'Pollo de prueba')
             ->assertJsonPath('data.graficos.rentabilidad_por_platillo.1.utilidad_estimada', 23.33);
+    }
+
+    /**
+     * Verifica que el gasto neto del periodo se agrupa por subcategoría de egreso con su porcentaje.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Reportes – RF-REP-007 / CC-71
+     */
+    public function test_dashboard_agrupa_gastos_netos_por_subcategoria(): void
+    {
+        $hoy = now()->toDateString();
+        $this->registrarEgreso($this->administrador, 113, 100, $hoy, 'Aves');
+        $this->registrarEgreso($this->administrador, 56.5, 50, $hoy, 'Aves');
+        $this->registrarEgreso($this->administrador, 56.5, 50, $hoy, 'Lácteos');
+        $this->registrarEgreso($this->administrador, 113, 100, now()->subMonths(2)->toDateString(), 'Carnes');
+        Sanctum::actingAs($this->administrador);
+
+        $this->getJson("/api/reportes/dashboard?fecha_desde={$hoy}&fecha_hasta={$hoy}")
+            ->assertOk()
+            ->assertJsonPath('data.kpis.gastos_netos', 200)
+            ->assertJsonCount(2, 'data.graficos.gastos_por_subcategoria')
+            ->assertJsonPath('data.graficos.gastos_por_subcategoria.0.nombre', 'Aves')
+            ->assertJsonPath('data.graficos.gastos_por_subcategoria.0.egresos', 2)
+            ->assertJsonPath('data.graficos.gastos_por_subcategoria.0.gasto_neto', 150)
+            ->assertJsonPath('data.graficos.gastos_por_subcategoria.0.porcentaje', 75)
+            ->assertJsonPath('data.graficos.gastos_por_subcategoria.1.nombre', 'Lácteos')
+            ->assertJsonPath('data.graficos.gastos_por_subcategoria.1.porcentaje', 25);
+    }
+
+    /**
+     * Verifica que las compras de la calculadora de IVA no se suman como gasto del dashboard,
+     * para no contar dos veces una factura que también se registró como egreso.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Reportes – RF-REP-007 / CC-71
+     */
+    public function test_dashboard_no_suma_compras_como_gastos(): void
+    {
+        $hoy = now()->toDateString();
+        $this->registrarVenta($this->administrador, 100, $hoy);
+        Compra::create([
+            'usuario_id' => $this->administrador->id,
+            'fecha_compra' => $hoy,
+            'monto_total' => 113,
+            'costo_neto' => 100,
+            'iva_credito_fiscal' => 13,
+        ]);
+        Sanctum::actingAs($this->administrador);
+
+        $this->getJson("/api/reportes/dashboard?fecha_desde={$hoy}&fecha_hasta={$hoy}")
+            ->assertOk()
+            ->assertJsonPath('data.kpis.gastos_netos', 0)
+            ->assertJsonPath('data.kpis.egresos_registrados', 0)
+            ->assertJsonPath('data.kpis.margen_bruto_porcentaje', 100)
+            ->assertJsonCount(0, 'data.graficos.gastos_por_subcategoria');
     }
 
     /**
@@ -223,22 +284,34 @@ class DashboardGerencialTest extends TestCase
     }
 
     /**
-     * Registra una compra ya desglosada para el escenario de consolidación financiera.
+     * Registra un egreso ya desglosado para el escenario de consolidación financiera.
      *
-     * @autor  Jeferson De La Cruz
-     * @fecha  2026-10-23
-     * @módulo Reportes – RF-REP-007 / CC-75
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Reportes – RF-REP-007 / CC-71
      *
-     * @param  User  $usuario  Persona responsable del registro de compra.
+     * @param  User  $usuario  Persona responsable del registro del egreso.
      * @param  float  $montoTotal  Importe total con IVA incluido.
      * @param  float  $costoNeto  Base imponible que se reconoce como gasto neto.
-     * @param  string  $fecha  Día que debe incluirse en el dashboard.
+     * @param  string  $fecha  Fecha del comprobante que debe incluirse en el dashboard.
+     * @param  string  $subcategoria  Nombre de la subcategoría con que se clasifica.
      */
-    private function registrarCompra(User $usuario, float $montoTotal, float $costoNeto, string $fecha): void
-    {
-        Compra::create([
+    private function registrarEgreso(
+        User $usuario,
+        float $montoTotal,
+        float $costoNeto,
+        string $fecha,
+        string $subcategoria = 'Abarrotes',
+    ): void {
+        $numero = Egreso::count() + 1;
+
+        Egreso::create([
+            'correlativo' => sprintf('EG-%06d', $numero),
+            'subcategoria_egreso_id' => SubcategoriaEgreso::where('nombre', $subcategoria)->value('id'),
             'usuario_id' => $usuario->id,
-            'fecha_compra' => $fecha,
+            'proveedor' => 'Proveedor de prueba',
+            'numero_comprobante' => "PRUEBA-{$numero}",
+            'fecha_comprobante' => $fecha,
             'monto_total' => $montoTotal,
             'costo_neto' => $costoNeto,
             'iva_credito_fiscal' => round($montoTotal - $costoNeto, 2),

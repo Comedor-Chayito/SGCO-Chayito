@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Compra;
 use App\Models\ComandaDetalle;
+use App\Models\Egreso;
 use App\Models\Venta;
 use Illuminate\Support\Carbon;
 
@@ -17,14 +17,15 @@ use Illuminate\Support\Carbon;
 class DashboardGerencialService
 {
     /**
-     * Calcula los KPIs financieros de un periodo usando ventas y compras ya registradas.
+     * Calcula los KPIs financieros de un periodo usando ventas y egresos ya registrados.
      *
-     * Gasto neto corresponde a la suma de costo_neto de las compras; de esta manera el IVA
-     * crédito fiscal no se contabiliza como costo operativo. Margen bruto = utilidad / ingresos.
+     * Gasto neto corresponde a la suma de costo_neto de los egresos por fecha de comprobante; de
+     * esta manera el IVA crédito fiscal no se contabiliza como costo operativo.
+     * Margen bruto = utilidad / ingresos.
      *
      * @autor  Jeferson De La Cruz
      * @fecha  2026-10-23
-     * @módulo Reportes – RF-REP-007 / CC-75
+     * @módulo Reportes – RF-REP-007 / CC-75 / CC-71
      *
      * @param  string|null  $fechaDesde  Inicio inclusivo del periodo; por defecto, primer día del mes.
      * @param  string|null  $fechaHasta  Fin inclusivo del periodo; por defecto, fecha actual.
@@ -42,9 +43,14 @@ class DashboardGerencialService
         $ingresos = round((float) Venta::query()
             ->whereBetween('created_at', [$inicio, $fin])
             ->sum('total'), 2);
-        $gastosNetos = round((float) Compra::query()
-            ->whereBetween('fecha_compra', [$inicio->toDateString(), $fin->toDateString()])
-            ->sum('costo_neto'), 2);
+        $gastos = Egreso::query()
+            ->whereBetween('fecha_comprobante', [$inicio->toDateString(), $fin->toDateString()])
+            ->toBase()
+            ->selectRaw('COUNT(*) AS cantidad')
+            ->selectRaw('COALESCE(SUM(costo_neto), 0) AS costo_neto')
+            ->selectRaw('COALESCE(SUM(iva_credito_fiscal), 0) AS iva_credito_fiscal')
+            ->first();
+        $gastosNetos = round((float) $gastos->costo_neto, 2);
         $utilidadBruta = round($ingresos - $gastosNetos, 2);
         $margenBruto = $ingresos > 0
             ? round(($utilidadBruta / $ingresos) * 100, 2)
@@ -58,14 +64,13 @@ class DashboardGerencialService
             'kpis' => [
                 'ingresos' => $ingresos,
                 'gastos_netos' => $gastosNetos,
+                'iva_credito_fiscal' => round((float) $gastos->iva_credito_fiscal, 2),
                 'utilidad_bruta' => $utilidadBruta,
                 'margen_bruto_porcentaje' => $margenBruto,
                 'ventas_registradas' => Venta::query()
                     ->whereBetween('created_at', [$inicio, $fin])
                     ->count(),
-                'compras_registradas' => Compra::query()
-                    ->whereBetween('fecha_compra', [$inicio->toDateString(), $fin->toDateString()])
-                    ->count(),
+                'egresos_registrados' => (int) $gastos->cantidad,
             ],
             'graficos' => [
                 'ventas_mensuales' => $this->obtenerVentasMensuales(),
@@ -75,8 +80,51 @@ class DashboardGerencialService
                     $utilidadBruta,
                     $ingresos,
                 ),
+                'gastos_por_subcategoria' => $this->obtenerGastosPorSubcategoria(
+                    $inicio,
+                    $fin,
+                    $gastosNetos,
+                ),
             ],
         ];
+    }
+
+    /**
+     * Agrupa el gasto neto del periodo por subcategoría de egreso, de mayor a menor.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-24
+     * @módulo Reportes – RF-REP-007 / CC-71
+     *
+     * @param  Carbon  $inicio  Inicio inclusivo del periodo consultado.
+     * @param  Carbon  $fin  Fin inclusivo del periodo consultado.
+     * @param  float  $gastosNetos  Gasto neto total del periodo, base del porcentaje.
+     * @return array<int, array{subcategoria_egreso_id: int, nombre: string, egresos: int, gasto_neto: float, porcentaje: float}> Gasto por subcategoría.
+     */
+    private function obtenerGastosPorSubcategoria(Carbon $inicio, Carbon $fin, float $gastosNetos): array
+    {
+        return Egreso::query()
+            ->join('subcategorias_egreso', 'subcategorias_egreso.id', '=', 'egresos.subcategoria_egreso_id')
+            ->whereBetween('egresos.fecha_comprobante', [$inicio->toDateString(), $fin->toDateString()])
+            ->groupBy('subcategorias_egreso.id', 'subcategorias_egreso.nombre')
+            ->orderByDesc('gasto_neto')
+            ->toBase()
+            ->select('subcategorias_egreso.id AS subcategoria_egreso_id', 'subcategorias_egreso.nombre')
+            ->selectRaw('COUNT(*) AS egresos')
+            ->selectRaw('COALESCE(SUM(egresos.costo_neto), 0) AS gasto_neto')
+            ->get()
+            ->map(function (object $fila) use ($gastosNetos): array {
+                $gastoNeto = round((float) $fila->gasto_neto, 2);
+
+                return [
+                    'subcategoria_egreso_id' => (int) $fila->subcategoria_egreso_id,
+                    'nombre' => $fila->nombre,
+                    'egresos' => (int) $fila->egresos,
+                    'gasto_neto' => $gastoNeto,
+                    'porcentaje' => $gastosNetos > 0 ? round(($gastoNeto / $gastosNetos) * 100, 2) : 0.0,
+                ];
+            })
+            ->all();
     }
 
     /**
