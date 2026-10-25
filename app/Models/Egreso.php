@@ -17,12 +17,16 @@ class Egreso extends Model
         'numero_comprobante',
         'fecha_comprobante',
         'monto_total',
+        'costo_neto',
+        'iva_credito_fiscal',
         'descripcion',
     ];
 
     protected $casts = [
         'fecha_comprobante' => 'date:Y-m-d',
         'monto_total' => 'decimal:2',
+        'costo_neto' => 'decimal:2',
+        'iva_credito_fiscal' => 'decimal:2',
     ];
 
     /**

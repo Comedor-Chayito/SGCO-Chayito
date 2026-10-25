@@ -22,16 +22,19 @@ class EgresoService
     private const INTENTOS_CORRELATIVO = 3;
 
     /**
-     * Inicializa el servicio con el registro de auditoría inyectado.
+     * Inicializa el servicio con el registro de auditoría y el calculador de IVA inyectados.
      *
      * @autor  manuelmv15
-     * @fecha  2026-10-23
-     * @módulo Contabilidad – RF-CON-005 (CC-63)
+     * @fecha  2026-10-24
+     * @módulo Contabilidad – RF-CON-005 (CC-63) / RF-CON-006 (CC-68)
      *
-     * @param  AuditoriaService $auditoriaService Servicio de bitácora de auditoría.
+     * @param  AuditoriaService        $auditoriaService        Servicio de bitácora de auditoría.
+     * @param  IvaCreditoFiscalService $ivaCreditoFiscalService Calculador del desglose de IVA crédito fiscal.
      */
-    public function __construct(private readonly AuditoriaService $auditoriaService)
-    {
+    public function __construct(
+        private readonly AuditoriaService $auditoriaService,
+        private readonly IvaCreditoFiscalService $ivaCreditoFiscalService,
+    ) {
     }
 
     /**
@@ -72,12 +75,12 @@ class EgresoService
     }
 
     /**
-     * Inserta el egreso con el siguiente correlativo y deja registro de auditoría.
+     * Inserta el egreso con el siguiente correlativo y su desglose de IVA, y deja registro de auditoría.
      * Debe ejecutarse dentro de una transacción para que el bloqueo tenga efecto.
      *
      * @autor  manuelmv15
-     * @fecha  2026-10-23
-     * @módulo Contabilidad – RF-CON-005 (CC-63)
+     * @fecha  2026-10-24
+     * @módulo Contabilidad – RF-CON-005 (CC-63) / RF-CON-006 (CC-68)
      *
      * @param  array $datos   Datos validados de la factura.
      * @param  User  $usuario Usuario que registra el egreso.
@@ -85,6 +88,9 @@ class EgresoService
      */
     private function crear(array $datos, User $usuario): Egreso
     {
+        $montoTotal = round((float) $datos['monto_total'], 2);
+        $desglose = $this->ivaCreditoFiscalService->calcular($montoTotal);
+
         $egreso = Egreso::create([
             'correlativo'            => $this->siguienteCorrelativo(),
             'subcategoria_egreso_id' => $datos['subcategoria_egreso_id'],
@@ -92,7 +98,9 @@ class EgresoService
             'proveedor'              => trim($datos['proveedor']),
             'numero_comprobante'     => trim($datos['numero_comprobante']),
             'fecha_comprobante'      => $datos['fecha_comprobante'],
-            'monto_total'            => round((float) $datos['monto_total'], 2),
+            'monto_total'            => $montoTotal,
+            'costo_neto'             => $desglose['costo_neto'],
+            'iva_credito_fiscal'     => $desglose['iva_credito_fiscal'],
             'descripcion'            => $datos['descripcion'] ?? null,
         ]);
 
