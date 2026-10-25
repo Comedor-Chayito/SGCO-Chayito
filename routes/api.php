@@ -6,6 +6,7 @@ use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\DashboardGerencialController;
+use App\Http\Controllers\ExportacionReporteController;
 use App\Http\Controllers\EgresoController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\RecetaController;
@@ -139,4 +140,9 @@ Route::middleware(['auth:sanctum', 'role:contadora|administrador'])->group(funct
 // Módulo Reportes — CC-75 / CC-76: KPIs financieros exclusivos de socios y administración
 Route::middleware(['auth:sanctum', 'role:socio|administrador'])->group(function () {
     Route::get('/reportes/dashboard', [DashboardGerencialController::class, 'index']);
+});
+
+// Módulo Reportes — CC-79: exportación del reporte consolidado para llenado manual
+Route::middleware(['auth:sanctum', 'role:contadora|socio|administrador'])->group(function () {
+    Route::get('/reportes/exportar', [ExportacionReporteController::class, 'exportar']);
 });
