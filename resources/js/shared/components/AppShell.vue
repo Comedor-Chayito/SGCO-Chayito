@@ -116,12 +116,12 @@ async function cerrarSesion() {
             <Menu :size="21" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" class="w-80 p-0">
-          <SheetHeader class="border-b border-[#E5E0DB] p-5 text-left">
+        <SheetContent side="left" class="flex h-dvh w-80 flex-col p-0">
+          <SheetHeader class="shrink-0 border-b border-[#E5E0DB] p-5 text-left">
             <SheetTitle class="flex items-center gap-2 text-[#3D3D3D]"><ChefHat :size="19" /> SGCO-Chayito</SheetTitle>
             <SheetDescription>Accesos disponibles para tu rol.</SheetDescription>
           </SheetHeader>
-          <nav class="p-3" aria-label="Navegación móvil">
+          <nav class="min-h-0 flex-1 overflow-y-auto p-3" aria-label="Navegación móvil">
             <section v-for="grupo in gruposNavegacion" :key="grupo.titulo" class="mb-4">
               <h2 class="px-3 text-xs font-bold text-[#6B6B6B]">{{ grupo.titulo }}</h2>
               <div class="mt-1 space-y-1">
@@ -137,10 +137,12 @@ async function cerrarSesion() {
                 </RouterLink>
               </div>
             </section>
+          </nav>
+          <div class="shrink-0 border-t border-[#E5E0DB] p-3">
             <Button variant="ghost" class="mt-2 w-full justify-start text-rose-700" @click="cerrarSesion">
               <LogOut :size="17" /> Cerrar sesión
             </Button>
-          </nav>
+          </div>
         </SheetContent>
       </Sheet>
       <RouterLink :to="{ name: 'inicio' }" class="text-sm font-black lg:hidden">SGCO-Chayito</RouterLink>
