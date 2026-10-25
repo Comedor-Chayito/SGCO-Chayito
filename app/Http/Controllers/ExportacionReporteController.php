@@ -33,10 +33,10 @@ class ExportacionReporteController extends Controller
      *
      * @autor  manuelmv15
      * @fecha  2026-10-24
-     * @módulo Reportes – Sec-3.5.1 / CC-79
+     * @módulo Reportes – Sec-3.5.1 / CC-79 / CC-80
      *
      * @param  ExportarReporteRequest  $request  Período y formato ya validados.
-     * @return Response Archivo CSV como adjunto.
+     * @return Response Archivo CSV o Excel como adjunto.
      */
     public function exportar(ExportarReporteRequest $request): Response
     {
@@ -48,10 +48,14 @@ class ExportacionReporteController extends Controller
         );
 
         return response(
-            $this->exportacionReporteService->generarCsv($filtro['fecha_desde'], $filtro['fecha_hasta']),
+            $this->exportacionReporteService->generarArchivo(
+                $filtro['formato'],
+                $filtro['fecha_desde'],
+                $filtro['fecha_hasta'],
+            ),
             200,
             [
-                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Type' => $this->exportacionReporteService->tipoMime($filtro['formato']),
                 'Content-Disposition' => "attachment; filename=\"{$nombreArchivo}\"",
             ],
         );

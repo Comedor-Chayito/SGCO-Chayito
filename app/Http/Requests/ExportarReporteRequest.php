@@ -32,7 +32,7 @@ class ExportarReporteRequest extends FormRequest
      *
      * @autor  manuelmv15
      * @fecha  2026-10-24
-     * @módulo Reportes – Sec-3.5.1 / CC-79
+     * @módulo Reportes – Sec-3.5.1 / CC-79 / CC-80
      *
      * @return array<string, mixed> Reglas del período y del formato.
      */
@@ -41,7 +41,7 @@ class ExportarReporteRequest extends FormRequest
         return [
             'fecha_desde' => ['required', 'date', 'before_or_equal:today'],
             'fecha_hasta' => ['required', 'date', 'after_or_equal:fecha_desde', 'before_or_equal:today'],
-            'formato' => ['required', 'in:csv'],
+            'formato' => ['required', 'in:csv,xlsx'],
         ];
     }
 
