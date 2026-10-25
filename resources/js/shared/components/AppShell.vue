@@ -1,6 +1,6 @@
 <script setup>
 /**
- * Contenedor global con navegación lateral y barra superior para usuarios autenticados.
+ * Contenedor global con navegación lateral y controles móviles para usuarios autenticados.
  *
  * @autor  Jeferson De La Cruz
  * @fecha  2026-10-25
@@ -109,7 +109,7 @@ async function cerrarSesion() {
       </div>
     </aside>
 
-    <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#E5E0DB] bg-white/95 px-4 backdrop-blur lg:pl-[19rem] lg:pr-6">
+    <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#E5E0DB] bg-white/95 px-4 backdrop-blur lg:hidden">
       <Sheet v-model:open="menuMovilAbierto">
         <SheetTrigger as-child>
           <Button variant="ghost" size="icon" class="lg:hidden" aria-label="Abrir navegación">
@@ -144,7 +144,6 @@ async function cerrarSesion() {
         </SheetContent>
       </Sheet>
       <RouterLink :to="{ name: 'inicio' }" class="text-sm font-black lg:hidden">SGCO-Chayito</RouterLink>
-      <p class="hidden text-sm text-[#6B6B6B] lg:block">{{ sesion.usuario?.name }} · {{ sesion.rol }}</p>
       <Button variant="ghost" size="sm" class="lg:hidden text-rose-700" @click="cerrarSesion">
         <LogOut :size="17" />
       </Button>

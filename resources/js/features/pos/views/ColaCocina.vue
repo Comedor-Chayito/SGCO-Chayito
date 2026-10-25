@@ -25,6 +25,7 @@ import { Toaster, toast } from 'vue-sonner';
 import { obtenerColaCocina, actualizarEstadoComanda } from '@/features/pos/services/posService.js';
 import ComandaCard from '@/features/pos/components/ComandaCard.vue';
 import ComandaCompletadaItem from '@/features/pos/components/ComandaCompletadaItem.vue';
+import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
 // Enrutador y Sesión activa
 const router = useRouter();
@@ -323,9 +324,12 @@ onUnmounted(() => {
     <!-- Toaster de notificaciones shadcn -->
     <Toaster richColors position="top-center" />
 
-    <!-- Barra superior de navegación y control KDS -->
-    <header class="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 border-b border-[#E5E0DB] bg-white/95 px-4 py-3 backdrop-blur-md shadow-xs">
-      <div class="flex items-center gap-3">
+    <EncabezadoOperacion
+      titulo="Cola de Cocina"
+      subtitulo="Comedor Chayito · Órdenes en preparación"
+      :icono="ChefHat"
+    >
+      <template #navegacion>
         <RouterLink
           to="/pos"
           class="flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] text-[#3D3D3D] hover:bg-zinc-100 active:scale-95 transition-all"
@@ -333,24 +337,9 @@ onUnmounted(() => {
         >
           <ArrowLeft :size="20" stroke-width="2" />
         </RouterLink>
+      </template>
 
-        <div class="flex items-center gap-2.5">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F26A21] text-white shadow-xs">
-            <ChefHat :size="22" stroke-width="2" />
-          </div>
-          <div>
-            <h1 class="text-lg font-bold leading-tight text-[#3D3D3D] tracking-tight">
-              Cola de Cocina
-            </h1>
-            <p class="text-sm text-[#6B6B6B]">
-              Comedor Chayito
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Controles de la pantalla: Sonido, Auto-refresco, Refrescar ahora -->
-      <div class="flex items-center gap-2">
+      <template #acciones>
         <!-- Alternar sonido de nuevas comandas -->
         <button
           type="button"
@@ -403,8 +392,8 @@ onUnmounted(() => {
           <LogOut :size="16" />
           <span class="hidden sm:inline">Salir</span>
         </button>
-      </div>
-    </header>
+      </template>
+    </EncabezadoOperacion>
 
     <!-- Tablero Kanban tipo Jira: una columna por estado de la comanda -->
     <main class="flex-1 overflow-x-auto p-4 md:p-6">
