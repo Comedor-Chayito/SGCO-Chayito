@@ -33,6 +33,7 @@ import { obtenerComandas, procesarCobro } from '@/features/pos/services/posServi
 import { useCalculoCambio } from '@/features/pos/composables/useCalculoCambio.js';
 import PanelRetiros from '@/features/pos/components/PanelRetiros.vue';
 import PanelSaldoInicial from '@/features/pos/components/PanelSaldoInicial.vue';
+import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
 const router = useRouter();
 
@@ -226,9 +227,13 @@ onUnmounted(() => {
   <div class="flex min-h-[100dvh] flex-col bg-[#FAF7F4]" id="vista-pantalla-cobro">
     <Toaster richColors position="top-center" />
 
-    <!-- Barra superior -->
-    <header class="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[#E5E0DB] bg-white/95 px-4 py-3 backdrop-blur-md shadow-xs">
-      <div class="flex items-center gap-3">
+    <EncabezadoOperacion
+      titulo="Pantalla de Cobro"
+      subtitulo="Comedor Chayito · Caja"
+      :icono="Receipt"
+      clase-icono="bg-emerald-100 text-[#2E7D4F]"
+    >
+      <template #navegacion>
         <RouterLink
           to="/cocina"
           class="flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] text-[#3D3D3D] hover:bg-zinc-100 active:scale-95 transition-all"
@@ -236,20 +241,9 @@ onUnmounted(() => {
         >
           <ArrowLeft :size="20" stroke-width="2" />
         </RouterLink>
+      </template>
 
-        <div class="flex items-center gap-2.5">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2E7D4F] text-white shadow-xs">
-            <Receipt :size="20" stroke-width="2" />
-          </div>
-          <div>
-            <h1 class="text-lg font-bold leading-tight text-[#3D3D3D] tracking-tight">Pantalla de Cobro</h1>
-            <p class="text-xs text-[#6B6B6B]">Comedor Chayito · Caja</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Badge de comandas en espera y acceso a saldo inicial y retiros -->
-      <div class="flex items-center gap-2">
+      <template #acciones>
         <button
           type="button"
           id="btn-abrir-saldo-inicial"
@@ -288,8 +282,8 @@ onUnmounted(() => {
           <CheckCircle2 :size="14" stroke-width="2.5" />
           {{ comandasListas.length }} lista(s) para cobro
         </span>
-      </div>
-    </header>
+      </template>
+    </EncabezadoOperacion>
 
     <!-- Layout principal: lista izquierda | formulario derecho -->
     <main class="flex-1 flex flex-col md:flex-row gap-0 overflow-hidden">

@@ -57,8 +57,12 @@ async function cerrarSesion() {
         Sistema operativo
       </div>
 
-      <!-- Menús y botones con restricción dinámica según rol del token (RBAC) -->
-      <div class="flex flex-col gap-2.5 justify-center">
+      <p v-if="sesion.autenticado" class="rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] p-4 text-sm text-[#6B6B6B]">
+        Selecciona una operación desde el menú principal.
+      </p>
+
+      <!-- Acceso público al formulario de autenticación. -->
+      <div v-else class="flex flex-col gap-2.5 justify-center">
         <!-- Punto de Venta (Mesero, Cajero, Admin) -->
         <RouterLink v-if="puedeVer(['mesero', 'cajero', 'administrador'])" to="/pos">
           <Button class="w-full min-h-[44px] bg-[#F26A21] hover:bg-[#FF8C42] text-white font-bold px-5 rounded-xl cursor-pointer">
@@ -109,6 +113,20 @@ async function cerrarSesion() {
           </Button>
         </RouterLink>
 
+        <!-- Dashboard gerencial (Exclusivo Socio y Administrador) -->
+        <RouterLink v-if="puedeVer(['socio', 'administrador'])" to="/reportes">
+          <Button class="w-full min-h-[44px] bg-[#2B6CB0] hover:bg-[#1E4F80] text-white font-bold px-5 rounded-xl cursor-pointer">
+            Dashboard gerencial
+          </Button>
+        </RouterLink>
+
+        <!-- Exportación de reportes consolidados (Contadora, Socio, Admin) -->
+        <RouterLink v-if="puedeVer(['contadora', 'socio', 'administrador'])" to="/reportes/exportar">
+          <Button variant="outline" class="w-full min-h-[44px] border-[#E5E0DB] text-[#3D3D3D] hover:bg-zinc-50 font-semibold px-5 rounded-xl cursor-pointer">
+            Exportar reportes
+          </Button>
+        </RouterLink>
+
         <!-- Botón de Login si no está autenticado -->
         <RouterLink v-if="!sesion.autenticado" to="/login">
           <Button variant="outline" class="w-full min-h-[44px] border-[#E5E0DB] text-[#F26A21] hover:bg-orange-50 font-semibold px-5 rounded-xl cursor-pointer">
@@ -117,16 +135,6 @@ async function cerrarSesion() {
           </Button>
         </RouterLink>
 
-        <!-- Botón de Cerrar Sesión si está autenticado -->
-        <Button
-          v-if="sesion.autenticado"
-          variant="ghost"
-          class="w-full min-h-[40px] text-zinc-500 hover:text-rose-600 hover:bg-rose-50 font-medium text-xs mt-2"
-          @click="cerrarSesion"
-        >
-          <LogOut :size="14" class="mr-1.5" />
-          Cerrar Sesión Activa
-        </Button>
       </div>
     </div>
   </main>

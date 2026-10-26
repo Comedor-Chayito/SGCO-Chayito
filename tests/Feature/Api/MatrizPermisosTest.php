@@ -27,6 +27,7 @@ class MatrizPermisosTest extends TestCase
     protected User $mesero;
     protected User $cocinero;
     protected User $contadora;
+    protected User $socio;
 
     /**
      * Configuración inicial del entorno de prueba con la matriz sembrada.
@@ -59,6 +60,13 @@ class MatrizPermisosTest extends TestCase
             'activo' => true,
         ]);
         $this->contadora->assignRole('contadora');
+
+        $this->socio = User::factory()->create([
+            'name' => 'Socia de Prueba',
+            'email' => 'socia@sgco-chayito.local',
+            'activo' => true,
+        ]);
+        $this->socio->assignRole('socio');
     }
 
     /**
@@ -75,6 +83,7 @@ class MatrizPermisosTest extends TestCase
             'cocinero',
             'cocinera',
             'contadora',
+            'socio',
         ];
 
         foreach ($rolesEsperados as $rol) {
@@ -116,6 +125,20 @@ class MatrizPermisosTest extends TestCase
                 "El administrador debería tener el permiso: {$permiso}"
             );
             $this->assertTrue($this->admin->can($permiso));
+        }
+    }
+
+    /**
+     * Verifica que el rol Socio conserve acceso total a los indicadores gerenciales.
+     *
+     * @autor  Jeferson De La Cruz
+     * @fecha  2026-10-23
+     * @módulo Reportes – RF-REP-007 / CC-76
+     */
+    public function test_rol_socio_tiene_acceso_a_todos_los_permisos(): void
+    {
+        foreach (Permission::pluck('name') as $permiso) {
+            $this->assertTrue($this->socio->hasPermissionTo($permiso));
         }
     }
 
@@ -252,4 +275,3 @@ class MatrizPermisosTest extends TestCase
         $this->assertNotContains('usuarios.crear', $permisos);
     }
 }
-

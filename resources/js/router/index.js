@@ -27,37 +27,37 @@ const routes = [
     path: '/pos',
     name: 'pos',
     component: () => import('@/features/pos/views/POS.vue'),
-    meta: { roles: ['mesero', 'cajero', 'administrador'] },
+    meta: { roles: ['mesero', 'administrador', 'socio'] },
   },
   {
     path: '/cocina',
     name: 'cocina',
     component: () => import('@/features/pos/views/ColaCocina.vue'),
-    meta: { roles: ['cocinero', 'cajero', 'administrador'] },
+    meta: { roles: ['cocinero', 'cocinera', 'administrador', 'socio'] },
   },
   {
     path: '/caja',
     name: 'caja',
     component: () => import('@/features/pos/views/PantallaCobro.vue'),
-    meta: { roles: ['cajero', 'administrador'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'] },
   },
   {
     path: '/caja/apertura',
     name: 'caja-apertura',
     component: () => import('@/features/pos/views/AperturaCaja.vue'),
-    meta: { roles: ['cajero', 'administrador'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'] },
   },
   {
     path: '/caja/ticket/:id',
     name: 'ticket-venta',
     component: () => import('@/features/pos/views/TicketVenta.vue'),
-    meta: { roles: ['cajero', 'administrador'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'] },
   },
   {
     path: '/caja/cierre',
     name: 'cierre-caja',
     component: () => import('@/features/pos/views/ReporteCierreCaja.vue'),
-    meta: { roles: ['cajero', 'administrador'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'] },
   },
   {
     path: '/pos/cocina',
@@ -67,37 +67,43 @@ const routes = [
     path: '/inventario',
     name: 'inventario',
     component: () => import('@/views/Inventario.vue'),
-    meta: { roles: ['cocinero', 'administrador'] },
+    meta: { roles: ['cocinero', 'cocinera', 'administrador', 'socio'] },
   },
   {
     path: '/requisiciones/nueva',
     name: 'nueva-requisicion',
     component: () => import('@/features/inventario/views/FormularioRequisicion.vue'),
-    meta: { roles: ['cocinero', 'administrador'] },
+    meta: { roles: ['cocinero', 'cocinera', 'administrador', 'socio'] },
   },
   {
     path: '/requisiciones',
     name: 'gestion-requisiciones',
     component: () => import('@/features/inventario/views/GestionRequisiciones.vue'),
-    meta: { roles: ['administrador'] },
+    meta: { roles: ['administrador', 'socio'] },
   },
   {
     path: '/contabilidad',
     name: 'contabilidad',
     component: () => import('@/views/Contabilidad.vue'),
-    meta: { roles: ['contadora', 'administrador'] },
+    meta: { roles: ['contadora', 'administrador', 'socio'] },
   },
   {
     path: '/reportes',
     name: 'reportes',
-    component: () => import('@/views/Reportes.vue'),
-    meta: { roles: ['contadora', 'administrador'] },
+    component: () => import('@/features/reportes/views/DashboardGerencial.vue'),
+    meta: { roles: ['socio', 'administrador'] },
+  },
+  {
+    path: '/reportes/exportar',
+    name: 'exportar-reportes',
+    component: () => import('@/features/reportes/views/ExportarReportes.vue'),
+    meta: { roles: ['contadora', 'socio', 'administrador'] },
   },
   {
     path: '/admin',
     name: 'admin',
     component: () => import('@/views/Admin.vue'),
-    meta: { roles: ['administrador'] },
+    meta: { roles: ['administrador', 'socio'] },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -124,6 +130,8 @@ export function obtenerRutaInicioPorRol(rol) {
       return { name: 'cocina' };
     case 'contadora':
       return { name: 'contabilidad' };
+    case 'socio':
+      return { name: 'reportes' };
     case 'mesero':
     case 'cajero':
     case 'administrador':

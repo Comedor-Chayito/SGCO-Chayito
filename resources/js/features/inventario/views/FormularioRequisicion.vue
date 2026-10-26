@@ -11,6 +11,7 @@ import { ArrowLeft, ClipboardPlus, LoaderCircle, PackagePlus, Plus, Trash2 } fro
 import { Toaster, toast } from 'vue-sonner';
 import { useRouter } from 'vue-router';
 import { crearRequisicion, obtenerInsumos } from '@/features/inventario/services/inventarioService.js';
+import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
 const router = useRouter();
 const insumos = ref([]);
@@ -214,8 +215,12 @@ onMounted(cargarInsumos);
   <main class="min-h-[100dvh] bg-[#FAF7F4]" id="vista-formulario-requisicion">
     <Toaster rich-colors position="top-center" />
 
-    <header class="border-b border-[#E5E0DB] bg-white px-4 py-4 sm:px-6">
-      <div class="mx-auto flex max-w-3xl items-center gap-3">
+    <EncabezadoOperacion
+      titulo="Nueva requisición"
+      subtitulo="Solicita insumos a bodega desde tu área."
+      :icono="ClipboardPlus"
+    >
+      <template #navegacion>
         <button
           id="btn-volver-inventario"
           type="button"
@@ -225,15 +230,8 @@ onMounted(cargarInsumos);
         >
           <ArrowLeft :size="20" />
         </button>
-        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-[#F26A21]">
-          <ClipboardPlus :size="22" />
-        </div>
-        <div>
-          <h1 class="text-lg font-black text-[#3D3D3D]">Nueva requisición</h1>
-          <p class="text-xs text-[#6B6B6B]">Solicita insumos a bodega desde tu área.</p>
-        </div>
-      </div>
-    </header>
+      </template>
+    </EncabezadoOperacion>
 
     <form class="mx-auto max-w-3xl space-y-4 p-4 pb-10 sm:p-6" @submit.prevent="enviarRequisicion">
       <section class="rounded-2xl border border-[#E5E0DB] bg-white p-4 shadow-sm sm:p-5">

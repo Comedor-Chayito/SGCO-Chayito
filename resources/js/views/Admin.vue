@@ -9,7 +9,6 @@
  */
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useSesionStore } from '@/stores/sesion.js';
 import { usePermisos } from '@/shared/composables/usePermisos.js';
 import {
   obtenerUsuarios,
@@ -33,17 +32,15 @@ import {
   Lock,
   Mail,
   User as UserIcon,
-  LogOut,
   Trash2,
   AlertTriangle,
 } from '@lucide/vue';
 import { toast, Toaster } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
 const router = useRouter();
-const sesion = useSesionStore();
 const { puedeVer } = usePermisos();
 
 // Estado reactivo
@@ -100,11 +97,6 @@ async function recargarDatos() {
   } finally {
     cargando.value = false;
   }
-}
-
-async function cerrarSesion() {
-  await sesion.cerrarSesion();
-  router.push('/login');
 }
 
 // Usuarios filtrados en tiempo real
@@ -282,12 +274,13 @@ async function ejecutarEliminarUsuario() {
 
 <template>
   <Toaster position="top-right" richColors />
-  <main class="min-h-screen bg-[#FDFBF7] text-[#2D2D2D] p-4 sm:p-6 lg:p-8" id="vista-admin">
-    <div class="max-w-7xl mx-auto space-y-6">
-
-      <!-- Cabecera Principal -->
-      <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-[#EBE6DF] shadow-sm">
-        <div class="flex items-center gap-4">
+  <main class="min-h-screen bg-[#FDFBF7] text-[#2D2D2D]" id="vista-admin">
+    <EncabezadoOperacion
+      titulo="Administración de usuarios y roles"
+      subtitulo="Control de acceso basado en roles oficiales."
+      :icono="Users"
+    >
+      <template #navegacion>
           <Button
             variant="ghost"
             size="icon"
@@ -297,20 +290,8 @@ async function ejecutarEliminarUsuario() {
           >
             <ArrowLeft :size="20" />
           </Button>
-          <div>
-            <div class="flex items-center gap-2">
-              <h1 class="text-2xl font-bold text-[#1A1A1A]">Administración de Usuarios y Roles</h1>
-              <Badge variant="outline" class="bg-orange-50 text-[#F26A21] border-[#F26A21]/30 font-semibold">
-                RBAC
-              </Badge>
-            </div>
-            <p class="text-sm text-[#737373]">
-              Control de acceso basado en roles oficiales: Mesero, Cajero, Cocinero, Contadora y Administrador.
-            </p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3">
+      </template>
+      <template #acciones>
           <Button
             variant="outline"
             class="rounded-xl border-[#E5E0DB] text-zinc-700 hover:bg-zinc-50 font-medium"
@@ -328,18 +309,10 @@ async function ejecutarEliminarUsuario() {
             <UserPlus :size="18" class="mr-2" />
             Nuevo Usuario
           </Button>
+      </template>
+    </EncabezadoOperacion>
 
-          <Button
-            variant="outline"
-            class="rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 font-medium"
-            @click="cerrarSesion"
-            title="Cerrar sesión actual"
-          >
-            <LogOut :size="16" class="mr-2" />
-            Cerrar Sesión
-          </Button>
-        </div>
-      </header>
+    <div class="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
 
       <!-- Tarjetas Métricas -->
       <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
