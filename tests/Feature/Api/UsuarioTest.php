@@ -70,7 +70,7 @@ class UsuarioTest extends TestCase
                 ],
             ]);
 
-        $this->assertCount(3, $response->json('data'));
+        $this->assertCount(User::count(), $response->json('data'));
     }
 
     /**

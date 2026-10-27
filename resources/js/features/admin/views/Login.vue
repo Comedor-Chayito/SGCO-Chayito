@@ -95,9 +95,14 @@ async function manejarLogin() {
       const errores = err.response.data?.errors ?? {}
 
       erroresValidacion.value.correo =
-        errores.correo?.[0] ?? ''
+        errores.correo?.[0] ?? errores.email?.[0] ?? ''
       erroresValidacion.value.contrasena =
-        errores.contrasena?.[0] ?? ''
+        errores.contrasena?.[0] ?? errores.password?.[0] ?? ''
+
+      if (!erroresValidacion.value.correo && !erroresValidacion.value.contrasena) {
+        error.value = err.response.data?.message
+          ?? 'No fue posible iniciar sesión. Verifica tus datos.'
+      }
     } else if (err.response?.status === 401) {
       error.value =
         'Correo o contraseña incorrectos. Verifica tus datos.'

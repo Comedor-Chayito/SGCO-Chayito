@@ -8,6 +8,8 @@
       name="description"
       content="SGCO-Chayito — Sistema de Gestión Contable y Operativa del Comedor Chayito, UES-FMO."
     />
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}" />
+    <link rel="alternate icon" href="{{ asset('favicon.ico') }}" />
     <title>SGCO-Chayito</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
   </head>
