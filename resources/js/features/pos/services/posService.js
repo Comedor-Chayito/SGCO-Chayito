@@ -1,0 +1,156 @@
+import api from '@/services/api.js';
+
+/**
+ * Servicio HTTP del módulo POS.
+ * Todas las llamadas al backend pasan por este módulo, nunca directamente desde componentes.
+ *
+ * @autor  Jeferson De La Cruz
+ * @fecha  2026-09-18
+ * @módulo POS – RF-POS-001
+ */
+
+/**
+ * Obtiene la lista de platillos disponibles en el menú del día.
+ *
+ * @autor  Jeferson De La Cruz
+ * @fecha  2026-09-18
+ * @módulo POS – RF-POS-001
+ *
+ * @returns {Promise<Array>} Lista de platillos con id, nombre, descripcion, precio_unitario.
+ */
+export async function obtenerPlatillos() {
+  const respuesta = await api.get('/platillos');
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene la lista de mesas del comedor con su estado actual.
+ *
+ * @autor  Jeferson De La Cruz
+ * @fecha  2026-09-18
+ * @módulo POS – RF-POS-001
+ *
+ * @returns {Promise<Array>} Lista de mesas con id, numero, capacidad, estado.
+ */
+export async function obtenerMesas() {
+  const respuesta = await api.get('/mesas');
+  return respuesta.data.data;
+}
+
+/**
+ * Envía una comanda al backend para registrarla en estado "pendiente".
+ *
+ * @autor  Jeferson De La Cruz
+ * @fecha  2026-09-18
+ * @módulo POS – RF-POS-001
+ *
+ * @param   {{
+ *   canal: string,
+ *   mesa_id: number|null,
+ *   observaciones: string,
+ *   items: Array<{platillo_id: number, cantidad: number, observaciones: string}>
+ * }} payload Datos de la comanda a registrar.
+ * @returns {Promise<Object>} Comanda creada con sus detalles.
+ */
+export async function registrarComanda(payload) {
+  const respuesta = await api.post('/comandas', payload);
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene la cola de comandas activas para la cocina en orden de llegada (FIFO).
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-19
+ * @módulo POS – US-POS-02 / RF-POS-001
+ *
+ * @param   {string|null} [filtroEstado=null] Filtro opcional por estado ('pendiente', 'en_preparacion').
+ * @returns {Promise<Array>} Lista de comandas ordenadas cronológicamente con sus detalles.
+ */
+export async function obtenerColaCocina(filtroEstado = null) {
+  const params = filtroEstado ? { estado: filtroEstado } : {};
+  const respuesta = await api.get('/comandas/cocina', { params });
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene las comandas registradas, con filtro opcional por estado (ej. 'lista' para caja).
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-10-12
+ * @módulo POS – US-POS-03 / RF-POS-002
+ *
+ * @param   {string|null} [estado=null] Estado por el cual filtrar.
+ * @returns {Promise<Array>} Lista de comandas con detalles, mesa y usuario.
+ */
+export async function obtenerComandas(estado = null) {
+  const params = estado ? { estado } : {};
+  const respuesta = await api.get('/comandas', { params });
+  return respuesta.data.data;
+}
+
+/**
+ * Actualiza el estado operativo de una comanda desde la pantalla de cocina o caja.
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-19
+ * @módulo POS – US-POS-02 / RF-POS-001
+ *
+ * @param   {number} idComanda   Identificador de la comanda.
+ * @param   {string} nuevoEstado Nuevo estado ('pendiente', 'en_preparacion', 'lista', 'cancelada').
+ * @returns {Promise<Object>} Comanda actualizada.
+ */
+export async function actualizarEstadoComanda(idComanda, nuevoEstado) {
+  const respuesta = await api.patch(`/comandas/${idComanda}/estado`, {
+    estado: nuevoEstado,
+  });
+  return respuesta.data.data;
+}
+
+/**
+ * Procesa el cobro de una comanda en caja y genera el comprobante de venta.
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-19
+ * @módulo POS – RF-POS-002
+ *
+ * @param   {{ comanda_id: number, monto_recibido: number, metodo_pago?: string }} payload
+ * @returns {Promise<Object>} Datos del comprobante de venta, total y cambio calculado.
+ */
+export async function procesarCobro(payload) {
+  const respuesta = await api.post('/cobros', payload);
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene los detalles de un comprobante de venta o ticket por su ID.
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-19
+ * @módulo POS – RF-POS-002
+ *
+ * @param   {number} ventaId Identificador de la venta.
+ * @returns {Promise<Object>} Comprobante con desglose de ítems, totales y cambio.
+ */
+export async function obtenerComprobante(ventaId) {
+  const respuesta = await api.get(`/cobros/${ventaId}`);
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene el formato de impresión térmica de una comanda para cocina (58 mm / 80 mm).
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-09-20
+ * @módulo POS – US-POS-02 / RF-POS-001 / Sec. 3.1.2
+ *
+ * @param   {number} idComanda Identificador de la comanda.
+ * @param   {number} [ancho=58] Ancho del rollo térmico en mm (58 u 80).
+ * @returns {Promise<Object>} Datos del ticket (líneas, texto plano, comandos ESC/POS).
+ */
+export async function obtenerTicketImpresion(idComanda, ancho = 58) {
+  const respuesta = await api.get(`/comandas/${idComanda}/impresion`, {
+    params: { ancho },
+  });
+  return respuesta.data.data;
+}

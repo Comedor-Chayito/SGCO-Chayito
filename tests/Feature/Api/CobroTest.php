@@ -1,0 +1,965 @@
+<?php
+
+namespace Tests\Feature\Api;
+
+use App\Models\Comanda;
+use App\Models\Insumo;
+use App\Models\Mesa;
+use App\Models\Platillo;
+use App\Models\Receta;
+use App\Models\User;
+use App\Models\Venta;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
+
+/**
+ * Pruebas del procesamiento de cobros (US-POS-03 / RF-POS-002 / CC-31).
+ *
+ * @autor  Equipo SGCO-Chayito
+ *
+ * @fecha  2026-09-19
+ *
+ * @módulo POS – RF-POS-002
+ */
+class CobroTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected User $cajero;
+
+    protected Mesa $mesa;
+
+    protected Platillo $platillo;
+
+    protected Comanda $comanda;
+
+    /**
+     * Configuración inicial antes de cada prueba de cobro.
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-09-19
+     *
+     * @módulo POS – RF-POS-002
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Role::firstOrCreate(['name' => 'cajero', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'mesero', 'guard_name' => 'web']);
+
+        $this->cajero = User::factory()->create();
+        $this->cajero->assignRole('cajero');
+        Sanctum::actingAs($this->cajero);
+
+        $this->mesa = Mesa::create([
+            'numero' => 3,
+            'capacidad' => 4,
+            'estado' => 'ocupada',
+        ]);
+
+        $this->platillo = Platillo::create([
+            'nombre' => 'Pollo Asado',
+            'descripcion' => 'Pollo con guarnición',
+            'precio_unitario' => 5.00,
+            'disponible' => true,
+        ]);
+
+        $this->comanda = Comanda::create([
+            'mesa_id' => $this->mesa->id,
+            'usuario_id' => $this->cajero->id,
+            'canal' => 'mesa',
+            'estado' => 'pendiente',
+            'observaciones' => null,
+            'subtotal' => 10.00,
+        ]);
+
+        $this->comanda->detalles()->create([
+            'platillo_id' => $this->platillo->id,
+            'cantidad' => 2,
+            'precio_unitario' => 5.00,
+        ]);
+    }
+
+    /**
+     * Valida que un cobro en efectivo se procesa, calcula el cambio y actualiza comanda a pagada.
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-09-19
+     *
+     * @módulo POS – RF-POS-002
+     */
+    public function test_cobro_procesa_correctamente_con_efectivo_y_calcula_cambio(): void
+    {
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 20.00,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'status' => 'ok',
+                'message' => 'Cobro procesado correctamente.',
+                'data' => [
+                    'comanda_id' => $this->comanda->id,
+                    'total' => '10.00',
+                    'monto_recibido' => '20.00',
+                    'cambio' => '10.00',
+                    'metodo_pago' => 'efectivo',
+                ],
+            ]);
+
+        $this->assertDatabaseHas('ventas', [
+            'comanda_id' => $this->comanda->id,
+            'total' => 10.00,
+            'monto_recibido' => 20.00,
+            'cambio' => 10.00,
+            'metodo_pago' => 'efectivo',
+        ]);
+
+        $this->assertDatabaseHas('comandas', [
+            'id' => $this->comanda->id,
+            'estado' => 'pagada',
+        ]);
+    }
+
+    /**
+     * Valida que el cobro descuenta cada receta según cantidad vendida y unidad de bodega.
+     *
+     * @autor  Alexis
+     *
+     * @fecha  2026-10-19
+     *
+     * @módulo Inventario – RF-INV-003 / CC-47
+     */
+    public function test_cobro_descuenta_recetas_convertidas_segun_cantidad_vendida(): void
+    {
+        $pollo = Insumo::create([
+            'nombre' => 'Pollo',
+            'unidad_medida' => 'kg',
+            'stock_actual' => 5,
+            'stock_minimo' => 1,
+        ]);
+        $salsa = Insumo::create([
+            'nombre' => 'Salsa roja',
+            'unidad_medida' => 'ml',
+            'stock_actual' => 1000,
+            'stock_minimo' => 100,
+        ]);
+
+        Receta::create([
+            'platillo_id' => $this->platillo->id,
+            'insumo_id' => $pollo->id,
+            'cantidad_por_porcion' => 200,
+            'unidad_consumo' => 'g',
+        ]);
+        Receta::create([
+            'platillo_id' => $this->platillo->id,
+            'insumo_id' => $salsa->id,
+            'cantidad_por_porcion' => 50,
+            'unidad_consumo' => 'ml',
+        ]);
+
+        $this->postJson('/api/cobros', [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 10,
+        ])->assertStatus(201);
+
+        // La comanda incluye 2 platillos: 2 × 200 g = 0.4 kg y 2 × 50 ml = 100 ml.
+        $this->assertSame('4.600000', $pollo->fresh()->stock_actual);
+        $this->assertSame('900.000000', $salsa->fresh()->stock_actual);
+    }
+
+    /**
+     * Valida que el cambio directo de estado a pagada también descuenta una sola vez.
+     *
+     * @autor  Alexis
+     *
+     * @fecha  2026-10-19
+     *
+     * @módulo Inventario – RF-INV-003 / CC-47
+     */
+    public function test_marcar_comanda_como_pagada_descuenta_inventario(): void
+    {
+        $arroz = Insumo::create([
+            'nombre' => 'Arroz',
+            'unidad_medida' => 'g',
+            'stock_actual' => 1000,
+            'stock_minimo' => 100,
+        ]);
+
+        Receta::create([
+            'platillo_id' => $this->platillo->id,
+            'insumo_id' => $arroz->id,
+            'cantidad_por_porcion' => 125,
+            'unidad_consumo' => 'g',
+        ]);
+
+        $this->patchJson("/api/comandas/{$this->comanda->id}/estado", [
+            'estado' => 'pagada',
+        ])->assertStatus(200);
+
+        // La comanda incluye 2 platillos: 2 × 125 g = 250 g.
+        $this->assertSame('750.000000', $arroz->fresh()->stock_actual);
+    }
+
+    /**
+     * Valida que pagar con el monto exacto genera cambio de cero.
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-09-19
+     *
+     * @módulo POS – RF-POS-002
+     */
+    public function test_cobro_con_monto_exacto_genera_cambio_cero(): void
+    {
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 10.00,
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.cambio', '0.00');
+
+        $this->assertDatabaseHas('ventas', [
+            'comanda_id' => $this->comanda->id,
+            'cambio' => 0.00,
+        ]);
+    }
+
+    /**
+     * Valida que se rechaza si el monto entregado no cubre el total de la comanda.
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-09-19
+     *
+     * @módulo POS – RF-POS-002
+     */
+    public function test_cobro_rechaza_si_monto_recibido_es_insuficiente(): void
+    {
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 8.50,
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['monto_recibido'])
+            ->assertJsonFragment([
+                'monto_recibido' => [
+                    'El monto recibido es insuficiente para cubrir el total de la comanda.',
+                ],
+            ]);
+
+        $this->assertDatabaseMissing('ventas', [
+            'comanda_id' => $this->comanda->id,
+        ]);
+
+        $this->assertDatabaseHas('comandas', [
+            'id' => $this->comanda->id,
+            'estado' => 'pendiente',
+        ]);
+    }
+
+    /**
+     * Valida que se rechaza si la comanda indicada no existe en el sistema.
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-09-19
+     *
+     * @módulo POS – RF-POS-002
+     */
+    public function test_cobro_rechaza_si_comanda_no_existe(): void
+    {
+        $payload = [
+            'comanda_id' => 99999,
+            'monto_recibido' => 20.00,
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['comanda_id']);
+    }
+
+    /**
+     * Valida que no se puede volver a cobrar una comanda previamente pagada.
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-09-19
+     *
+     * @módulo POS – RF-POS-002
+     */
+    public function test_cobro_rechaza_si_comanda_ya_esta_pagada(): void
+    {
+        $this->comanda->update(['estado' => 'pagada']);
+
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 20.00,
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['comanda_id'])
+            ->assertJsonFragment([
+                'comanda_id' => [
+                    'Esta comanda ya ha sido pagada.',
+                ],
+            ]);
+    }
+
+    /**
+     * Valida que no se puede cobrar una comanda que fue cancelada.
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-09-19
+     *
+     * @módulo POS – RF-POS-002
+     */
+    public function test_cobro_rechaza_si_comanda_esta_cancelada(): void
+    {
+        $this->comanda->update(['estado' => 'cancelada']);
+
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 20.00,
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['comanda_id'])
+            ->assertJsonFragment([
+                'comanda_id' => [
+                    'No se puede cobrar una comanda cancelada.',
+                ],
+            ]);
+    }
+
+    /**
+     * Valida que el cobro soporta método de transferencia electrónica.
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-09-19
+     *
+     * @módulo POS – RF-POS-002
+     */
+    public function test_cobro_soporta_metodo_transferencia(): void
+    {
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 10.00,
+            'metodo_pago' => 'transferencia',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.metodo_pago', 'transferencia');
+
+        $this->assertDatabaseHas('ventas', [
+            'comanda_id' => $this->comanda->id,
+            'metodo_pago' => 'transferencia',
+        ]);
+    }
+
+    /**
+     * Valida que con tarjeta se cobra el total exacto aunque llegue un monto mayor: sin cambio.
+     *
+     * @autor  manuelmv15
+     *
+     * @fecha  2026-10-14
+     *
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-33)
+     */
+    public function test_cobro_con_tarjeta_registra_total_exacto_sin_cambio(): void
+    {
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 50.00,
+            'metodo_pago' => 'tarjeta',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.metodo_pago', 'tarjeta')
+            ->assertJsonPath('data.monto_recibido', '10.00')
+            ->assertJsonPath('data.cambio', '0.00');
+
+        $this->assertDatabaseHas('ventas', [
+            'comanda_id' => $this->comanda->id,
+            'metodo_pago' => 'tarjeta',
+            'monto_recibido' => 10.00,
+            'cambio' => 0.00,
+        ]);
+    }
+
+    /**
+     * Valida que una transferencia no exige monto recibido y se registra por el total.
+     *
+     * @autor  manuelmv15
+     *
+     * @fecha  2026-10-14
+     *
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-33)
+     */
+    public function test_cobro_con_transferencia_no_requiere_monto_recibido(): void
+    {
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'metodo_pago' => 'transferencia',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.monto_recibido', '10.00')
+            ->assertJsonPath('data.cambio', '0.00');
+    }
+
+    /**
+     * Valida que en efectivo el monto recibido sigue siendo obligatorio.
+     *
+     * @autor  manuelmv15
+     *
+     * @fecha  2026-10-14
+     *
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-33)
+     */
+    public function test_cobro_en_efectivo_exige_monto_recibido(): void
+    {
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['monto_recibido']);
+
+        $this->assertDatabaseMissing('ventas', [
+            'comanda_id' => $this->comanda->id,
+        ]);
+    }
+
+    /**
+     * Valida que se rechaza un método de pago que el comedor no acepta.
+     *
+     * @autor  manuelmv15
+     *
+     * @fecha  2026-10-14
+     *
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-33)
+     */
+    public function test_cobro_rechaza_metodo_de_pago_no_permitido(): void
+    {
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 10.00,
+            'metodo_pago' => 'cheque',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['metodo_pago']);
+    }
+
+    /**
+     * Valida que el cobro puede procesarse también a través del endpoint alternativo /api/ventas.
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-09-19
+     *
+     * @módulo POS – RF-POS-002
+     */
+    public function test_cobro_funciona_con_endpoint_ventas(): void
+    {
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 15.00,
+        ];
+
+        $response = $this->postJson('/api/ventas', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.cambio', '5.00');
+    }
+
+    /**
+     * Valida la consulta del comprobante digital o ticket generado tras el cobro.
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-09-19
+     *
+     * @módulo POS – RF-POS-002
+     */
+    public function test_obtener_comprobante_digital_por_id(): void
+    {
+        $venta = Venta::create([
+            'comanda_id' => $this->comanda->id,
+            'usuario_id' => $this->cajero->id,
+            'total' => 10.00,
+            'monto_recibido' => 20.00,
+            'cambio' => 10.00,
+            'metodo_pago' => 'efectivo',
+        ]);
+
+        $response = $this->getJson('/api/cobros/'.$venta->id);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'status' => 'ok',
+                'message' => 'Comprobante obtenido.',
+                'data' => [
+                    'id' => $venta->id,
+                    'comanda_id' => $this->comanda->id,
+                    'total' => '10.00',
+                    'cambio' => '10.00',
+                ],
+            ])
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'total',
+                    'monto_recibido',
+                    'cambio',
+                    'comanda' => [
+                        'id',
+                        'canal',
+                        'mesa',
+                        'detalles',
+                    ],
+                ],
+            ]);
+    }
+
+    /**
+     * Valida que consultar un comprobante inexistente responde 404 con el contrato de la API.
+     *
+     * @autor  manuelmv15
+     *
+     * @fecha  2026-10-14
+     *
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
+     */
+    public function test_obtener_comprobante_inexistente_responde_404(): void
+    {
+        $response = $this->getJson('/api/cobros/999999');
+
+        $response->assertStatus(404)
+            ->assertJsonPath('status', 'error');
+    }
+
+    /**
+     * Valida que la venta queda registrada a nombre del cajero autenticado.
+     *
+     * @autor  manuelmv15
+     *
+     * @fecha  2026-10-14
+     *
+     * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
+     */
+    public function test_cobro_registra_la_venta_a_nombre_del_usuario_autenticado(): void
+    {
+        $this->postJson('/api/cobros', [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 10.00,
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('ventas', [
+            'comanda_id' => $this->comanda->id,
+            'usuario_id' => $this->cajero->id,
+        ]);
+    }
+
+    /**
+     * Valida que sin sesión no se puede cobrar ni consultar comprobantes (RF-ADM-008).
+     *
+     * @autor  manuelmv15
+     *
+     * @fecha  2026-10-14
+     *
+     * @módulo POS – US-POS-03 / RF-ADM-008 (CC-38)
+     */
+    public function test_cobro_y_comprobante_rechazan_solicitud_sin_sesion(): void
+    {
+        $this->app['auth']->forgetGuards();
+
+        $venta = Venta::create([
+            'comanda_id' => $this->comanda->id,
+            'usuario_id' => $this->cajero->id,
+            'total' => 10.00,
+            'monto_recibido' => 10.00,
+            'cambio' => 0.00,
+            'metodo_pago' => 'efectivo',
+        ]);
+
+        $this->postJson('/api/cobros', [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 10.00,
+        ])->assertStatus(401);
+
+        $this->getJson('/api/cobros/'.$venta->id)->assertStatus(401);
+
+        // Navegador sin "Accept: application/json": antes respondía 500 "Route [login] not defined"
+        $this->get('/api/cobros/'.$venta->id)
+            ->assertStatus(401)
+            ->assertJsonPath('status', 'error');
+    }
+
+    /**
+     * Valida que un mesero no puede cobrar: el cobro es exclusivo de caja (CLAUDE.md §9).
+     *
+     * @autor  manuelmv15
+     *
+     * @fecha  2026-10-14
+     *
+     * @módulo POS – US-POS-03 / RF-ADM-008 (CC-38)
+     */
+    public function test_mesero_no_puede_cobrar(): void
+    {
+        $mesero = User::factory()->create();
+        $mesero->assignRole('mesero');
+        Sanctum::actingAs($mesero);
+
+        $this->postJson('/api/cobros', [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 10.00,
+        ])->assertStatus(403);
+
+        $this->assertDatabaseMissing('ventas', [
+            'comanda_id' => $this->comanda->id,
+        ]);
+    }
+
+    /**
+     * Valida el cálculo exacto de cambio con centavos y fracciones (CC-33).
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-10-12
+     *
+     * @módulo POS – US-POS-03 / CC-33
+     */
+    public function test_calculo_cambio_con_centavos_y_fracciones(): void
+    {
+        // Actualizamos subtotal con centavos (ej. $7.35)
+        $this->comanda->update(['subtotal' => 7.35]);
+
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 10.00,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.total', '7.35')
+            ->assertJsonPath('data.monto_recibido', '10.00')
+            ->assertJsonPath('data.cambio', '2.65');
+
+        $this->assertDatabaseHas('ventas', [
+            'comanda_id' => $this->comanda->id,
+            'total' => 7.35,
+            'monto_recibido' => 10.00,
+            'cambio' => 2.65,
+        ]);
+    }
+
+    /**
+     * Valida el cálculo de cambio al pagar con billete de $20.00 (CC-33).
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-10-12
+     *
+     * @módulo POS – US-POS-03 / CC-33
+     */
+    public function test_calculo_cambio_con_billete_de_veinte_dolares(): void
+    {
+        $this->comanda->update(['subtotal' => 12.50]);
+
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 20.00,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.total', '12.50')
+            ->assertJsonPath('data.monto_recibido', '20.00')
+            ->assertJsonPath('data.cambio', '7.50');
+    }
+
+    /**
+     * Valida que el pago exacto con centavos genera cambio $0.00 (CC-33).
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-10-12
+     *
+     * @módulo POS – US-POS-03 / CC-33
+     */
+    public function test_calculo_cambio_con_pago_exacto_en_centavos(): void
+    {
+        $this->comanda->update(['subtotal' => 8.75]);
+
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 8.75,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.total', '8.75')
+            ->assertJsonPath('data.monto_recibido', '8.75')
+            ->assertJsonPath('data.cambio', '0.00');
+    }
+
+    /**
+     * Valida que si el monto recibido es tan solo 1 centavo menor al total, se rechaza (CC-33).
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-10-12
+     *
+     * @módulo POS – US-POS-03 / CC-33
+     */
+    public function test_calculo_cambio_rechaza_centavo_menos_que_el_total(): void
+    {
+        $this->comanda->update(['subtotal' => 10.00]);
+
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 9.99,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['monto_recibido']);
+    }
+
+    /**
+     * Valida que al procesar el cobro, la comanda pasa a pagada y se libera la mesa si no hay más comandas activas (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-10-13
+     *
+     * @módulo POS – US-POS-03 / CC-34
+     */
+    public function test_cambiar_estado_a_pagada_actualiza_comanda_y_libera_mesa(): void
+    {
+        $this->assertSame('ocupada', $this->mesa->fresh()->estado);
+        $this->assertSame('pendiente', $this->comanda->fresh()->estado);
+
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 15.00,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->postJson('/api/cobros', $payload);
+
+        $response->assertStatus(201);
+        $this->assertSame('pagada', $this->comanda->fresh()->estado);
+        $this->assertSame('libre', $this->mesa->fresh()->estado);
+    }
+
+    /**
+     * Valida que la mesa no se libera al cobrar si aún tiene otra comanda activa en la misma mesa (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-10-13
+     *
+     * @módulo POS – US-POS-03 / CC-34
+     */
+    public function test_mesa_no_se_libera_si_tiene_otra_comanda_activa(): void
+    {
+        // Creamos una segunda comanda activa en la misma mesa
+        $comanda2 = Comanda::create([
+            'mesa_id' => $this->mesa->id,
+            'usuario_id' => $this->cajero->id,
+            'canal' => 'mesa',
+            'estado' => 'en_preparacion',
+            'observaciones' => null,
+            'subtotal' => 6.00,
+        ]);
+
+        $payload = [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 10.00,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        // Se cobra la primera comanda
+        $response = $this->postJson('/api/cobros', $payload);
+        $response->assertStatus(201);
+
+        $this->assertSame('pagada', $this->comanda->fresh()->estado);
+        // La mesa debe seguir ocupada porque comanda2 sigue activa
+        $this->assertSame('ocupada', $this->mesa->fresh()->estado);
+
+        // Se cobra la segunda comanda
+        $response2 = $this->postJson('/api/cobros', [
+            'comanda_id' => $comanda2->id,
+            'monto_recibido' => 10.00,
+            'metodo_pago' => 'efectivo',
+        ]);
+        $response2->assertStatus(201);
+
+        $this->assertSame('pagada', $comanda2->fresh()->estado);
+        // Ahora sí la mesa debe quedar libre
+        $this->assertSame('libre', $this->mesa->fresh()->estado);
+    }
+
+    /**
+     * Valida que una comanda pagada se excluye de la cola activa de cocina (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-10-13
+     *
+     * @módulo POS – US-POS-03 / CC-34
+     */
+    public function test_comanda_pagada_se_excluye_de_cola_de_cocina_activa(): void
+    {
+        // Inicialmente está pendiente y debe figurar en la cola activa
+        $resActivasAntes = $this->getJson('/api/comandas/cocina');
+        $resActivasAntes->assertStatus(200);
+        $idsAntes = collect($resActivasAntes->json('data.activas'))->pluck('id')->all();
+        $this->assertContains($this->comanda->id, $idsAntes);
+
+        // Procesamos el cobro
+        $this->postJson('/api/cobros', [
+            'comanda_id' => $this->comanda->id,
+            'monto_recibido' => 10.00,
+        ])->assertStatus(201);
+
+        // Ya no debe figurar en la cola activa
+        $resActivasDespues = $this->getJson('/api/comandas/cocina');
+        $resActivasDespues->assertStatus(200);
+        $idsDespues = collect($resActivasDespues->json('data.activas'))->pluck('id')->all();
+        $this->assertNotContains($this->comanda->id, $idsDespues);
+
+        // Pero sí debe figurar en completadas recientes
+        $resCompletadas = $this->getJson('/api/comandas/cocina?estado=pagada');
+        $resCompletadas->assertStatus(200);
+        $idsCompletadas = collect($resCompletadas->json('data'))->pluck('id')->all();
+        $this->assertContains($this->comanda->id, $idsCompletadas);
+    }
+
+    /**
+     * Valida que se rechaza la actualización de estado a 'pagada' si la comanda ya está pagada (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-10-13
+     *
+     * @módulo POS – US-POS-03 / CC-34
+     */
+    public function test_rechaza_actualizar_estado_a_pagada_si_ya_esta_pagada(): void
+    {
+        $this->comanda->update(['estado' => 'pagada']);
+
+        $response = $this->patchJson('/api/comandas/'.$this->comanda->id.'/estado', [
+            'estado' => 'pagada',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['estado'])
+            ->assertJsonFragment([
+                'estado' => [
+                    'Esta comanda ya ha sido pagada.',
+                ],
+            ]);
+    }
+
+    /**
+     * Valida que se rechaza la actualización de estado si la comanda se encuentra cancelada (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-10-13
+     *
+     * @módulo POS – US-POS-03 / CC-34
+     */
+    public function test_rechaza_actualizar_estado_si_comanda_esta_cancelada(): void
+    {
+        $this->comanda->update(['estado' => 'cancelada']);
+
+        $response = $this->patchJson('/api/comandas/'.$this->comanda->id.'/estado', [
+            'estado' => 'pagada',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['estado'])
+            ->assertJsonFragment([
+                'estado' => [
+                    'No se puede modificar el estado de una comanda cancelada.',
+                ],
+            ]);
+    }
+
+    /**
+     * Valida que actualizar estado a pagada directamente vía endpoint PATCH libera la mesa (CC-34).
+     *
+     * @autor  Equipo SGCO-Chayito
+     *
+     * @fecha  2026-10-13
+     *
+     * @módulo POS – US-POS-03 / CC-34
+     */
+    public function test_actualizar_estado_a_pagada_via_endpoint_libera_mesa(): void
+    {
+        $this->assertSame('ocupada', $this->mesa->fresh()->estado);
+
+        $response = $this->patchJson('/api/comandas/'.$this->comanda->id.'/estado', [
+            'estado' => 'pagada',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'status' => 'ok',
+                'message' => 'Estado de la comanda actualizado correctamente.',
+                'data' => [
+                    'id' => $this->comanda->id,
+                    'estado' => 'pagada',
+                ],
+            ]);
+
+        $this->assertSame('pagada', $this->comanda->fresh()->estado);
+        $this->assertSame('libre', $this->mesa->fresh()->estado);
+    }
+}

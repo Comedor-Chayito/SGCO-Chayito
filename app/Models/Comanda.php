@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Comanda extends Model
 {
@@ -61,5 +62,19 @@ class Comanda extends Model
     public function detalles(): HasMany
     {
         return $this->hasMany(ComandaDetalle::class);
+    }
+
+    /**
+     * Obtiene el registro de venta (cobro) asociado a la comanda.
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-09-19
+     * @módulo POS – RF-POS-002
+     *
+     * @return HasOne<Venta>
+     */
+    public function venta(): HasOne
+    {
+        return $this->hasOne(Venta::class);
     }
 }

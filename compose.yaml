@@ -75,6 +75,20 @@ services:
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         networks:
             - sail
+    playwright:
+        image: 'mcr.microsoft.com/playwright:v1.54.0-noble'
+        working_dir: /var/www/html
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            - laravel.test
+        environment:
+            APP_URL: 'http://laravel.test'
+        profiles:
+            - testing
+        command: ['npx', 'playwright', 'test']
 networks:
     sail:
         driver: bridge
