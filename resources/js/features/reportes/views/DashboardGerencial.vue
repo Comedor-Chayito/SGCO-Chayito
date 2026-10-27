@@ -8,18 +8,16 @@
  */
 import { computed, onMounted, ref } from 'vue';
 import {
-  ArrowLeft, BadgeDollarSign, ChartNoAxesCombined, CircleDollarSign, LoaderCircle,
+  BadgeDollarSign, ChartNoAxesCombined, CircleDollarSign, LoaderCircle,
   ReceiptText, RefreshCw, ShoppingBag, TrendingDown, TrendingUp,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
-import { useRouter } from 'vue-router';
 import { obtenerDashboardGerencial } from '@/features/reportes/services/dashboardGerencialService.js';
 import {
   PERIODOS_PREDEFINIDOS, PERIODO_PREDETERMINADO, calcularPeriodo, fechaLocalIso, identificarPeriodo,
 } from '@/features/reportes/services/periodoDashboardService.js';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
-const router = useRouter();
 const cargando = ref(true);
 const dashboard = ref(null);
 const filtros = ref(calcularPeriodo(PERIODO_PREDETERMINADO));
@@ -314,17 +312,6 @@ onMounted(cargarDashboard);
       :icono="ChartNoAxesCombined"
       clase-icono="bg-blue-100 text-blue-700"
     >
-      <template #navegacion>
-        <button
-          id="btn-volver-inicio-dashboard"
-          type="button"
-          class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E0DB] text-[#3D3D3D] hover:bg-[#FAF7F4]"
-          aria-label="Volver al inicio"
-          @click="router.push('/')"
-        >
-          <ArrowLeft :size="20" />
-        </button>
-      </template>
       <template #acciones>
         <button
           id="btn-recargar-dashboard"

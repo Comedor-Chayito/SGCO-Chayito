@@ -7,9 +7,8 @@
  * @módulo Reportes – Sec-3.1.3 / Sec-3.5.1 / CC-78
  */
 import { computed, ref } from 'vue';
-import { ArrowLeft, Download, FileSpreadsheet, LoaderCircle } from '@lucide/vue';
+import { Download, FileSpreadsheet, LoaderCircle } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
-import { useRouter } from 'vue-router';
 import {
   PERIODOS_PREDEFINIDOS, PERIODO_PREDETERMINADO, calcularPeriodo, fechaLocalIso, identificarPeriodo,
 } from '@/features/reportes/services/periodoDashboardService.js';
@@ -19,7 +18,6 @@ import {
 } from '@/features/reportes/services/exportacionService.js';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
-const router = useRouter();
 const filtros = ref(calcularPeriodo(PERIODO_PREDETERMINADO));
 const formato = ref(FORMATO_PREDETERMINADO);
 const exportando = ref(false);
@@ -93,19 +91,7 @@ function formatearFecha(fecha) {
       subtitulo="Elige el período y el formato del reporte consolidado."
       :icono="FileSpreadsheet"
       clase-icono="bg-orange-100 text-[#C24E12]"
-    >
-      <template #navegacion>
-        <button
-          id="btn-volver-inicio-exportar"
-          type="button"
-          class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E0DB] text-[#3D3D3D] hover:bg-[#FAF7F4]"
-          aria-label="Volver al inicio"
-          @click="router.push('/')"
-        >
-          <ArrowLeft :size="20" />
-        </button>
-      </template>
-    </EncabezadoOperacion>
+    />
 
     <div class="mx-auto max-w-3xl space-y-5 p-4 sm:p-6">
 

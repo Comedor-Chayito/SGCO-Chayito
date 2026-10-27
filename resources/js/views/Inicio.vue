@@ -1,27 +1,24 @@
 <script setup>
 /**
  * Vista de inicio / bienvenida del sistema SGCO-Chayito.
- * Muestra el acceso dinámico a módulos según el rol del token (US-ADM-01 / RF-ADM-008).
+ * Sin sesión ofrece el acceso al login; con sesión lleva a la vista principal del rol.
  *
  * @autor  Jeferson De La Cruz / Equipo SGCO-Chayito
  * @fecha  2026-09-20
- * @módulo Core – Inicio
+ * @módulo Core – Inicio / RF-ADM-008 (CC-86)
  */
-import { RouterLink, useRouter } from 'vue-router';
-import { ChefHat, ShieldCheck, LogOut, LogIn, Users } from '@lucide/vue';
+import { computed } from 'vue';
+import { RouterLink } from 'vue-router';
+import { ChefHat, ShieldCheck, LogIn, ArrowRight } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { obtenerRutaInicioPorRol } from '@/router/index.js';
 import { useSesionStore } from '@/stores/sesion.js';
 import { usePermisos } from '@/shared/composables/usePermisos.js';
 
-const router = useRouter();
 const sesion = useSesionStore();
-const { puedeVer, rolActual } = usePermisos();
-
-async function cerrarSesion() {
-  await sesion.cerrarSesion();
-  router.push('/login');
-}
+const { rolActual } = usePermisos();
+const rutaInicio = computed(() => obtenerRutaInicioPorRol(rolActual.value));
 </script>
 
 <template>
@@ -57,85 +54,21 @@ async function cerrarSesion() {
         Sistema operativo
       </div>
 
-      <p v-if="sesion.autenticado" class="rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] p-4 text-sm text-[#6B6B6B]">
-        Selecciona una operación desde el menú principal.
-      </p>
+      <!-- Con sesión: la navegación vive en el menú lateral; aquí solo se lleva a la vista del rol -->
+      <RouterLink v-if="sesion.autenticado" :to="rutaInicio" class="block">
+        <Button class="w-full min-h-[44px] bg-[#F26A21] hover:bg-[#FF8C42] text-white font-bold px-5 rounded-xl cursor-pointer">
+          Ir a mi módulo
+          <ArrowRight :size="18" class="ml-2" />
+        </Button>
+      </RouterLink>
 
-      <!-- Acceso público al formulario de autenticación. -->
-      <div v-else class="flex flex-col gap-2.5 justify-center">
-        <!-- Punto de Venta (Mesero, Cajero, Admin) -->
-        <RouterLink v-if="puedeVer(['mesero', 'cajero', 'administrador'])" to="/pos">
-          <Button class="w-full min-h-[44px] bg-[#F26A21] hover:bg-[#FF8C42] text-white font-bold px-5 rounded-xl cursor-pointer">
-            Punto de Venta (POS)
-          </Button>
-        </RouterLink>
-
-        <!-- Cola de Cocina (Cocinero, Cocinera, Admin) -->
-        <RouterLink v-if="puedeVer(['cocinero', 'cocinera', 'administrador'])" to="/cocina">
-          <Button variant="outline" class="w-full min-h-[44px] border-[#E5E0DB] text-[#3D3D3D] hover:bg-zinc-50 font-semibold px-5 rounded-xl cursor-pointer">
-            Cola de Cocina (KDS)
-          </Button>
-        </RouterLink>
-
-        <!-- Panel de Administración de Usuarios (Exclusivo Administrador) -->
-        <RouterLink v-if="puedeVer(['administrador'])" to="/admin">
-          <Button class="w-full min-h-[44px] bg-purple-700 hover:bg-purple-800 text-white font-bold px-5 rounded-xl cursor-pointer">
-            <Users :size="18" class="mr-2" />
-            Administración de Usuarios
-          </Button>
-        </RouterLink>
-
-        <!-- Inventario (Cocinero, Admin) -->
-        <RouterLink v-if="puedeVer(['cocinero', 'cocinera', 'administrador'])" to="/inventario">
-          <Button variant="outline" class="w-full min-h-[44px] border-[#E5E0DB] text-[#3D3D3D] hover:bg-zinc-50 font-semibold px-5 rounded-xl cursor-pointer">
-            Inventario
-          </Button>
-        </RouterLink>
-
-        <!-- Requisiciones internas (Cocina, Admin) -->
-        <RouterLink v-if="puedeVer(['cocinero', 'cocinera', 'administrador'])" to="/requisiciones/nueva">
-          <Button class="w-full min-h-[44px] bg-[#F26A21] hover:bg-[#FF8C42] text-white font-bold px-5 rounded-xl cursor-pointer">
-            Solicitar insumos a bodega
-          </Button>
-        </RouterLink>
-
-        <!-- Aprobación y transferencia de requisiciones (Exclusivo Administrador) -->
-        <RouterLink v-if="puedeVer(['administrador'])" to="/requisiciones">
-          <Button class="w-full min-h-[44px] bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-5 rounded-xl cursor-pointer">
-            Gestionar requisiciones de bodega
-          </Button>
-        </RouterLink>
-
-        <!-- Contabilidad (Contadora, Admin) -->
-        <RouterLink v-if="puedeVer(['contadora', 'administrador'])" to="/contabilidad">
-          <Button variant="outline" class="w-full min-h-[44px] border-[#E5E0DB] text-[#3D3D3D] hover:bg-zinc-50 font-semibold px-5 rounded-xl cursor-pointer">
-            Contabilidad y Cortes
-          </Button>
-        </RouterLink>
-
-        <!-- Dashboard gerencial (Exclusivo Socio y Administrador) -->
-        <RouterLink v-if="puedeVer(['socio', 'administrador'])" to="/reportes">
-          <Button class="w-full min-h-[44px] bg-[#2B6CB0] hover:bg-[#1E4F80] text-white font-bold px-5 rounded-xl cursor-pointer">
-            Dashboard gerencial
-          </Button>
-        </RouterLink>
-
-        <!-- Exportación de reportes consolidados (Contadora, Socio, Admin) -->
-        <RouterLink v-if="puedeVer(['contadora', 'socio', 'administrador'])" to="/reportes/exportar">
-          <Button variant="outline" class="w-full min-h-[44px] border-[#E5E0DB] text-[#3D3D3D] hover:bg-zinc-50 font-semibold px-5 rounded-xl cursor-pointer">
-            Exportar reportes
-          </Button>
-        </RouterLink>
-
-        <!-- Botón de Login si no está autenticado -->
-        <RouterLink v-if="!sesion.autenticado" to="/login">
-          <Button variant="outline" class="w-full min-h-[44px] border-[#E5E0DB] text-[#F26A21] hover:bg-orange-50 font-semibold px-5 rounded-xl cursor-pointer">
-            <LogIn :size="18" class="mr-2" />
-            Iniciar Sesión
-          </Button>
-        </RouterLink>
-
-      </div>
+      <!-- Acceso público al formulario de autenticación -->
+      <RouterLink v-else to="/login" class="block">
+        <Button class="w-full min-h-[44px] bg-[#F26A21] hover:bg-[#FF8C42] text-white font-bold px-5 rounded-xl cursor-pointer">
+          <LogIn :size="18" class="mr-2" />
+          Iniciar sesión
+        </Button>
+      </RouterLink>
     </div>
   </main>
 </template>

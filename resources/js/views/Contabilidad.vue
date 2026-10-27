@@ -8,16 +8,13 @@
  * @módulo Contabilidad – US-CON-01 / RF-CON-005
  */
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { Toaster, toast } from 'vue-sonner';
-import { Landmark, ArrowLeft } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import { Landmark } from '@lucide/vue';
 import FormularioEgreso from '@/features/contabilidad/components/FormularioEgreso.vue';
 import ConfirmacionEgreso from '@/features/contabilidad/components/ConfirmacionEgreso.vue';
 import HistorialEgresos from '@/features/contabilidad/components/HistorialEgresos.vue';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
-const router = useRouter();
 const ultimoEgreso = ref(null);
 const historialEgresos = ref(null);
 
@@ -50,19 +47,7 @@ function confirmarEgreso(egreso) {
       subtitulo="Cortes de caja, egresos e IVA crédito fiscal"
       :icono="Landmark"
       clase-icono="bg-emerald-100 text-emerald-600"
-    >
-      <template #navegacion>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="rounded-xl hover:bg-zinc-100"
-          title="Volver"
-          @click="router.back()"
-        >
-          <ArrowLeft :size="20" />
-        </Button>
-      </template>
-    </EncabezadoOperacion>
+    />
 
     <div class="mx-auto max-w-6xl space-y-6 p-4 sm:p-6 lg:p-8">
 

@@ -12,7 +12,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import {
-  ArrowLeft,
   ShoppingBag,
   CreditCard,
   Banknote,
@@ -233,16 +232,6 @@ onUnmounted(() => {
       :icono="Receipt"
       clase-icono="bg-emerald-100 text-[#2E7D4F]"
     >
-      <template #navegacion>
-        <RouterLink
-          to="/cocina"
-          class="flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] text-[#3D3D3D] hover:bg-zinc-100 active:scale-95 transition-all"
-          title="Regresar a Cocina"
-        >
-          <ArrowLeft :size="20" stroke-width="2" />
-        </RouterLink>
-      </template>
-
       <template #acciones>
         <button
           type="button"

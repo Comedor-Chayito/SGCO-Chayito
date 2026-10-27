@@ -18,6 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { obtenerRutaInicioPorRol } from '@/router/index.js';
 import { obtenerNavegacionPorRol } from '@/shared/config/navegacion.js';
 import { useSesionStore } from '@/stores/sesion.js';
 
@@ -26,19 +27,21 @@ const router = useRouter();
 const sesion = useSesionStore();
 const menuMovilAbierto = ref(false);
 const gruposNavegacion = computed(() => obtenerNavegacionPorRol(sesion.rol));
+const rutaInicio = computed(() => obtenerRutaInicioPorRol(sesion.rol));
 
 /**
- * Determina si el acceso corresponde a la ruta activa para comunicar contexto visual.
+ * Determina si el acceso corresponde a la sección activa para comunicar contexto visual.
+ * Las sub-vistas (cierre, apertura, ticket) declaran su sección padre en `meta.seccion`.
  *
  * @autor  Jeferson De La Cruz
  * @fecha  2026-10-25
- * @módulo Core – RF-ADM-008 / Integración de navegación
+ * @módulo Core – RF-ADM-008 / Integración de navegación (CC-86)
  *
  * @param {{ ruta: string }} item Acceso de navegación que se va a evaluar.
- * @returns {boolean} true cuando el acceso coincide con la ruta actual.
+ * @returns {boolean} true cuando el acceso coincide con la sección actual.
  */
 function esRutaActiva(item) {
-  return route.name === item.ruta;
+  return (route.meta.seccion ?? route.name) === item.ruta;
 }
 
 /**
@@ -68,8 +71,9 @@ async function cerrarSesion() {
 </script>
 
 <template>
-  <div class="min-h-[100dvh] bg-[#FAF7F4] text-[#3D3D3D]">
-    <aside class="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-[#E5E0DB] bg-white lg:flex lg:flex-col">
+  <!-- --alto-shell: espacio del encabezado móvil para que los encabezados fijos de cada vista no lo tapen -->
+  <div class="min-h-[100dvh] bg-[#FAF7F4] text-[#3D3D3D] [--alto-shell:4rem] lg:[--alto-shell:0px]">
+    <aside class="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-[#E5E0DB] bg-white lg:flex lg:flex-col print:hidden">
       <div class="flex h-16 items-center gap-3 border-b border-[#E5E0DB] px-5">
         <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F26A21] text-white">
           <ChefHat :size="20" />
@@ -109,7 +113,7 @@ async function cerrarSesion() {
       </div>
     </aside>
 
-    <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#E5E0DB] bg-white/95 px-4 backdrop-blur lg:hidden">
+    <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#E5E0DB] bg-white/95 px-4 backdrop-blur lg:hidden print:hidden">
       <Sheet v-model:open="menuMovilAbierto">
         <SheetTrigger as-child>
           <Button variant="ghost" size="icon" class="lg:hidden" aria-label="Abrir navegación">
@@ -145,13 +149,11 @@ async function cerrarSesion() {
           </div>
         </SheetContent>
       </Sheet>
-      <RouterLink :to="{ name: 'inicio' }" class="text-sm font-black lg:hidden">SGCO-Chayito</RouterLink>
-      <Button variant="ghost" size="sm" class="lg:hidden text-rose-700" @click="cerrarSesion">
-        <LogOut :size="17" />
-      </Button>
+      <RouterLink :to="rutaInicio" class="text-sm font-black lg:hidden">SGCO-Chayito</RouterLink>
+      <span class="w-10" aria-hidden="true" />
     </header>
 
-    <main class="lg:pl-72">
+    <main class="lg:pl-72 print:pl-0">
       <slot />
     </main>
   </div>

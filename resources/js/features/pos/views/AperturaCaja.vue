@@ -32,7 +32,7 @@ function volverACaja() {
     <Toaster richColors position="top-center" />
 
     <!-- Barra superior de navegación -->
-    <header class="sticky top-0 z-30 flex items-center justify-between border-b border-[#E5E0DB] bg-white px-4 py-3 shadow-xs">
+    <header class="sticky top-[var(--alto-shell,0px)] z-10 flex items-center justify-between border-b border-[#E5E0DB] bg-white px-4 py-3 shadow-xs">
       <div class="flex items-center gap-3">
         <button
           type="button"

@@ -386,6 +386,55 @@ class RequisicionTest extends TestCase
     }
 
     /**
+     * Verifica que cocinera y socio también emiten requisiciones, igual que la ruta lo permite.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-26
+     * @módulo Inventario – RF-INV-004 / CC-85 / CC-55
+     */
+    public function test_cocinera_y_socio_tambien_pueden_crear_requisicion(): void
+    {
+        foreach (['cocinera', 'socio'] as $rol) {
+            Role::findOrCreate($rol, 'web');
+            $usuario = User::factory()->create();
+            $usuario->assignRole($rol);
+            Sanctum::actingAs($usuario);
+
+            $this->postJson('/api/requisiciones', [
+                'area_solicitante' => 'cocina',
+                'detalles' => [
+                    ['insumo_id' => $this->arroz->id, 'cantidad_solicitada' => 1],
+                ],
+            ])
+                ->assertCreated()
+                ->assertJsonPath('data.usuario_solicita_id', $usuario->id);
+        }
+    }
+
+    /**
+     * Verifica que el socio resuelve requisiciones con las mismas atribuciones del administrador.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-26
+     * @módulo Inventario – RF-INV-004 / CC-85 / CC-55
+     */
+    public function test_socio_puede_resolver_requisicion(): void
+    {
+        $requisicion = $this->crearRequisicionPendiente();
+        Role::findOrCreate('socio', 'web');
+        $socio = User::factory()->create();
+        $socio->assignRole('socio');
+        Sanctum::actingAs($socio);
+
+        $this->patchJson("/api/requisiciones/{$requisicion->id}/resolucion", [
+            'estado' => 'rechazada',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.estado', 'rechazada')
+            ->assertJsonPath('data.usuario_aprueba_id', $socio->id);
+    }
+
+    /**
      * Verifica que bodega lista las requisiciones ordenadas cronológicamente inverso con sus relaciones.
      *
      * @autor  Cesar

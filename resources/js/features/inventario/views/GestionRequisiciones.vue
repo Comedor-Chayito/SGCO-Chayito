@@ -8,10 +8,9 @@
  */
 import { computed, onMounted, ref } from 'vue';
 import {
-  ArrowLeft, Check, ClipboardCheck, LoaderCircle, PackageCheck, RefreshCw, Send, X,
+  Check, ClipboardCheck, LoaderCircle, PackageCheck, RefreshCw, Send, X,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
-import { useRouter } from 'vue-router';
 import {
   obtenerRequisiciones,
   resolverRequisicion,
@@ -19,7 +18,6 @@ import {
 } from '@/features/inventario/services/inventarioService.js';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
-const router = useRouter();
 const requisiciones = ref([]);
 const cargando = ref(true);
 const procesando = ref(false);
@@ -257,17 +255,6 @@ onMounted(cargarRequisiciones);
       subtitulo="Aprueba solicitudes y transfiere stock a las áreas."
       :icono="ClipboardCheck"
     >
-      <template #navegacion>
-        <button
-          id="btn-volver-inicio-requisiciones"
-          type="button"
-          class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#E5E0DB] text-[#3D3D3D] transition hover:bg-[#FAF7F4]"
-          aria-label="Volver al inicio"
-          @click="router.push('/')"
-        >
-          <ArrowLeft :size="20" />
-        </button>
-      </template>
       <template #acciones>
         <button
           id="btn-recargar-requisiciones"

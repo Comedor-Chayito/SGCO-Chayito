@@ -9,6 +9,7 @@
  */
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { obtenerRutaInicioPorRol } from '@/router/index.js';
 import { usePermisos } from '@/shared/composables/usePermisos.js';
 import {
   obtenerUsuarios,
@@ -27,7 +28,6 @@ import {
   Search,
   Edit2,
   Power,
-  ArrowLeft,
   RefreshCw,
   Lock,
   Mail,
@@ -41,7 +41,7 @@ import { Input } from '@/components/ui/input';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
 const router = useRouter();
-const { puedeVer } = usePermisos();
+const { puedeVer, rolActual } = usePermisos();
 
 // Estado reactivo
 const usuarios = ref([]);
@@ -90,7 +90,7 @@ async function recargarDatos() {
   } catch (error) {
     if (error.response?.status === 403) {
       toast.error('Acceso restringido: Se requieren permisos de Administrador.');
-      router.push('/pos');
+      router.push(obtenerRutaInicioPorRol(rolActual.value));
       return;
     }
     toast.error('Error al cargar la lista de usuarios y roles.');
@@ -280,17 +280,6 @@ async function ejecutarEliminarUsuario() {
       subtitulo="Control de acceso basado en roles oficiales."
       :icono="Users"
     >
-      <template #navegacion>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="rounded-xl hover:bg-zinc-100"
-            @click="router.push('/pos')"
-            title="Volver al Punto de Venta (POS)"
-          >
-            <ArrowLeft :size="20" />
-          </Button>
-      </template>
       <template #acciones>
           <Button
             variant="outline"

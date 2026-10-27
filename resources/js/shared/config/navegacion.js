@@ -5,6 +5,7 @@ import {
   FileDown,
   Landmark,
   Package,
+  ReceiptText,
   ShoppingCart,
   Users,
   WalletCards,
@@ -22,7 +23,7 @@ export const ITEMS_NAVEGACION = [
   {
     titulo: 'Operación',
     items: [
-      { etiqueta: 'Punto de venta', ruta: 'pos', icono: ShoppingCart, roles: ['mesero', 'administrador', 'socio'] },
+      { etiqueta: 'Punto de venta', ruta: 'pos', icono: ShoppingCart, roles: ['mesero', 'cajero', 'administrador', 'socio'] },
       { etiqueta: 'Cocina', ruta: 'cocina', icono: ChefHat, roles: ['cocinero', 'cocinera', 'administrador', 'socio'] },
       { etiqueta: 'Caja', ruta: 'caja', icono: WalletCards, roles: ['cajero', 'administrador', 'socio'] },
     ],
@@ -39,6 +40,7 @@ export const ITEMS_NAVEGACION = [
     titulo: 'Finanzas',
     items: [
       { etiqueta: 'Contabilidad', ruta: 'contabilidad', icono: Landmark, roles: ['contadora', 'administrador', 'socio'] },
+      { etiqueta: 'Compras e IVA', ruta: 'compras-iva', icono: ReceiptText, roles: ['contadora', 'administrador', 'socio'] },
       { etiqueta: 'Dashboard gerencial', ruta: 'reportes', icono: BarChart3, roles: ['socio', 'administrador'] },
       { etiqueta: 'Exportar reportes', ruta: 'exportar-reportes', icono: FileDown, roles: ['contadora', 'socio', 'administrador'] },
     ],
