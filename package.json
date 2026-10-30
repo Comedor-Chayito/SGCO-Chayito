@@ -20,7 +20,7 @@
     "dependencies": {
         "@lucide/vue": "^1.47.0",
         "@playwright/test": "^1.63.0",
-        "@vitejs/plugin-vue": "^6.0.9",
+        "@vitejs/plugin-vue": "^6.0.10",
         "@vueuse/core": "^15.0.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
