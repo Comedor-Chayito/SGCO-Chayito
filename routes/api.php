@@ -105,27 +105,30 @@ Route::middleware('auth:sanctum')->group(function () {
     // El cajero cambia el estado al cobrar o cancelar; cocina al preparar
     Route::patch('/comandas/{comanda}/estado', [ComandaController::class, 'actualizarEstado'])
         ->middleware('role:cocinero|cocinera|cajero|administrador|socio');
-});
 
-// Módulo Inventario — CC-45: CRUD de insumos con unidad de medida (US-INV-01 / RF-INV-003)
-Route::get('/insumos',           [InsumoController::class, 'index']);
-Route::post('/insumos',          [InsumoController::class, 'store']);
+    // Módulo Inventario — cocina, administrador y socio gestionan insumos y recetas (CC-98)
+    Route::middleware('role:cocinero|cocinera|administrador|socio')->group(function () {
+        // CC-45: CRUD de insumos con unidad de medida (US-INV-01 / RF-INV-003)
+        Route::get('/insumos',  [InsumoController::class, 'index']);
+        Route::post('/insumos', [InsumoController::class, 'store']);
 
-// CC-57: Alertas de quiebre de stock (US-INV-03 / RF-INV-004)
-// IMPORTANTE: /insumos/alertas debe ir antes de /insumos/{insumo} para evitar conflicto de rutas
-Route::get('/insumos/alertas',   [InsumoController::class, 'alertas']);
+        // CC-57: Alertas de quiebre de stock (US-INV-03 / RF-INV-004)
+        // IMPORTANTE: /insumos/alertas debe ir antes de /insumos/{insumo} para evitar conflicto de rutas
+        Route::get('/insumos/alertas', [InsumoController::class, 'alertas']);
 
-Route::get('/insumos/{insumo}',  [InsumoController::class, 'show']);
-Route::put('/insumos/{insumo}',  [InsumoController::class, 'update']);
-Route::delete('/insumos/{insumo}', [InsumoController::class, 'destroy']);
+        Route::get('/insumos/{insumo}',    [InsumoController::class, 'show']);
+        Route::put('/insumos/{insumo}',    [InsumoController::class, 'update']);
+        Route::delete('/insumos/{insumo}', [InsumoController::class, 'destroy']);
 
-// Módulo Inventario — CC-46: Vincular ingredientes a platillos (US-INV-01 / RF-INV-003)
-// scopeBindings: el renglón {receta} debe pertenecer al {platillo} de la URL, si no responde 404
-Route::scopeBindings()->group(function () {
-    Route::get('/platillos/{platillo}/recetas',                        [RecetaController::class, 'index']);
-    Route::post('/platillos/{platillo}/recetas',                       [RecetaController::class, 'store']);
-    Route::put('/platillos/{platillo}/recetas/{receta}',               [RecetaController::class, 'update']);
-    Route::delete('/platillos/{platillo}/recetas/{receta}',            [RecetaController::class, 'destroy']);
+        // CC-46: Vincular ingredientes a platillos (US-INV-01 / RF-INV-003)
+        // scopeBindings: el renglón {receta} debe pertenecer al {platillo} de la URL, si no responde 404
+        Route::scopeBindings()->group(function () {
+            Route::get('/platillos/{platillo}/recetas',             [RecetaController::class, 'index']);
+            Route::post('/platillos/{platillo}/recetas',            [RecetaController::class, 'store']);
+            Route::put('/platillos/{platillo}/recetas/{receta}',    [RecetaController::class, 'update']);
+            Route::delete('/platillos/{platillo}/recetas/{receta}', [RecetaController::class, 'destroy']);
+        });
+    });
 });
 
 // Módulo Inventario — CC-52: Solicitudes internas por área (US-INV-02 / RF-INV-004)
