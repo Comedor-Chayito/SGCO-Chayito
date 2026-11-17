@@ -1,0 +1,30 @@
+import api from '@/services/api.js';
+
+/**
+ * Servicio API para la consulta y visualización de la Matriz de Permisos RBAC (US-ADM-04 / CC-121).
+ *
+ * @autor  Equipo SGCO-Chayito
+ * @fecha  2026-11-16
+ * @módulo Admin – RF-ADM-008
+ */
+
+/**
+ * Obtiene la matriz completa rol × permiso con módulos, metadatos y listados estructurados.
+ *
+ * @returns {Promise<{
+ *   roles: Array<{ id: number, name: string, permisos: string[], total_permisos: number }>,
+ *   permisos: Array<{ id: number, name: string, modulo: string, accion: string, descripcion: string }>,
+ *   modulos: Array<{ clave: string, nombre: string, permisos: Array<object> }>,
+ *   matriz: Record<string, Record<string, boolean>>,
+ *   total_roles: number,
+ *   total_permisos: number
+ * }>}
+ */
+export async function obtenerMatrizPermisos() {
+  const respuesta = await api.get('/matriz-permisos');
+  return respuesta.data.data;
+}
+
+export default {
+  obtenerMatrizPermisos,
+};

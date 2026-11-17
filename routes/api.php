@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardGerencialController;
 use App\Http\Controllers\ExportacionReporteController;
 use App\Http\Controllers\EgresoController;
 use App\Http\Controllers\InsumoController;
+use App\Http\Controllers\MatrizPermisoController;
 use App\Http\Controllers\RecetaController;
 use App\Http\Controllers\RequisicionController;
 use App\Http\Controllers\RetiroController;
@@ -39,9 +40,11 @@ Route::middleware('auth:sanctum')->group(function () {
         'data'    => $request->user()->load(['roles:id,name', 'permissions:id,name']),
     ]));
 
-    // Módulo Administración y Seguridad — Gestión de Usuarios y Roles RBAC (US-ADM-01 / CC-84)
+    // Módulo Administración y Seguridad — Gestión de Usuarios, Roles RBAC y Matriz (US-ADM-01 / CC-84 / US-ADM-04 / CC-121)
     Route::middleware('role:administrador|socio')->group(function () {
         Route::get('/roles',                                [UsuarioController::class, 'roles']);
+        Route::get('/matriz-permisos',                      [MatrizPermisoController::class, 'index']);
+        Route::get('/roles/matriz',                         [MatrizPermisoController::class, 'index']);
         Route::get('/usuarios',                             [UsuarioController::class, 'index']);
         Route::post('/usuarios',                            [UsuarioController::class, 'store']);
         Route::get('/usuarios/{usuario}',                   [UsuarioController::class, 'show']);

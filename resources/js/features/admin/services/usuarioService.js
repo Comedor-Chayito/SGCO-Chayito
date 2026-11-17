@@ -86,6 +86,16 @@ export async function obtenerRoles() {
 }
 
 /**
+ * Obtiene la matriz completa rol × permiso estructurada (US-ADM-04 / CC-121).
+ *
+ * @returns {Promise<object>} Matriz de roles y permisos.
+ */
+export async function obtenerMatrizPermisos() {
+  const respuesta = await api.get('/matriz-permisos');
+  return respuesta.data.data;
+}
+
+/**
  * Elimina permanentemente una cuenta de usuario si no posee restricciones de integridad.
  *
  * @param   {number|string} id ID del usuario.
