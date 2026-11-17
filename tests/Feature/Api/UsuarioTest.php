@@ -70,7 +70,7 @@ class UsuarioTest extends TestCase
                 ],
             ]);
 
-        $this->assertCount(3, $response->json('data'));
+        $this->assertCount(User::count(), $response->json('data'));
     }
 
     /**
@@ -113,6 +113,40 @@ class UsuarioTest extends TestCase
         $nuevoUsuario = User::where('email', 'ana.contadora@sgco-chayito.local')->first();
         $this->assertTrue($nuevoUsuario->hasRole('contadora'));
         $this->assertTrue(Hash::check('PasswordSeguro123!', $nuevoUsuario->password));
+    }
+
+    /**
+     * Verifica que el socio, con los mismos permisos del administrador (§9), cree y edite usuarios.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-10-26
+     * @módulo Administración y Seguridad – RF-ADM-008 (CC-85 / CC-88)
+     *
+     * @return void
+     */
+    public function test_socio_puede_crear_y_actualizar_usuarios(): void
+    {
+        $socio = User::where('email', 'socio@sgco-chayito.local')->first();
+        Sanctum::actingAs($socio);
+
+        $this->postJson('/api/usuarios', [
+            'name'     => 'Luis Mesero',
+            'email'    => 'luis.mesero@sgco-chayito.local',
+            'password' => 'PasswordSeguro123!',
+            'rol'      => 'mesero',
+            'activo'   => true,
+        ])
+            ->assertStatus(201)
+            ->assertJsonPath('status', 'ok')
+            ->assertJsonPath('data.rol', 'mesero');
+
+        $this->putJson("/api/usuarios/{$this->mesero->id}", [
+            'name'  => 'Mesero Renombrado',
+            'email' => $this->mesero->email,
+            'rol'   => 'mesero',
+        ])
+            ->assertStatus(200)
+            ->assertJsonPath('data.name', 'Mesero Renombrado');
     }
 
     /**

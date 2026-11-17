@@ -10,11 +10,11 @@ import { test, expect } from '@playwright/test';
  */
 
 /**
- * Inicia sesión como cajero con el usuario del seeder y abre la pantalla de caja.
+ * Inicia sesión como cajero con el usuario del seeder; la caja es su vista de inicio.
  *
  * @autor  manuelmv15
  * @fecha  2026-10-14
- * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
+ * @módulo POS – US-POS-03 / RF-POS-002 (CC-38) / RF-ADM-008 (CC-86)
  *
  * @param   {import('@playwright/test').Page} page Página de Playwright.
  * @returns {Promise<void>}
@@ -24,9 +24,8 @@ async function entrarComoCajeroACaja(page) {
   await page.locator('#campo-correo').fill('cajero@sgco-chayito.local');
   await page.locator('#campo-contrasena').fill('Password123!');
   await page.locator('#boton-login').click();
-  await page.waitForURL('**/pos');
+  await page.waitForURL('**/caja');
 
-  await page.goto('/caja');
   await expect(page.locator('#vista-pantalla-cobro')).toBeVisible();
 }
 

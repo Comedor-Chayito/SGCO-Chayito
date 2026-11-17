@@ -165,7 +165,10 @@ async function cargarAperturaHoy() {
     const data = await obtenerAperturaTurno();
     aperturaExistente.value = data;
   } catch (error) {
-    console.error('Error al cargar apertura:', error);
+    toast.error(
+      error.response?.data?.message
+      ?? 'No se pudo consultar la apertura de caja. Intenta de nuevo.'
+    );
   } finally {
     cargando.value = false;
   }

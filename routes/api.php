@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     ]));
 
     // Módulo Administración y Seguridad — Gestión de Usuarios y Roles RBAC (US-ADM-01 / CC-84)
-    Route::middleware('role:administrador')->group(function () {
+    Route::middleware('role:administrador|socio')->group(function () {
         Route::get('/roles',                                [UsuarioController::class, 'roles']);
         Route::get('/usuarios',                             [UsuarioController::class, 'index']);
         Route::post('/usuarios',                            [UsuarioController::class, 'store']);
@@ -51,7 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Módulo POS — RF-POS-002 (Cobros y Ventas): solo cajero y administrador (CLAUDE.md §9)
-    Route::middleware('role:cajero|administrador')->group(function () {
+    Route::middleware('role:cajero|administrador|socio')->group(function () {
         Route::post('/cobros',     [VentaController::class, 'cobrar']);
         Route::post('/ventas',     [VentaController::class, 'cobrar']);
         Route::get('/cobros/{id}', [VentaController::class, 'mostrar']);
@@ -72,7 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Módulo Contabilidad — RF-CON-005 (Egresos): solo contadora y administrador (CLAUDE.md §9)
-    Route::middleware('role:contadora|administrador')->group(function () {
+    Route::middleware('role:contadora|administrador|socio')->group(function () {
         // Catálogo para clasificar facturas en el formulario rápido (CC-62 / US-CON-01)
         Route::get('/subcategorias-egreso', [SubcategoriaEgresoController::class, 'index']);
 
@@ -120,19 +120,19 @@ Route::scopeBindings()->group(function () {
 });
 
 // Módulo Inventario — CC-52: Solicitudes internas por área (US-INV-02 / RF-INV-004)
-Route::middleware(['auth:sanctum', 'role:cocinero|administrador'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:cocinero|cocinera|administrador|socio'])->group(function () {
     Route::post('/requisiciones', [RequisicionController::class, 'store']);
 });
 
 // Módulo Inventario — CC-53 / CC-54: aprobación y transferencia de requisiciones
-Route::middleware(['auth:sanctum', 'role:administrador'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:administrador|socio'])->group(function () {
     Route::get('/requisiciones', [RequisicionController::class, 'index']);
     Route::patch('/requisiciones/{requisicion}/resolucion', [RequisicionController::class, 'resolver']);
     Route::post('/requisiciones/{requisicion}/transferir', [RequisicionController::class, 'transferir']);
 });
 
 // Módulo Contabilidad — CC-66 / CC-67: desglose automático de IVA crédito fiscal
-Route::middleware(['auth:sanctum', 'role:contadora|administrador'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:contadora|administrador|socio'])->group(function () {
     Route::get('/compras', [CompraController::class, 'index']);
     Route::post('/compras', [CompraController::class, 'store']);
 });

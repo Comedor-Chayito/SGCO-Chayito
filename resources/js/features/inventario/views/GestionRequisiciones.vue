@@ -8,17 +8,16 @@
  */
 import { computed, onMounted, ref } from 'vue';
 import {
-  ArrowLeft, Check, ClipboardCheck, LoaderCircle, PackageCheck, RefreshCw, Send, X,
+  Check, ClipboardCheck, LoaderCircle, PackageCheck, RefreshCw, Send, X,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
-import { useRouter } from 'vue-router';
 import {
   obtenerRequisiciones,
   resolverRequisicion,
   transferirRequisicion,
 } from '@/features/inventario/services/inventarioService.js';
+import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
-const router = useRouter();
 const requisiciones = ref([]);
 const cargando = ref(true);
 const procesando = ref(false);
@@ -251,24 +250,12 @@ onMounted(cargarRequisiciones);
   <main id="vista-gestion-requisiciones" class="min-h-[100dvh] bg-[#FAF7F4]">
     <Toaster rich-colors position="top-center" />
 
-    <header class="border-b border-[#E5E0DB] bg-white px-4 py-4 sm:px-6">
-      <div class="mx-auto flex max-w-5xl items-center gap-3">
-        <button
-          id="btn-volver-inicio-requisiciones"
-          type="button"
-          class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#E5E0DB] text-[#3D3D3D] transition hover:bg-[#FAF7F4]"
-          aria-label="Volver al inicio"
-          @click="router.push('/')"
-        >
-          <ArrowLeft :size="20" />
-        </button>
-        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-[#F26A21]">
-          <ClipboardCheck :size="22" />
-        </div>
-        <div class="min-w-0 flex-1">
-          <h1 class="text-lg font-black text-[#3D3D3D]">Gestión de requisiciones</h1>
-          <p class="text-xs text-[#6B6B6B]">Aprueba solicitudes y transfiere stock a las áreas.</p>
-        </div>
+    <EncabezadoOperacion
+      titulo="Gestión de requisiciones"
+      subtitulo="Aprueba solicitudes y transfiere stock a las áreas."
+      :icono="ClipboardCheck"
+    >
+      <template #acciones>
         <button
           id="btn-recargar-requisiciones"
           type="button"
@@ -279,8 +266,8 @@ onMounted(cargarRequisiciones);
         >
           <RefreshCw :size="19" :class="{ 'animate-spin': cargando }" />
         </button>
-      </div>
-    </header>
+      </template>
+    </EncabezadoOperacion>
 
     <div class="mx-auto max-w-5xl space-y-4 p-4 pb-10 sm:p-6">
       <section class="rounded-2xl border border-orange-100 bg-orange-50 p-4 text-sm text-[#6B6B6B]">

@@ -8,17 +8,16 @@
  */
 import { computed, onMounted, ref } from 'vue';
 import {
-  ArrowLeft, BadgeDollarSign, ChartNoAxesCombined, CircleDollarSign, LoaderCircle,
+  BadgeDollarSign, ChartNoAxesCombined, CircleDollarSign, LoaderCircle,
   ReceiptText, RefreshCw, ShoppingBag, TrendingDown, TrendingUp,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
-import { useRouter } from 'vue-router';
 import { obtenerDashboardGerencial } from '@/features/reportes/services/dashboardGerencialService.js';
 import {
   PERIODOS_PREDEFINIDOS, PERIODO_PREDETERMINADO, calcularPeriodo, fechaLocalIso, identificarPeriodo,
 } from '@/features/reportes/services/periodoDashboardService.js';
+import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
-const router = useRouter();
 const cargando = ref(true);
 const dashboard = ref(null);
 const filtros = ref(calcularPeriodo(PERIODO_PREDETERMINADO));
@@ -304,27 +303,16 @@ onMounted(cargarDashboard);
 </script>
 
 <template>
-  <main id="vista-dashboard-gerencial" class="min-h-[100dvh] bg-[#FAF7F4] p-4 sm:p-6">
+  <main id="vista-dashboard-gerencial" class="min-h-[100dvh] bg-[#FAF7F4]">
     <Toaster rich-colors position="top-center" />
 
-    <div class="mx-auto max-w-6xl space-y-5">
-      <header class="flex flex-wrap items-center gap-3 rounded-2xl border border-[#E5E0DB] bg-white p-4 shadow-sm sm:p-5">
-        <button
-          id="btn-volver-inicio-dashboard"
-          type="button"
-          class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E0DB] text-[#3D3D3D] hover:bg-[#FAF7F4]"
-          aria-label="Volver al inicio"
-          @click="router.push('/')"
-        >
-          <ArrowLeft :size="20" />
-        </button>
-        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-          <ChartNoAxesCombined :size="22" />
-        </div>
-        <div class="min-w-0 flex-1">
-          <h1 class="text-lg font-black text-[#3D3D3D]">Dashboard gerencial</h1>
-          <p class="text-xs text-[#6B6B6B]">KPIs financieros en tiempo real para decisión estratégica.</p>
-        </div>
+    <EncabezadoOperacion
+      titulo="Dashboard gerencial"
+      subtitulo="KPIs financieros en tiempo real para decisión estratégica."
+      :icono="ChartNoAxesCombined"
+      clase-icono="bg-blue-100 text-blue-700"
+    >
+      <template #acciones>
         <button
           id="btn-recargar-dashboard"
           type="button"
@@ -335,7 +323,10 @@ onMounted(cargarDashboard);
         >
           <RefreshCw :size="19" :class="{ 'animate-spin': cargando }" />
         </button>
-      </header>
+      </template>
+    </EncabezadoOperacion>
+
+    <div class="mx-auto max-w-6xl space-y-5 p-4 sm:p-6">
 
       <section class="rounded-2xl border border-[#E5E0DB] bg-white p-4 shadow-sm sm:p-5">
         <div class="mb-3 flex flex-wrap gap-2" role="group" aria-label="Periodos predefinidos">

@@ -27,37 +27,37 @@ const routes = [
     path: '/pos',
     name: 'pos',
     component: () => import('@/features/pos/views/POS.vue'),
-    meta: { roles: ['mesero', 'cajero', 'administrador'] },
+    meta: { roles: ['mesero', 'cajero', 'administrador', 'socio'] },
   },
   {
     path: '/cocina',
     name: 'cocina',
     component: () => import('@/features/pos/views/ColaCocina.vue'),
-    meta: { roles: ['cocinero', 'cajero', 'administrador'] },
+    meta: { roles: ['cocinero', 'cocinera', 'administrador', 'socio'] },
   },
   {
     path: '/caja',
     name: 'caja',
     component: () => import('@/features/pos/views/PantallaCobro.vue'),
-    meta: { roles: ['cajero', 'administrador'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'] },
   },
   {
     path: '/caja/apertura',
     name: 'caja-apertura',
     component: () => import('@/features/pos/views/AperturaCaja.vue'),
-    meta: { roles: ['cajero', 'administrador'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'], seccion: 'caja' },
   },
   {
     path: '/caja/ticket/:id',
     name: 'ticket-venta',
     component: () => import('@/features/pos/views/TicketVenta.vue'),
-    meta: { roles: ['cajero', 'administrador'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'], seccion: 'caja' },
   },
   {
     path: '/caja/cierre',
     name: 'cierre-caja',
     component: () => import('@/features/pos/views/ReporteCierreCaja.vue'),
-    meta: { roles: ['cajero', 'administrador'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'], seccion: 'caja' },
   },
   {
     path: '/pos/cocina',
@@ -67,25 +67,31 @@ const routes = [
     path: '/inventario',
     name: 'inventario',
     component: () => import('@/views/Inventario.vue'),
-    meta: { roles: ['cocinero', 'administrador'] },
+    meta: { roles: ['cocinero', 'cocinera', 'administrador', 'socio'] },
   },
   {
     path: '/requisiciones/nueva',
     name: 'nueva-requisicion',
     component: () => import('@/features/inventario/views/FormularioRequisicion.vue'),
-    meta: { roles: ['cocinero', 'administrador'] },
+    meta: { roles: ['cocinero', 'cocinera', 'administrador', 'socio'] },
   },
   {
     path: '/requisiciones',
     name: 'gestion-requisiciones',
     component: () => import('@/features/inventario/views/GestionRequisiciones.vue'),
-    meta: { roles: ['administrador'] },
+    meta: { roles: ['administrador', 'socio'] },
   },
   {
     path: '/contabilidad',
     name: 'contabilidad',
     component: () => import('@/views/Contabilidad.vue'),
-    meta: { roles: ['contadora', 'administrador'] },
+    meta: { roles: ['contadora', 'administrador', 'socio'] },
+  },
+  {
+    path: '/contabilidad/compras',
+    name: 'compras-iva',
+    component: () => import('@/features/contabilidad/views/ComprasIva.vue'),
+    meta: { roles: ['contadora', 'administrador', 'socio'] },
   },
   {
     path: '/reportes',
@@ -103,7 +109,7 @@ const routes = [
     path: '/admin',
     name: 'admin',
     component: () => import('@/views/Admin.vue'),
-    meta: { roles: ['administrador'] },
+    meta: { roles: ['administrador', 'socio'] },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -132,8 +138,9 @@ export function obtenerRutaInicioPorRol(rol) {
       return { name: 'contabilidad' };
     case 'socio':
       return { name: 'reportes' };
-    case 'mesero':
     case 'cajero':
+      return { name: 'caja' };
+    case 'mesero':
     case 'administrador':
     default:
       return { name: 'pos' };
@@ -163,10 +170,9 @@ router.beforeEach(async (to) => {
 
   const rutaDestino = obtenerRutaInicioPorRol(sesion.rol);
 
-  // Rutas públicas (login, inicio)
+  // Rutas públicas (login, inicio): con sesión activa se va directo a la vista del rol
   if (to.meta.publica || to.name === 'inicio') {
-    // Si ya está autenticado, no permitir volver a login
-    if (to.name === 'login' && sesion.autenticado) {
+    if (sesion.autenticado) {
       return rutaDestino;
     }
     return true;
@@ -181,8 +187,9 @@ router.beforeEach(async (to) => {
   if (to.meta.roles && to.meta.roles.length > 0) {
     const rolActual = sesion.rol;
     if (!rolActual || !to.meta.roles.includes(rolActual)) {
-      // Si el usuario no tiene acceso a la ruta solicitada, redirigir a su vista permitida
+      // Un rol sin acceso ni a su propia vista de inicio cerraría un ciclo login ↔ destino
       if (to.name === rutaDestino.name) {
+        await sesion.cerrarSesion();
         return { name: 'login' };
       }
       return rutaDestino;

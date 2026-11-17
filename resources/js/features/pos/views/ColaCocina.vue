@@ -9,31 +9,23 @@
  * @módulo POS – US-POS-02 / RF-POS-001
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { RouterLink, useRouter } from 'vue-router';
-import { useSesionStore } from '@/stores/sesion.js';
+import { RouterLink } from 'vue-router';
+import { usePermisos } from '@/shared/composables/usePermisos.js';
 import {
   ChefHat,
   RefreshCw,
   CheckCircle2,
   Volume2,
   VolumeX,
-  ArrowLeft,
   Receipt,
-  LogOut,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
 import { obtenerColaCocina, actualizarEstadoComanda } from '@/features/pos/services/posService.js';
 import ComandaCard from '@/features/pos/components/ComandaCard.vue';
 import ComandaCompletadaItem from '@/features/pos/components/ComandaCompletadaItem.vue';
+import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
-// Enrutador y Sesión activa
-const router = useRouter();
-const sesion = useSesionStore();
-
-async function manejarCerrarSesion() {
-  await sesion.cerrarSesion();
-  router.push('/login');
-}
+const { puedeVer } = usePermisos();
 
 // Estado de comandas
 const comandas = ref([]);
@@ -323,34 +315,12 @@ onUnmounted(() => {
     <!-- Toaster de notificaciones shadcn -->
     <Toaster richColors position="top-center" />
 
-    <!-- Barra superior de navegación y control KDS -->
-    <header class="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 border-b border-[#E5E0DB] bg-white/95 px-4 py-3 backdrop-blur-md shadow-xs">
-      <div class="flex items-center gap-3">
-        <RouterLink
-          to="/pos"
-          class="flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E0DB] bg-[#FAF7F4] text-[#3D3D3D] hover:bg-zinc-100 active:scale-95 transition-all"
-          title="Regresar al Punto de Venta"
-        >
-          <ArrowLeft :size="20" stroke-width="2" />
-        </RouterLink>
-
-        <div class="flex items-center gap-2.5">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F26A21] text-white shadow-xs">
-            <ChefHat :size="22" stroke-width="2" />
-          </div>
-          <div>
-            <h1 class="text-lg font-bold leading-tight text-[#3D3D3D] tracking-tight">
-              Cola de Cocina
-            </h1>
-            <p class="text-sm text-[#6B6B6B]">
-              Comedor Chayito
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Controles de la pantalla: Sonido, Auto-refresco, Refrescar ahora -->
-      <div class="flex items-center gap-2">
+    <EncabezadoOperacion
+      titulo="Cola de Cocina"
+      subtitulo="Comedor Chayito · Órdenes en preparación"
+      :icono="ChefHat"
+    >
+      <template #acciones>
         <!-- Alternar sonido de nuevas comandas -->
         <button
           type="button"
@@ -365,6 +335,7 @@ onUnmounted(() => {
 
         <!-- Botón de acceso rápido a Caja con badge de comandas listas -->
         <RouterLink
+          v-if="puedeVer(['cajero', 'administrador', 'socio'])"
           to="/caja"
           class="relative flex h-11 items-center gap-2 rounded-xl border border-[#E5E0DB] bg-white px-3.5 text-sm font-semibold text-[#3D3D3D] hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer shadow-xs"
           :class="totalListasCobro > 0 ? 'border-[#2E7D4F] bg-emerald-50 text-[#2E7D4F]' : ''"
@@ -392,19 +363,8 @@ onUnmounted(() => {
           <RefreshCw :size="16" stroke-width="2.2" :class="{ 'animate-spin': cargando }" />
           <span class="hidden sm:inline">Refrescar</span>
         </button>
-
-        <!-- Botón de Cerrar Sesión -->
-        <button
-          type="button"
-          @click="manejarCerrarSesion"
-          class="flex h-11 items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 text-sm font-semibold text-rose-600 hover:bg-rose-100 active:scale-95 transition-all cursor-pointer shadow-xs"
-          title="Cerrar sesión"
-        >
-          <LogOut :size="16" />
-          <span class="hidden sm:inline">Salir</span>
-        </button>
-      </div>
-    </header>
+      </template>
+    </EncabezadoOperacion>
 
     <!-- Tablero Kanban tipo Jira: una columna por estado de la comanda -->
     <main class="flex-1 overflow-x-auto p-4 md:p-6">

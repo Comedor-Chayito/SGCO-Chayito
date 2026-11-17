@@ -11,9 +11,9 @@ use Tests\TestCase;
 /**
  * Pruebas del desglose automático de costo neto e IVA crédito fiscal de compras.
  *
- * @autor  Jeferson De La Cruz
- * @fecha  2026-10-23
- * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
+ * @autor  Jeferson De La Cruz / Cesar
+ * @fecha  2026-10-25
+ * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67 / CC-70
  */
 class CompraIvaTest extends TestCase
 {
@@ -153,5 +153,62 @@ class CompraIvaTest extends TestCase
             'fecha_compra' => '2026-10-23',
             'monto_total' => 10,
         ])->assertForbidden();
+    }
+
+    /**
+     * Verifica el cálculo con facturas de ejemplo reales (fraccionarias y de montos cotidianos).
+     *
+     * @autor  Cesar
+     * @fecha  2026-10-25
+     * @módulo Contabilidad – RF-CON-006 / CC-70
+     */
+    public function test_desglose_iva_con_facturas_de_ejemplo_reales_de_compras(): void
+    {
+        $facturasEjemplo = [
+            ['total' => 45.00,  'neto' => '39.82',  'iva' => '5.18'],
+            ['total' => 84.75,  'neto' => '75.00',  'iva' => '9.75'],
+            ['total' => 15.25,  'neto' => '13.50',  'iva' => '1.75'],
+            ['total' => 199.99, 'neto' => '176.98', 'iva' => '23.01'],
+            ['total' => 1.13,   'neto' => '1.00',   'iva' => '0.13'],
+        ];
+
+        foreach ($facturasEjemplo as $factura) {
+            $resp = $this->postJson('/api/compras', [
+                'fecha_compra' => '2026-10-25',
+                'monto_total'  => $factura['total'],
+            ]);
+
+            $resp
+                ->assertCreated()
+                ->assertJsonPath('data.monto_total', number_format($factura['total'], 2, '.', ''))
+                ->assertJsonPath('data.costo_neto', $factura['neto'])
+                ->assertJsonPath('data.iva_credito_fiscal', $factura['iva']);
+        }
+    }
+
+    /**
+     * Verifica que en todas las compras registradas la suma de neto e IVA coincide con el monto total.
+     *
+     * @autor  Cesar
+     * @fecha  2026-10-25
+     * @módulo Contabilidad – RF-CON-006 / CC-70
+     */
+    public function test_invariante_suma_costo_neto_e_iva_credito_fiscal_en_compras(): void
+    {
+        $montos = [25.00, 78.50, 120.30, 250.00, 339.00];
+
+        foreach ($montos as $monto) {
+            $resp = $this->postJson('/api/compras', [
+                'fecha_compra' => '2026-10-25',
+                'monto_total'  => $monto,
+            ]);
+
+            $resp->assertCreated();
+
+            $neto = (float) $resp->json('data.costo_neto');
+            $iva  = (float) $resp->json('data.iva_credito_fiscal');
+
+            $this->assertEquals($monto, round($neto + $iva, 2));
+        }
     }
 }

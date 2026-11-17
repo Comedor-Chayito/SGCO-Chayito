@@ -94,7 +94,7 @@ function agregarPlatoAlTicket() {
       />
 
       <!-- ── PASO 2: Menú y Carrito ── -->
-      <div v-else-if="carrito.pasoActual === 2" class="flex h-[100dvh] min-h-0 flex-1 overflow-hidden">
+      <div v-else-if="carrito.pasoActual === 2" class="flex h-[calc(100dvh-var(--alto-shell,0px))] min-h-0 flex-1 overflow-hidden">
         
         <!-- Zona Menú (Izquierda) -->
         <div class="relative min-w-0 flex-1 overflow-hidden">
