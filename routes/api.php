@@ -82,21 +82,30 @@ Route::middleware('auth:sanctum')->group(function () {
         // Registro de facturas con correlativo único (CC-63 / US-CON-01)
         Route::post('/egresos', [EgresoController::class, 'store']);
     });
+
+    // Módulo POS — RF-POS-001 (Comandas). Roles según CLAUDE.md §9 (CC-97)
+    Route::get('/platillos', [ComandaController::class, 'platillos'])
+        ->middleware('role:mesero|cajero|cocinero|cocinera|administrador|socio');
+
+    Route::middleware('role:mesero|cajero|administrador|socio')->group(function () {
+        Route::get('/mesas',     [ComandaController::class, 'mesas']);
+        Route::post('/comandas', [ComandaController::class, 'registrar']);
+    });
+
+    Route::get('/comandas', [ComandaController::class, 'index'])
+        ->middleware('role:cajero|administrador|socio');
+
+    // US-POS-02: Cola de cocina y cambio de estado (CC-27 / CC-28)
+    // IMPORTANTE: /comandas/cocina debe ir antes de /comandas/{comanda} para evitar conflicto de rutas
+    Route::middleware('role:cocinero|cocinera|administrador|socio')->group(function () {
+        Route::get('/comandas/cocina',              [ComandaController::class, 'colaCocina']);
+        Route::get('/comandas/{comanda}/impresion', [ComandaController::class, 'impresion']);
+    });
+
+    // El cajero cambia el estado al cobrar o cancelar; cocina al preparar
+    Route::patch('/comandas/{comanda}/estado', [ComandaController::class, 'actualizarEstado'])
+        ->middleware('role:cocinero|cocinera|cajero|administrador|socio');
 });
-
-// Módulo POS — RF-POS-001 (Comandas)
-Route::get('/platillos',                    [ComandaController::class, 'platillos']);
-Route::get('/mesas',                        [ComandaController::class, 'mesas']);
-Route::get('/comandas',                     [ComandaController::class, 'index']);
-Route::post('/comandas',                    [ComandaController::class, 'registrar']);
-Route::get('/comandas/cocina',              [ComandaController::class, 'colaCocina']);
-Route::patch('/comandas/{comanda}/estado',  [ComandaController::class, 'actualizarEstado']);
-Route::get('/comandas/{comanda}/impresion', [ComandaController::class, 'impresion']);
-
-// US-POS-02: Cola de cocina y cambio de estado (CC-27 / CC-28)
-// IMPORTANTE: /comandas/cocina debe ir antes de /comandas/{comanda} para evitar conflicto de rutas
-Route::get('/comandas/cocina',              [ComandaController::class, 'colaCocina']);
-Route::patch('/comandas/{comanda}/estado',  [ComandaController::class, 'actualizarEstado']);
 
 // Módulo Inventario — CC-45: CRUD de insumos con unidad de medida (US-INV-01 / RF-INV-003)
 Route::get('/insumos',           [InsumoController::class, 'index']);

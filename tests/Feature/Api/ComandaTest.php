@@ -7,6 +7,8 @@ use App\Models\Mesa;
 use App\Models\Platillo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -39,7 +41,12 @@ class ComandaTest extends TestCase
     {
         parent::setUp();
 
+        // El cajero puede registrar y listar comandas (CLAUDE.md §9, CC-97)
+        Role::firstOrCreate(['name' => 'cajero', 'guard_name' => 'web']);
+
         $this->usuario = User::factory()->create(['id' => 1]);
+        $this->usuario->assignRole('cajero');
+        Sanctum::actingAs($this->usuario);
 
         $this->mesa = Mesa::create([
             'numero'    => 1,

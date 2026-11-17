@@ -5,6 +5,8 @@ namespace Tests\Feature\Api;
 use App\Models\Comanda;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -34,7 +36,13 @@ class EstadoComandaTest extends TestCase
     {
         parent::setUp();
 
+        // Cocina consulta la cola y cambia estados (CLAUDE.md §9, CC-97)
+        Role::firstOrCreate(['name' => 'cocinero', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'cajero', 'guard_name' => 'web']);
+
         $this->usuario = User::factory()->create(['id' => 1]);
+        $this->usuario->assignRole('cocinero');
+        Sanctum::actingAs($this->usuario);
     }
 
     /**
@@ -124,6 +132,11 @@ class EstadoComandaTest extends TestCase
         $lista = $this->crearComanda('lista');
         $this->crearComanda('en_preparacion');
         $this->crearComanda('pagada');
+
+        // El listado para cobro es exclusivo de caja (CC-97)
+        $cajero = User::factory()->create();
+        $cajero->assignRole('cajero');
+        Sanctum::actingAs($cajero);
 
         $response = $this->getJson('/api/comandas?estado=lista');
 
