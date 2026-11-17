@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ExistenciaAreaOperativa;
 use App\Models\Insumo;
+use App\Models\MovimientoInventario;
 use App\Models\Requisicion;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -127,13 +128,14 @@ class RequisicionService
      * @módulo Inventario – RF-INV-004 / CC-54
      *
      * @param  Requisicion $requisicion Requisición aprobada que se transferirá.
+     * @param  int|null $usuarioId Actor de la transferencia; por defecto el usuario autenticado.
      * @return Requisicion Requisición transferida con sus relaciones actualizadas.
      *
      * @throws ValidationException Si no está aprobada o bodega no tiene stock suficiente.
      */
-    public function transferir(Requisicion $requisicion): Requisicion
+    public function transferir(Requisicion $requisicion, ?int $usuarioId = null): Requisicion
     {
-        return DB::transaction(function () use ($requisicion) {
+        return DB::transaction(function () use ($requisicion, $usuarioId) {
             $requisicionBloqueada = Requisicion::query()
                 ->with('detalles.insumo')
                 ->lockForUpdate()
@@ -181,9 +183,14 @@ class RequisicionService
             foreach ($requisicionBloqueada->detalles as $detalle) {
                 $cantidadAprobada = (float) $detalle->cantidad_aprobada;
                 $insumo = $insumos->get($detalle->insumo_id);
-                $stockBodega = round((float) $insumo->stock_actual - $cantidadAprobada, 6);
-
-                $insumo->update(['stock_actual' => $stockBodega]);
+                $resultado = app(MovimientoInventarioService::class)->aplicar(
+                    $insumo,
+                    -$cantidadAprobada,
+                    MovimientoInventario::TIPO_REQUISICION,
+                    $usuarioId,
+                    ['requisicion_id' => $requisicionBloqueada->id]
+                );
+                $insumos->put($insumo->id, $resultado['insumo']);
 
                 $existenciaArea = $existenciasArea->get($insumo->id);
 

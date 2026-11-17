@@ -8,6 +8,7 @@ use App\Models\Mesa;
 use App\Models\Platillo;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ComandaService
 {
@@ -149,13 +150,22 @@ class ComandaService
      *
      * @param  Comanda  $comanda  Instancia de la comanda a modificar.
      * @param  string  $nuevoEstado  Nuevo valor para el campo estado.
+     * @param  int|null $usuarioId Actor del cambio; por defecto el usuario autenticado.
      * @return Comanda Comanda actualizada con relaciones cargadas.
      */
-    public function actualizarEstado(Comanda $comanda, string $nuevoEstado): Comanda
+    public function actualizarEstado(Comanda $comanda, string $nuevoEstado, ?int $usuarioId = null): Comanda
     {
-        return DB::transaction(function () use ($comanda, $nuevoEstado) {
+        return DB::transaction(function () use ($comanda, $nuevoEstado, $usuarioId) {
+            $comanda = Comanda::query()->lockForUpdate()->findOrFail($comanda->id);
+
+            if (in_array($comanda->estado, ['pagada', 'cancelada'], true)) {
+                throw ValidationException::withMessages([
+                    'estado' => 'No se puede modificar una comanda pagada o cancelada.',
+                ]);
+            }
+
             if ($nuevoEstado === 'pagada') {
-                $this->deduccionInventarioService->descontarPorComanda($comanda);
+                $this->deduccionInventarioService->descontarPorComanda($comanda, $usuarioId);
             }
 
             $comanda->update(['estado' => $nuevoEstado]);

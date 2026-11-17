@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Comanda;
 use App\Models\Insumo;
+use App\Models\MovimientoInventario;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -111,6 +112,7 @@ class DeduccionInventarioService
      * @módulo Inventario – RF-INV-003 / CC-47 / CC-49
      *
      * @param  Comanda  $comanda  Comanda cuyos platillos ya fueron cobrados.
+     * @param  int|null $usuarioId Actor del descuento; por defecto el usuario autenticado.
      * @return array<int, array{
      *     insumo_id: int,
      *     nombre: string,
@@ -122,7 +124,7 @@ class DeduccionInventarioService
      *     alerta_stock_bajo: bool
      * }>
      */
-    public function descontarPorComanda(Comanda $comanda): array
+    public function descontarPorComanda(Comanda $comanda, ?int $usuarioId = null): array
     {
         $consumos = $this->calcularConsumosPorComanda($comanda);
 
@@ -130,9 +132,17 @@ class DeduccionInventarioService
             return [];
         }
 
-        return DB::transaction(function () use ($consumos) {
+        return DB::transaction(function () use ($consumos, $comanda, $usuarioId) {
+            Comanda::query()->lockForUpdate()->findOrFail($comanda->id);
+
+            if (MovimientoInventario::query()->where('comanda_id', $comanda->id)
+                ->where('tipo', MovimientoInventario::TIPO_VENTA)->exists()) {
+                return [];
+            }
+
             $insumos = Insumo::query()
                 ->whereIn('id', collect($consumos)->pluck('insumo_id'))
+                ->orderBy('id')
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
@@ -147,9 +157,18 @@ class DeduccionInventarioService
                 }
 
                 $stockAnterior = (float) $insumo->stock_actual;
-                $stockActual = round($stockAnterior - $consumo['total_a_descontar'], 6);
+                if ($consumo['total_a_descontar'] == 0) {
+                    continue;
+                }
 
-                $insumo->update(['stock_actual' => $stockActual]);
+                $resultado = app(MovimientoInventarioService::class)->aplicar(
+                    $insumo,
+                    -$consumo['total_a_descontar'],
+                    MovimientoInventario::TIPO_VENTA,
+                    $usuarioId,
+                    ['comanda_id' => $comanda->id]
+                );
+                $stockActual = (float) $resultado['insumo']->stock_actual;
 
                 $descontados[] = [
                     'insumo_id' => $insumo->id,

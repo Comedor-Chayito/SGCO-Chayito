@@ -39,7 +39,7 @@ class ActualizarInsumoRequest extends FormRequest
                 Rule::unique('insumos', 'nombre')->ignore($this->route('insumo')),
             ],
             'unidad_medida' => ['required', 'string', 'max:20'],
-            'stock_actual'  => ['required', 'numeric', 'min:0'],
+            'stock_actual'  => ['prohibited'],
             'stock_minimo'  => ['required', 'numeric', 'min:0'],
         ];
     }
@@ -57,9 +57,7 @@ class ActualizarInsumoRequest extends FormRequest
             'nombre.unique'          => 'Ya existe un insumo con ese nombre.',
             'unidad_medida.required' => 'La unidad de medida es obligatoria (ej: kg, lt, unidad).',
             'unidad_medida.max'      => 'La unidad de medida no puede superar los 20 caracteres.',
-            'stock_actual.required'  => 'El stock actual es obligatorio.',
-            'stock_actual.numeric'   => 'El stock actual debe ser un número.',
-            'stock_actual.min'       => 'El stock actual no puede ser negativo.',
+            'stock_actual.prohibited' => 'El stock actual solo se modifica mediante movimientos de inventario.',
             'stock_minimo.required'  => 'El stock mínimo es obligatorio.',
             'stock_minimo.numeric'   => 'El stock mínimo debe ser un número.',
             'stock_minimo.min'       => 'El stock mínimo no puede ser negativo.',

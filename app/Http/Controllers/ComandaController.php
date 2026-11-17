@@ -163,7 +163,8 @@ class ComandaController extends Controller
     {
         $comandaActualizada = $this->comandaService->actualizarEstado(
             $comanda,
-            $request->validated()['estado']
+            $request->validated()['estado'],
+            $request->user()->id
         );
 
         return response()->json([
