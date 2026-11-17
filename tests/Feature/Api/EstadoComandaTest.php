@@ -40,7 +40,7 @@ class EstadoComandaTest extends TestCase
         Role::firstOrCreate(['name' => 'cocinero', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'cajero', 'guard_name' => 'web']);
 
-        $this->usuario = User::factory()->create(['id' => 1]);
+        $this->usuario = User::factory()->create();
         $this->usuario->assignRole('cocinero');
         Sanctum::actingAs($this->usuario);
     }

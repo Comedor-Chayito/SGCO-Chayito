@@ -44,7 +44,7 @@ class ComandaTest extends TestCase
         // El cajero puede registrar y listar comandas (CLAUDE.md §9, CC-97)
         Role::firstOrCreate(['name' => 'cajero', 'guard_name' => 'web']);
 
-        $this->usuario = User::factory()->create(['id' => 1]);
+        $this->usuario = User::factory()->create();
         $this->usuario->assignRole('cajero');
         Sanctum::actingAs($this->usuario);
 
@@ -114,11 +114,13 @@ class ComandaTest extends TestCase
                 ],
             ]);
 
+        // La comanda queda a nombre del usuario autenticado (CC-99)
         $this->assertDatabaseHas('comandas', [
-            'canal'    => 'mesa',
-            'mesa_id'  => $this->mesa->id,
-            'estado'   => 'pendiente',
-            'subtotal' => 5.00,
+            'canal'      => 'mesa',
+            'mesa_id'    => $this->mesa->id,
+            'usuario_id' => $this->usuario->id,
+            'estado'     => 'pendiente',
+            'subtotal'   => 5.00,
         ]);
 
         $this->assertDatabaseHas('comanda_detalles', [
