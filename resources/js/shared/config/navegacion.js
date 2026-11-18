@@ -7,6 +7,7 @@ import {
   Package,
   ReceiptText,
   ShoppingCart,
+  SlidersHorizontal,
   Users,
   WalletCards,
 } from '@lucide/vue';
@@ -49,6 +50,7 @@ export const ITEMS_NAVEGACION = [
     titulo: 'Configuración',
     items: [
       { etiqueta: 'Usuarios y roles', ruta: 'admin', icono: Users, roles: ['administrador', 'socio'] },
+      { etiqueta: 'Catálogos', ruta: 'configuracion', icono: SlidersHorizontal, roles: ['administrador', 'socio'] },
     ],
   },
 ];
