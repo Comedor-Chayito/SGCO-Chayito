@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardGerencialController;
 use App\Http\Controllers\ExportacionReporteController;
 use App\Http\Controllers\EgresoController;
 use App\Http\Controllers\InsumoController;
+use App\Http\Controllers\MesaController;
 use App\Http\Controllers\RecetaController;
 use App\Http\Controllers\RequisicionController;
 use App\Http\Controllers\RetiroController;
@@ -93,6 +94,16 @@ Route::middleware('auth:sanctum')->group(function () {
             '/subcategorias-egreso/{subcategoriaEgreso}/toggle-activo',
             [SubcategoriaEgresoController::class, 'toggleActivo'],
         );
+    });
+
+    // Panel de configuración — catálogo de mesas (US-ADM-03 / CC-107)
+    // IMPORTANTE: /mesas/todas debe ir antes de /mesas/{mesa} para evitar conflicto de rutas
+    Route::middleware('role:administrador|socio')->group(function () {
+        Route::get('/mesas/todas',                 [MesaController::class, 'todas']);
+        Route::post('/mesas',                      [MesaController::class, 'store']);
+        Route::put('/mesas/{mesa}',                [MesaController::class, 'update']);
+        Route::delete('/mesas/{mesa}',             [MesaController::class, 'destroy']);
+        Route::patch('/mesas/{mesa}/toggle-activo', [MesaController::class, 'toggleActivo']);
     });
 });
 
