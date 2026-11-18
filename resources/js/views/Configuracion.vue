@@ -15,7 +15,11 @@ import {
   Grid2X2,
   Tags,
 } from '@lucide/vue';
+import { Toaster } from 'vue-sonner';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
+import TablaPlatillos from '@/features/admin/components/TablaPlatillos.vue';
+import TablaMesas from '@/features/admin/components/TablaMesas.vue';
+import TablaSubcategorias from '@/features/admin/components/TablaSubcategorias.vue';
 
 const pestanaActiva = ref('platillos');
 
@@ -43,6 +47,7 @@ const PESTANAS = [
 
 <template>
   <main class="flex min-h-screen flex-col bg-[#FAF7F4]" id="vista-configuracion">
+    <Toaster position="top-right" rich-colors />
 
     <EncabezadoOperacion
       titulo="Configuración de catálogos"
@@ -75,51 +80,18 @@ const PESTANAS = [
       <div class="mx-auto max-w-7xl">
 
         <!-- Pestaña: Platillos y Precios -->
-        <section
-          v-if="pestanaActiva === 'platillos'"
-          id="panel-catalogo-platillos"
-          class="space-y-4"
-        >
-          <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 class="text-lg font-bold text-[#3D3D3D]">Platillos y Menú del Día</h2>
-              <p class="text-sm text-[#6B6B6B]">
-                Administra los precios base, activación para el menú del día y visibilidad en el POS.
-              </p>
-            </div>
-          </div>
+        <section v-if="pestanaActiva === 'platillos'" id="panel-catalogo-platillos">
+          <TablaPlatillos />
         </section>
 
         <!-- Pestaña: Mesas -->
-        <section
-          v-else-if="pestanaActiva === 'mesas'"
-          id="panel-catalogo-mesas"
-          class="space-y-4"
-        >
-          <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 class="text-lg font-bold text-[#3D3D3D]">Catálogo de Mesas</h2>
-              <p class="text-sm text-[#6B6B6B]">
-                Administra los números y nombres de mesa disponibles para las órdenes en salón.
-              </p>
-            </div>
-          </div>
+        <section v-else-if="pestanaActiva === 'mesas'" id="panel-catalogo-mesas">
+          <TablaMesas />
         </section>
 
         <!-- Pestaña: Subcategorías de egreso -->
-        <section
-          v-else-if="pestanaActiva === 'subcategorias'"
-          id="panel-catalogo-subcategorias"
-          class="space-y-4"
-        >
-          <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 class="text-lg font-bold text-[#3D3D3D]">Subcategorías de Egreso</h2>
-              <p class="text-sm text-[#6B6B6B]">
-                Gestiona las categorías auxiliares para clasificar egresos y compras de la contadora.
-              </p>
-            </div>
-          </div>
+        <section v-else-if="pestanaActiva === 'subcategorias'" id="panel-catalogo-subcategorias">
+          <TablaSubcategorias />
         </section>
 
       </div>
