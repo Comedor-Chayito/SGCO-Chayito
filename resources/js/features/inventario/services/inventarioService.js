@@ -34,7 +34,7 @@ export async function obtenerInsumos(busqueda = '') {
  * @fecha  2026-10-13
  * @módulo Inventario – RF-INV-003
  *
- * @param   {{ nombre: string, unidad_medida: string, stock_actual?: number, stock_minimo?: number }} payload
+ * @param   {{ nombre: string, unidad_medida: string, stock_minimo?: number }} payload
  * @returns {Promise<Object>} Insumo creado.
  */
 export async function crearInsumo(payload) {
@@ -70,6 +70,61 @@ export async function actualizarInsumo(id, payload) {
  */
 export async function eliminarInsumo(id) {
   await api.delete(`/insumos/${id}`);
+}
+
+/**
+ * Registra una entrada de stock con egreso y motivo opcionales.
+ * @autor Equipo de desarrollo
+ * @fecha 2026-11-17
+ * @módulo Inventario RF-INV-003 / CC-113
+ * @param {number} id Identificador del insumo.
+ * @param {Object} datos Cantidad positiva y referencias opcionales.
+ * @returns {Promise<Object>} Insumo actualizado y movimiento.
+ */
+export async function registrarEntrada(id, datos) {
+  const respuesta = await api.post(`/insumos/${id}/entradas`, datos);
+  return respuesta.data.data;
+}
+
+/**
+ * Registra un ajuste mediante delta firmado y motivo obligatorio.
+ * @autor Equipo de desarrollo
+ * @fecha 2026-11-17
+ * @módulo Inventario RF-INV-003 / CC-113
+ * @param {number} id Identificador del insumo.
+ * @param {Object} datos Cantidad distinta de cero y motivo.
+ * @returns {Promise<Object>} Insumo actualizado y movimiento.
+ */
+export async function registrarAjuste(id, datos) {
+  const respuesta = await api.post(`/insumos/${id}/ajustes`, datos);
+  return respuesta.data.data;
+}
+
+/**
+ * Consulta una página del historial de movimientos del insumo.
+ * @autor Equipo de desarrollo
+ * @fecha 2026-11-17
+ * @módulo Inventario RF-INV-003 / CC-113
+ * @param {number} id Identificador del insumo.
+ * @param {number} pagina Página solicitada.
+ * @returns {Promise<Object>} Paginador Laravel.
+ */
+export async function obtenerMovimientos(id, pagina = 1) {
+  const respuesta = await api.get(`/insumos/${id}/movimientos`, { params: { page: pagina } });
+  return respuesta.data.data;
+}
+
+/**
+ * Consulta egresos paginados para vincular entradas sin importar otro feature.
+ * @autor Equipo de desarrollo
+ * @fecha 2026-11-17
+ * @módulo Inventario RF-INV-003 / CC-113
+ * @param {number} pagina Página solicitada.
+ * @returns {Promise<Object>} Paginador con proveedor y comprobante.
+ */
+export async function obtenerEgresosEntrada(pagina = 1) {
+  const respuesta = await api.get('/egresos', { params: { page: pagina, busqueda: '' } });
+  return respuesta.data.data.egresos;
 }
 
 // ─── CC-57: Alertas de quiebre de stock ────────────────────────────────────────

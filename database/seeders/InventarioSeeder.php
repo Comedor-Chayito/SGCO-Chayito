@@ -109,7 +109,7 @@ class InventarioSeeder extends Seeder
             'Soda Lata'           => ['Soda en lata' => 1.000],
         ];
 
-        $idsInsumo = Insumo::pluck('id', 'nombre');
+        $insumosPorNombre = Insumo::all()->keyBy('nombre');
         $idsPlatillo = Platillo::pluck('id', 'nombre');
 
         foreach ($recetas as $platillo => $ingredientes) {
@@ -117,10 +117,16 @@ class InventarioSeeder extends Seeder
                 continue;
             }
 
-            foreach ($ingredientes as $insumo => $cantidad) {
+            foreach ($ingredientes as $nombreInsumo => $cantidad) {
+                $insumo = $insumosPorNombre[$nombreInsumo];
+
+                // unidad_consumo va explícita: con WithoutModelEvents el hook creating no corre
                 Receta::updateOrCreate(
-                    ['platillo_id' => $idsPlatillo[$platillo], 'insumo_id' => $idsInsumo[$insumo]],
-                    ['cantidad_por_porcion' => $cantidad]
+                    ['platillo_id' => $idsPlatillo[$platillo], 'insumo_id' => $insumo->id],
+                    [
+                        'cantidad_por_porcion' => $cantidad,
+                        'unidad_consumo'       => $insumo->unidad_medida,
+                    ]
                 );
             }
         }

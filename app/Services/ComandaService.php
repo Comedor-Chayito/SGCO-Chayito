@@ -8,9 +8,13 @@ use App\Models\Mesa;
 use App\Models\Platillo;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ComandaService
 {
+    /** Monto máximo que admite comandas.subtotal DECIMAL(10,2). */
+    public const MONTO_MAXIMO_COMANDA = 99999999.99;
+
     /**
      * Inicializa el servicio de comandas con la deducción automática de inventario.
      *
@@ -44,7 +48,8 @@ class ComandaService
     {
         return DB::transaction(function () use ($request, $usuarioId) {
             $items = $request->validated()['items'];
-            $subtotal = $this->calcularSubtotal($items);
+            $platillos = $this->bloquearPlatillosDisponibles($items);
+            $subtotal = $this->calcularSubtotal($items, $platillos);
 
             $comanda = Comanda::create([
                 'mesa_id' => $request->validated()['mesa_id'] ?? null,
@@ -62,7 +67,7 @@ class ComandaService
             }
 
             foreach ($items as $item) {
-                $platillo = Platillo::findOrFail($item['platillo_id']);
+                $platillo = $platillos[$item['platillo_id']];
 
                 $comanda->detalles()->create([
                     'platillo_id' => $platillo->id,
@@ -151,13 +156,22 @@ class ComandaService
      *
      * @param  Comanda  $comanda  Instancia de la comanda a modificar.
      * @param  string  $nuevoEstado  Nuevo valor para el campo estado.
+     * @param  int|null $usuarioId Actor del cambio; por defecto el usuario autenticado.
      * @return Comanda Comanda actualizada con relaciones cargadas.
      */
-    public function actualizarEstado(Comanda $comanda, string $nuevoEstado): Comanda
+    public function actualizarEstado(Comanda $comanda, string $nuevoEstado, ?int $usuarioId = null): Comanda
     {
-        return DB::transaction(function () use ($comanda, $nuevoEstado) {
+        return DB::transaction(function () use ($comanda, $nuevoEstado, $usuarioId) {
+            $comanda = Comanda::query()->lockForUpdate()->findOrFail($comanda->id);
+
+            if (in_array($comanda->estado, ['pagada', 'cancelada'], true)) {
+                throw ValidationException::withMessages([
+                    'estado' => 'No se puede modificar una comanda pagada o cancelada.',
+                ]);
+            }
+
             if ($nuevoEstado === 'pagada') {
-                $this->deduccionInventarioService->descontarPorComanda($comanda);
+                $this->deduccionInventarioService->descontarPorComanda($comanda, $usuarioId);
             }
 
             $comanda->update(['estado' => $nuevoEstado]);
@@ -201,8 +215,63 @@ class ComandaService
     }
 
     /**
+     * Bloquea (lockForUpdate) los platillos de la comanda y verifica que sigan disponibles.
+     * Se ejecuta dentro de la transacción: una desactivación o cambio de precio concurrente
+     * espera a que la comanda se registre, y la comanda usa el precio y estado bloqueados.
+     *
+     * @autor  Jeferson De La Cruz
+     *
+     * @fecha  2026-11-17
+     *
+     * @módulo POS – RF-POS-001 / US-ADM-03 (CC-106)
+     *
+     * @param  array<int, array{platillo_id: int, cantidad: int}>  $items  Ítems validados.
+     * @return \Illuminate\Support\Collection<int, Platillo> Platillos indexados por id.
+     *
+     * @throws ValidationException Si un platillo ya no existe o no está disponible.
+     */
+    private function bloquearPlatillosDisponibles(array $items): \Illuminate\Support\Collection
+    {
+        $platillos = Platillo::whereIn('id', array_column($items, 'platillo_id'))
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
+
+        foreach ($items as $indice => $item) {
+            $platillo = $platillos->get($item['platillo_id']);
+
+            if ($platillo === null) {
+                throw ValidationException::withMessages([
+                    "items.{$indice}.platillo_id" => 'Uno de los platillos seleccionados no existe.',
+                ]);
+            }
+
+            if (! $platillo->disponible) {
+                throw ValidationException::withMessages([
+                    "items.{$indice}.platillo_id" => 'El platillo seleccionado no está disponible en el menú del día.',
+                ]);
+            }
+
+            // Si el cliente informó el precio que mostró, debe coincidir con el vigente bajo bloqueo
+            $precioEsperado = $item['precio_esperado'] ?? null;
+            $centavosVigentes = (int) round((float) $platillo->precio_unitario * 100);
+
+            if ($precioEsperado !== null && (int) round((float) $precioEsperado * 100) !== $centavosVigentes) {
+                throw ValidationException::withMessages([
+                    "items.{$indice}.precio_esperado" => "El precio de {$platillo->nombre} cambió a "
+                        . number_format((float) $platillo->precio_unitario, 2)
+                        . '. Revisa la orden y vuelve a confirmarla.',
+                ]);
+            }
+        }
+
+        return $platillos;
+    }
+
+    /**
      * Calcula el subtotal de una comanda sumando cantidad × precio_unitario de cada ítem.
-     * Obtiene el precio directamente del platillo en BD, no del payload del cliente.
+     * Toma el precio de los platillos bloqueados en BD, no del payload del cliente, y rechaza
+     * totales que no caben en comandas.subtotal DECIMAL(10,2).
      *
      * @autor  Jeferson De La Cruz
      *
@@ -211,22 +280,29 @@ class ComandaService
      * @módulo POS – RF-POS-001
      *
      * @param  array<int, array{platillo_id: int, cantidad: int}>  $items  Ítems validados.
+     * @param  \Illuminate\Support\Collection<int, Platillo>  $platillos  Platillos bloqueados por id.
      * @return float Subtotal redondeado a 2 decimales.
+     *
+     * @throws ValidationException Si el subtotal supera MONTO_MAXIMO_COMANDA.
      */
-    private function calcularSubtotal(array $items): float
+    private function calcularSubtotal(array $items, \Illuminate\Support\Collection $platillos): float
     {
-        $platilloIds = array_column($items, 'platillo_id');
-        $precios = Platillo::whereIn('id', $platilloIds)
-            ->pluck('precio_unitario', 'id');
-
         $subtotal = 0.0;
 
         foreach ($items as $item) {
-            $precio = (float) ($precios[$item['platillo_id']] ?? 0);
+            $precio = (float) $platillos[$item['platillo_id']]->precio_unitario;
             $subtotal += $precio * $item['cantidad'];
         }
 
-        return round($subtotal, 2);
+        $subtotal = round($subtotal, 2);
+
+        if ($subtotal > self::MONTO_MAXIMO_COMANDA) {
+            throw ValidationException::withMessages([
+                'items' => 'El total de la comanda supera el monto máximo permitido (99,999,999.99).',
+            ]);
+        }
+
+        return $subtotal;
     }
 
     /**

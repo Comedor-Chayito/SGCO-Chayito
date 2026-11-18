@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Insumo;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -32,9 +33,9 @@ class InsumoService
      */
     public function evaluarExistencias(Insumo $insumo): string
     {
-        // Comparación en milésimas (precisión de la columna) para no arrastrar errores de punto flotante.
-        $actual = (int) round((float) $insumo->stock_actual * 1000);
-        $minimo = (int) round((float) $insumo->stock_minimo * 1000);
+        // Compara millonesimos, la precision real de las columnas de existencias.
+        $actual = (int) round((float) $insumo->stock_actual * 1000000);
+        $minimo = (int) round((float) $insumo->stock_minimo * 1000000);
 
         if ($actual <= 0) {
             return self::ESTADO_STOCK_AGOTADO;
@@ -135,7 +136,7 @@ class InsumoService
         $insumo = Insumo::create([
             'nombre'        => trim($datos['nombre']),
             'unidad_medida' => trim($datos['unidad_medida']),
-            'stock_actual'  => $datos['stock_actual'] ?? 0,
+            'stock_actual'  => 0,
             'stock_minimo'  => $datos['stock_minimo'] ?? 0,
         ]);
 
@@ -155,14 +156,26 @@ class InsumoService
      */
     public function actualizar(Insumo $insumo, array $datos): Insumo
     {
-        $insumo->update([
-            'nombre'        => trim($datos['nombre']),
-            'unidad_medida' => trim($datos['unidad_medida']),
-            'stock_actual'  => $datos['stock_actual'],
-            'stock_minimo'  => $datos['stock_minimo'],
-        ]);
+        return DB::transaction(function () use ($insumo, $datos) {
+            $insumo = Insumo::query()->lockForUpdate()->findOrFail($insumo->id);
+            $unidad = trim($datos['unidad_medida']);
 
-        return $this->adjuntarEstadoStock($insumo->fresh());
+            if ($unidad !== $insumo->unidad_medida
+                && ((float) $insumo->stock_actual !== 0.0 || $insumo->movimientos()->exists()
+                    || $insumo->existenciasAreaOperativa()->where('stock_actual', '!=', 0)->exists())) {
+                throw ValidationException::withMessages([
+                    'unidad_medida' => 'No se puede cambiar la unidad de un insumo con saldo o movimientos.',
+                ]);
+            }
+
+            $insumo->update([
+                'nombre' => trim($datos['nombre']),
+                'unidad_medida' => $unidad,
+                'stock_minimo' => $datos['stock_minimo'],
+            ]);
+
+            return $this->adjuntarEstadoStock($insumo->fresh());
+        });
     }
 
     /**
@@ -174,23 +187,33 @@ class InsumoService
      *
      * @param  Insumo $insumo Insumo a eliminar.
      * @return bool
-     * @throws ValidationException Si el insumo posee recetas o requisiciones vinculadas.
+     * @throws ValidationException Si el insumo posee historial, recetas o requisiciones vinculadas.
      */
     public function eliminar(Insumo $insumo): bool
     {
-        if ($insumo->recetas()->exists()) {
-            throw ValidationException::withMessages([
-                'insumo' => 'No se puede eliminar el insumo porque está vinculado a recetas de platillos. '
-                    . 'Primero elimina las relaciones en las recetas.',
-            ]);
-        }
+        return DB::transaction(function () use ($insumo) {
+            $insumo = Insumo::query()->lockForUpdate()->findOrFail($insumo->id);
 
-        if ($insumo->requisicionDetalles()->exists()) {
-            throw ValidationException::withMessages([
-                'insumo' => 'No se puede eliminar el insumo porque aparece en requisiciones registradas.',
-            ]);
-        }
+            if ($insumo->movimientos()->exists()) {
+                throw ValidationException::withMessages([
+                    'insumo' => 'No se puede eliminar un insumo con historial de movimientos.',
+                ]);
+            }
 
-        return (bool) $insumo->delete();
+            if ($insumo->recetas()->exists()) {
+                throw ValidationException::withMessages([
+                    'insumo' => 'No se puede eliminar el insumo porque está vinculado a recetas de platillos. '
+                        . 'Primero elimina las relaciones en las recetas.',
+                ]);
+            }
+
+            if ($insumo->requisicionDetalles()->exists()) {
+                throw ValidationException::withMessages([
+                    'insumo' => 'No se puede eliminar el insumo porque aparece en requisiciones registradas.',
+                ]);
+            }
+
+            return (bool) $insumo->delete();
+        });
     }
 }

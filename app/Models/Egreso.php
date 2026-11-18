@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Egreso extends Model
 {
@@ -55,5 +56,19 @@ class Egreso extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    /**
+     * Obtiene las entradas a bodega registradas a partir de este egreso.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-11-16
+     * @módulo Inventario – US-INV-04 (CC-114)
+     *
+     * @return HasMany<MovimientoInventario>
+     */
+    public function movimientosInventario(): HasMany
+    {
+        return $this->hasMany(MovimientoInventario::class);
     }
 }

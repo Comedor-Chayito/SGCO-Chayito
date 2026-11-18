@@ -7,6 +7,7 @@ use App\Http\Requests\ResolverRequisicionRequest;
 use App\Models\Requisicion;
 use App\Services\RequisicionService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Atiende solicitudes internas de insumos realizadas desde áreas operativas.
@@ -112,11 +113,12 @@ class RequisicionController extends Controller
      * @módulo Inventario – RF-INV-004 / CC-54
      *
      * @param  Requisicion  $requisicion  Requisición aprobada que se transferirá.
+     * @param  Request $request Solicitud con el usuario que transfiere las existencias.
      * @return JsonResponse Requisición transferida y stock actualizado.
      */
-    public function transferir(Requisicion $requisicion): JsonResponse
+    public function transferir(Requisicion $requisicion, Request $request): JsonResponse
     {
-        $requisicionTransferida = $this->requisicionService->transferir($requisicion);
+        $requisicionTransferida = $this->requisicionService->transferir($requisicion, $request->user()->id);
 
         return response()->json([
             'status' => 'ok',

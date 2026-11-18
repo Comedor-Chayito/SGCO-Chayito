@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ActualizarEstadoComandaRequest;
 use App\Http\Requests\RegistrarComandaRequest;
 use App\Models\Comanda;
-use App\Models\User;
 use App\Services\ComandaService;
 use App\Services\TicketImpresionService;
 use Illuminate\Http\JsonResponse;
@@ -103,9 +102,7 @@ class ComandaController extends Controller
      */
     public function registrar(RegistrarComandaRequest $request): JsonResponse
     {
-        $usuarioId = auth('sanctum')->id() ?? auth()->id() ?? User::query()->value('id') ?? 1;
-
-        $comanda = $this->comandaService->registrar($request, $usuarioId);
+        $comanda = $this->comandaService->registrar($request, $request->user()->id);
 
         return response()->json([
             'status'  => 'ok',
@@ -166,7 +163,8 @@ class ComandaController extends Controller
     {
         $comandaActualizada = $this->comandaService->actualizarEstado(
             $comanda,
-            $request->validated()['estado']
+            $request->validated()['estado'],
+            $request->user()->id
         );
 
         return response()->json([

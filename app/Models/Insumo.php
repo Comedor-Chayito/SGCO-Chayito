@@ -64,4 +64,18 @@ class Insumo extends Model
     {
         return $this->hasMany(ExistenciaAreaOperativa::class);
     }
+
+    /**
+     * Obtiene el historial de movimientos de stock de este insumo.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-11-16
+     * @módulo Inventario – US-INV-04 (CC-114)
+     *
+     * @return HasMany<MovimientoInventario>
+     */
+    public function movimientos(): HasMany
+    {
+        return $this->hasMany(MovimientoInventario::class);
+    }
 }

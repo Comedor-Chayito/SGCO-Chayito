@@ -55,6 +55,8 @@ class RegistrarComandaRequest extends FormRequest
                 },
             ],
             'items.*.cantidad'          => ['required', 'integer', 'min:1'],
+            // Precio que el operador vio y confirmó; el servidor lo contrasta con el vigente
+            'items.*.precio_esperado'   => ['nullable', 'numeric', 'gt:0'],
             'items.*.observaciones'     => ['nullable', 'string', 'max:200'],
         ];
     }

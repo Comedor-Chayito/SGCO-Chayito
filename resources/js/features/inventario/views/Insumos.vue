@@ -7,9 +7,11 @@
  * @fecha  2026-10-13
  * @módulo Inventario – RF-INV-003
  */
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useInventarioStore } from '@/features/inventario/stores/useInventarioStore.js';
-import { useCantidad } from '@/shared/composables/useCantidad.js';
+import { formatearCantidad } from '../services/cantidadService.js';
+import { usePermisos } from '@/shared/composables/usePermisos.js';
+import MovimientosInsumo from '../components/MovimientosInsumo.vue';
 import { Toaster, toast } from 'vue-sonner';
 import {
   PackageSearch,
@@ -22,7 +24,11 @@ import {
 } from '@lucide/vue';
 
 const store = useInventarioStore();
-const { formatearCantidad } = useCantidad();
+const { puedeVer } = usePermisos();
+const movimientoActivo = ref(null);
+const dialogoInsumo = ref(null);
+const guardando = ref(false);
+let focoAnterior = null;
 
 // ─── Estado del modal ───────────────────────────────────────────────────────
 const modalAbierto = ref(false);
@@ -33,7 +39,6 @@ const busqueda = ref('');
 const form = ref({
   nombre: '',
   unidad_medida: '',
-  stock_actual: '',
   stock_minimo: '',
 });
 
@@ -55,8 +60,10 @@ onMounted(() => store.cargarInsumos());
 function abrirCrear() {
   modoEdicion.value = false;
   insumoEditando.value = null;
-  form.value = { nombre: '', unidad_medida: '', stock_actual: '0', stock_minimo: '0' };
+  form.value = { nombre: '', unidad_medida: '', stock_minimo: '0' };
+  focoAnterior = document.activeElement;
   modalAbierto.value = true;
+  nextTick(mostrarDialogo);
 }
 
 /**
@@ -74,14 +81,68 @@ function abrirEditar(insumo) {
   form.value = {
     nombre: insumo.nombre,
     unidad_medida: insumo.unidad_medida,
-    stock_actual: insumo.stock_actual,
     stock_minimo: insumo.stock_minimo,
   };
+  focoAnterior = document.activeElement;
   modalAbierto.value = true;
+  nextTick(mostrarDialogo);
 }
 
+/**
+ * Activa el diálogo nativo con contención del foco y fondo inerte.
+ * @autor Equipo de desarrollo
+ * @fecha 2026-11-17
+ * @módulo Inventario RF-INV-003 / CC-113
+ * @returns {void}
+ */
+function mostrarDialogo() {
+  dialogoInsumo.value?.showModal();
+}
+
+/**
+ * Cierra el formulario y devuelve el foco al control de origen.
+ * @autor Equipo de desarrollo
+ * @fecha 2026-11-17
+ * @módulo Inventario RF-INV-003 / CC-113
+ * @returns {void}
+ */
 function cerrarModal() {
+  if (guardando.value) return;
+  dialogoInsumo.value?.close();
   modalAbierto.value = false;
+  if (focoAnterior?.isConnected) focoAnterior.focus();
+}
+
+/**
+ * Abre las acciones de stock solo para administrador y socio.
+ * @autor Equipo de desarrollo
+ * @fecha 2026-11-17
+ * @módulo Inventario RF-INV-003 / CC-113
+ * @param {Object} insumo Insumo seleccionado.
+ * @param {string} modo Entrada, ajuste o historial.
+ * @returns {void}
+ */
+function abrirMovimiento(insumo, modo) {
+  if (puedeVer(['administrador', 'socio'])) movimientoActivo.value = { insumo, modo };
+}
+
+/**
+ * Recarga catálogo y alertas tras registrar stock sin repetir el POST si falla la consulta.
+ * @autor Equipo de desarrollo
+ * @fecha 2026-11-17
+ * @módulo Inventario RF-INV-003 / CC-113
+ * @returns {Promise<void>}
+ */
+async function movimientoGuardado() {
+  const { insumo, modo } = movimientoActivo.value;
+  movimientoActivo.value = null;
+  toast.success('Movimiento registrado correctamente.');
+  await Promise.all([store.cargarInsumos(busqueda.value.trim()), store.cargarAlertas()]);
+  if (store.error || store.errorAlertas) {
+    toast.error('El movimiento se registró, pero no se pudo actualizar todo. Recarga el catálogo.');
+  }
+  await nextTick();
+  document.getElementById(`btn-${modo}-insumo-${insumo.id}`)?.focus();
 }
 
 /**
@@ -92,10 +153,11 @@ function cerrarModal() {
  * @módulo Inventario – RF-INV-003
  */
 async function guardar() {
+  if (guardando.value) return;
+  guardando.value = true;
   const datos = {
     nombre: form.value.nombre.trim(),
     unidad_medida: form.value.unidad_medida.trim(),
-    stock_actual: parseFloat(form.value.stock_actual) || 0,
     stock_minimo: parseFloat(form.value.stock_minimo) || 0,
   };
 
@@ -109,6 +171,7 @@ async function guardar() {
     if (resultado) toast.success(`Insumo "${resultado.nombre}" registrado.`);
   }
 
+  guardando.value = false;
   if (resultado) {
     cerrarModal();
   } else {
@@ -222,6 +285,12 @@ function claseStock(insumo) {
       </button>
     </div>
 
+    <div v-if="store.error" role="alert" class="mb-4 flex flex-wrap items-center gap-3">
+      <p class="text-sm text-[#C62828]">No se pudo actualizar el catálogo de insumos.</p>
+      <button class="min-h-11 rounded-lg border border-[#E5E0DB] bg-white px-4 text-sm"
+        :disabled="store.cargando" @click="buscar">Reintentar</button>
+    </div>
+
     <!-- Estado de carga -->
     <div v-if="store.cargando" class="flex justify-center py-16">
       <div class="flex flex-col items-center gap-3 animate-pulse">
@@ -243,7 +312,7 @@ function claseStock(insumo) {
     </div>
 
     <!-- Tabla de insumos -->
-    <div v-else class="overflow-hidden rounded-2xl border border-[#E5E0DB] bg-white shadow-sm">
+    <div v-else class="overflow-x-auto rounded-2xl border border-[#E5E0DB] bg-white shadow-sm">
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-[#E5E0DB] bg-[#FAF7F4]">
@@ -280,7 +349,22 @@ function claseStock(insumo) {
               {{ formatearCantidad(insumo.stock_minimo) }}
             </td>
             <td class="py-3.5 pl-3 pr-5 text-right">
-              <div class="inline-flex gap-2">
+              <div class="inline-flex items-center gap-2">
+                <template v-if="puedeVer(['administrador', 'socio'])">
+                  <button
+                    v-for="accion in ['entrada', 'ajuste', 'historial']"
+                    :key="accion"
+                    :id="`btn-${accion}-insumo-${insumo.id}`"
+                    class="inline-flex min-h-11 items-center justify-center rounded-lg border
+                      border-[#E5E0DB] bg-white px-3 text-sm font-semibold text-[#3D3D3D]
+                      hover:border-[#C24E12] hover:bg-[#FAF7F4]
+                      focus-visible:outline-2 focus-visible:outline-[#C24E12]"
+                    :aria-label="`${accion} de ${insumo.nombre}`"
+                    @click="abrirMovimiento(insumo, accion)"
+                  >
+                    {{ { entrada: 'Entrada', ajuste: 'Ajuste', historial: 'Historial' }[accion] }}
+                  </button>
+                </template>
                 <button
                   :id="`btn-editar-insumo-${insumo.id}`"
                   class="inline-flex h-8 min-w-[44px] items-center justify-center rounded-lg border border-[#E5E0DB] bg-white px-2 text-[#3D3D3D] transition-colors hover:bg-[#FAF7F4] hover:border-[#F26A21]"
@@ -306,20 +390,26 @@ function claseStock(insumo) {
 
     <!-- ─── Modal Crear / Editar ─────────────────────────────────────────── -->
     <Teleport to="body">
-      <div
+      <dialog
         v-if="modalAbierto"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+        ref="dialogoInsumo"
+        aria-labelledby="titulo-modal-insumo"
+        class="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-md
+          overflow-y-auto rounded-2xl bg-white p-0 shadow-2xl backdrop:bg-black/40"
         @click.self="cerrarModal"
+        @cancel.prevent="cerrarModal"
         id="modal-insumo"
       >
         <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
           <!-- Encabezado modal -->
           <div class="mb-5 flex items-center justify-between">
-            <h2 class="text-lg font-black text-[#3D3D3D]">
+            <h2 id="titulo-modal-insumo" class="text-lg font-black text-[#3D3D3D]">
               {{ modoEdicion ? 'Editar insumo' : 'Nuevo insumo' }}
             </h2>
             <button
-              class="flex h-8 w-8 items-center justify-center rounded-full text-[#6B6B6B] transition-colors hover:bg-[#FAF7F4]"
+              class="flex h-11 w-11 items-center justify-center rounded-full text-[#6B6B6B] transition-colors hover:bg-[#FAF7F4]"
+              aria-label="Cerrar formulario de insumo"
+              :disabled="guardando"
               @click="cerrarModal"
             >
               <X :size="18" />
@@ -369,21 +459,11 @@ function claseStock(insumo) {
               </div>
             </div>
 
-            <!-- Stock actual y mínimo -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label for="input-stock-actual" class="mb-1 block text-xs font-bold text-[#3D3D3D]">
-                  Stock actual
-                </label>
-                <input
-                  id="input-stock-actual"
-                  v-model="form.stock_actual"
-                  type="number"
-                  min="0"
-                  step="0.001"
-                  class="h-10 w-full rounded-lg border border-[#E5E0DB] bg-[#FAF7F4] px-3 text-sm text-[#111111] outline-none transition-all focus:border-[#F26A21] focus:ring-2 focus:ring-[#F26A21]/20"
-                />
-              </div>
+            <p class="text-sm text-[#6B6B6B]">
+              {{ modoEdicion ? 'El stock se modifica mediante Entrada o Ajuste.'
+                : 'El insumo se crea con stock 0. Carga las existencias mediante Entrada.' }}
+            </p>
+            <div>
               <div>
                 <label for="input-stock-minimo" class="mb-1 block text-xs font-bold text-[#3D3D3D]">
                   Stock mínimo
@@ -393,7 +473,7 @@ function claseStock(insumo) {
                   v-model="form.stock_minimo"
                   type="number"
                   min="0"
-                  step="0.001"
+                  step="0.000001"
                   class="h-10 w-full rounded-lg border border-[#E5E0DB] bg-[#FAF7F4] px-3 text-sm text-[#111111] outline-none transition-all focus:border-[#F26A21] focus:ring-2 focus:ring-[#F26A21]/20"
                 />
               </div>
@@ -403,6 +483,7 @@ function claseStock(insumo) {
             <div class="mt-2 flex gap-3">
               <button
                 type="button"
+                :disabled="guardando"
                 class="h-11 flex-1 rounded-xl border border-[#E5E0DB] text-sm font-bold text-[#6B6B6B] transition-colors hover:bg-[#FAF7F4]"
                 @click="cerrarModal"
               >
@@ -411,15 +492,23 @@ function claseStock(insumo) {
               <button
                 id="btn-guardar-insumo"
                 type="submit"
+                :disabled="guardando"
                 class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#F26A21] text-sm font-bold text-white transition-all hover:bg-[#e05e1c] active:scale-[0.98]"
               >
                 <Check :size="16" :stroke-width="2.5" />
-                {{ modoEdicion ? 'Guardar cambios' : 'Registrar insumo' }}
+                {{ guardando ? 'Guardando...' : modoEdicion ? 'Guardar cambios' : 'Registrar insumo' }}
               </button>
             </div>
           </form>
         </div>
-      </div>
+      </dialog>
     </Teleport>
+    <MovimientosInsumo
+      v-if="movimientoActivo && puedeVer(['administrador', 'socio'])"
+      :insumo="movimientoActivo.insumo"
+      :modo="movimientoActivo.modo"
+      @cerrar="movimientoActivo = null"
+      @guardado="movimientoGuardado"
+    />
   </div>
 </template>

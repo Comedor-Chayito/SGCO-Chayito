@@ -8,6 +8,8 @@ use App\Models\Mesa;
 use App\Models\Platillo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -42,6 +44,12 @@ class ImpresionComandaTest extends TestCase
             'name'  => 'Mesero Roberto',
             'email' => 'roberto.mesero@sgco-chayito.local',
         ]);
+
+        // El ticket y la cola se consultan desde cocina (CLAUDE.md §9, CC-97)
+        Role::firstOrCreate(['name' => 'cocinero', 'guard_name' => 'web']);
+        $cocinero = User::factory()->create();
+        $cocinero->assignRole('cocinero');
+        Sanctum::actingAs($cocinero);
 
         $this->mesa = Mesa::create([
             'numero'    => 4,
