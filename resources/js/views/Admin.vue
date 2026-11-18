@@ -8,9 +8,10 @@
  * @módulo Admin – US-ADM-01 / RF-ADM-008
  */
 import { ref, reactive, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { obtenerRutaInicioPorRol } from '@/router/index.js';
 import { usePermisos } from '@/shared/composables/usePermisos.js';
+import MatrizPermisos from '@/features/admin/components/MatrizPermisos.vue';
 import {
   obtenerUsuarios,
   crearUsuario,
@@ -41,7 +42,48 @@ import { Input } from '@/components/ui/input';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
 const router = useRouter();
+const route = useRoute();
 const { puedeVer, rolActual } = usePermisos();
+
+// Pestañas de administración (US-ADM-01 / US-ADM-04)
+const pestanaActiva = ref(route.query.tab?.toString() || 'usuarios');
+const matrizRef = ref(null);
+
+const PESTANAS = [
+  { id: 'usuarios', etiqueta: 'Cuentas de Usuarios', icono: Users },
+  { id: 'matriz', etiqueta: 'Matriz de Permisos', icono: ShieldCheck },
+];
+
+/**
+ * Cambia la pestaña activa de administración y sincroniza el parámetro query en la URL.
+ *
+ * @autor  kristiankovic
+ * @fecha  2026-11-18
+ * @módulo Admin – US-ADM-04 (CC-123) / RF-ADM-008
+ *
+ * @param {string} id Identificador de la pestaña seleccionada.
+ */
+function cambiarPestana(id) {
+  pestanaActiva.value = id;
+  router.replace({ query: { ...route.query, tab: id } });
+}
+
+/**
+ * Refresca los datos según la pestaña activa en el panel de administración.
+ *
+ * @autor  kristiankovic
+ * @fecha  2026-11-18
+ * @módulo Admin – US-ADM-01 / US-ADM-04 (CC-123)
+ *
+ * @returns {Promise<void>}
+ */
+async function refrescarVistaActual() {
+  if (pestanaActiva.value === 'usuarios') {
+    await recargarDatos();
+  } else if (pestanaActiva.value === 'matriz') {
+    await matrizRef.value?.cargarMatriz();
+  }
+}
 
 // Estado reactivo
 const usuarios = ref([]);
@@ -284,14 +326,15 @@ async function ejecutarEliminarUsuario() {
           <Button
             variant="outline"
             class="rounded-xl border-[#E5E0DB] text-zinc-700 hover:bg-zinc-50 font-medium"
-            :disabled="cargando"
-            @click="recargarDatos"
+            :disabled="cargando || matrizRef?.cargando"
+            @click="refrescarVistaActual"
           >
-            <RefreshCw :size="16" class="mr-2" :class="{ 'animate-spin': cargando }" />
+            <RefreshCw :size="16" class="mr-2" :class="{ 'animate-spin': cargando || matrizRef?.cargando }" />
             Refrescar
           </Button>
 
           <Button
+            v-if="pestanaActiva === 'usuarios'"
             class="rounded-xl bg-[#F26A21] hover:bg-[#FF8C42] text-white font-semibold shadow-sm"
             @click="abrirModalCrear"
           >
@@ -301,8 +344,33 @@ async function ejecutarEliminarUsuario() {
       </template>
     </EncabezadoOperacion>
 
+    <!-- Navegación de pestañas (US-ADM-01 / US-ADM-04) -->
+    <nav class="border-b border-[#E5E0DB] bg-white px-4 sm:px-6">
+      <div class="flex gap-1 overflow-x-auto">
+        <button
+          v-for="tab in PESTANAS"
+          :key="tab.id"
+          :id="`tab-admin-${tab.id}`"
+          type="button"
+          class="relative flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B6CB0]"
+          :class="pestanaActiva === tab.id
+            ? 'text-[#F26A21] after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-[#F26A21] after:rounded-t-full'
+            : 'text-[#6B6B6B] hover:text-[#3D3D3D]'"
+          @click="cambiarPestana(tab.id)"
+        >
+          <component :is="tab.icono" :size="16" />
+          {{ tab.etiqueta }}
+        </button>
+      </div>
+    </nav>
+
     <div class="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
 
+      <!-- Pestaña: Matriz de Permisos (CC-123 / US-ADM-04) -->
+      <MatrizPermisos ref="matrizRef" v-show="pestanaActiva === 'matriz'" />
+
+      <!-- Pestaña: Cuentas de Usuarios (US-ADM-01) -->
+      <div v-show="pestanaActiva === 'usuarios'" class="space-y-6">
       <!-- Tarjetas Métricas -->
       <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-white p-5 rounded-2xl border border-[#EBE6DF] shadow-sm flex items-center justify-between">
@@ -495,6 +563,7 @@ async function ejecutarEliminarUsuario() {
           </table>
         </div>
       </section>
+      </div>
 
       <!-- Modal Crear Usuario -->
       <div
