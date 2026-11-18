@@ -8,7 +8,7 @@
  * @fecha  2026-09-18
  * @módulo POS – US-POS-01 / RF-POS-001
  */
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useCarritoStore } from '@/features/pos/stores/useCarritoStore.js';
 import { obtenerPlatillos, obtenerMesas } from '@/features/pos/services/posService.js';
 import { ChefHat, ShoppingCart, Check } from '@lucide/vue';
@@ -29,6 +29,53 @@ const mesas = ref([]);
 const cargandoDatos = ref(true);
 const sheetAbierto = ref(false);
 
+// Intervalo (ms) con el que se revisa el menú mientras la vista está abierta.
+const INTERVALO_REFRESCO_MENU = 60000;
+let temporizadorMenu = null;
+
+/**
+ * Vuelve a pedir el menú vigente y reconcilia el carrito con él. Avisa al operador de
+ * cualquier precio cambiado o platillo retirado para que no confirme un importe obsoleto.
+ *
+ * @autor  Jeferson De La Cruz
+ * @fecha  2026-11-17
+ * @módulo POS – RF-POS-001 / US-ADM-03 (CC-104, CC-106)
+ *
+ * @returns {Promise<boolean|null>} true si hubo cambios en el carrito, false si no,
+ *                                  null si no se pudo consultar el menú.
+ */
+async function sincronizarMenu() {
+  let menu;
+  try {
+    menu = await obtenerPlatillos();
+  } catch (error) {
+    return null;
+  }
+
+  platillos.value = menu;
+  const cambios = carrito.reconciliarConMenu(menu);
+
+  cambios.forEach((cambio) => {
+    if (cambio.tipo === 'precio') {
+      toast.warning(`El precio de ${cambio.nombre} cambió`, {
+        description: `Antes $${cambio.anterior.toFixed(2)}, ahora $${cambio.nuevo.toFixed(2)}.`,
+        duration: 6000,
+      });
+    } else {
+      toast.warning(`${cambio.nombre} ya no está disponible`, {
+        description: 'Se quitó de la orden actual.',
+        duration: 6000,
+      });
+    }
+  });
+
+  return cambios.length > 0;
+}
+
+function alVolverAVerLaPantalla() {
+  if (document.visibilityState === 'visible') sincronizarMenu();
+}
+
 onMounted(async () => {
   try {
     [platillos.value, mesas.value] = await Promise.all([
@@ -40,6 +87,19 @@ onMounted(async () => {
   } finally {
     cargandoDatos.value = false;
   }
+
+  temporizadorMenu = setInterval(sincronizarMenu, INTERVALO_REFRESCO_MENU);
+  document.addEventListener('visibilitychange', alVolverAVerLaPantalla);
+});
+
+onUnmounted(() => {
+  clearInterval(temporizadorMenu);
+  document.removeEventListener('visibilitychange', alVolverAVerLaPantalla);
+});
+
+// Al iniciar una orden nueva (paso 2) se parte siempre del menú vigente
+watch(() => carrito.pasoActual, (paso) => {
+  if (paso === 2) sincronizarMenu();
 });
 
 // Resetea mesaId si se cambia el canal de forma retroactiva
@@ -47,17 +107,61 @@ watch(() => carrito.canal, (nuevoCanal) => {
   if (nuevoCanal !== 'mesa') carrito.mesaId = null;
 });
 
-async function confirmarComanda() {
-  const comanda = await carrito.enviarComanda();
+// Exclusión de reentrada: se activa antes del primer await y se libera en finally,
+// para que un doble clic (o el botón del carrito móvil y el de escritorio) registre una sola comanda.
+let confirmando = false;
 
-  if (comanda) {
-    sheetAbierto.value = false; // Cierra el sheet si estaba abierto en móvil
-    toast.success(`Comanda #${comanda.id} registrada`, {
-      description: 'La orden ya está en la cola de cocina.',
-      duration: 4000,
-    });
-  } else if (carrito.error) {
-    toast.error(carrito.error);
+/**
+ * Confirma la orden: verifica el menú vigente, registra la comanda enviando el precio esperado
+ * de cada ítem y, si el servidor detecta que un precio cambió, refresca el carrito sin registrar.
+ *
+ * @autor  Jeferson De La Cruz
+ * @fecha  2026-11-17
+ * @módulo POS – RF-POS-001 / US-ADM-03 (CC-104, CC-106)
+ *
+ * @returns {Promise<void>}
+ */
+async function confirmarComanda() {
+  if (confirmando) return;
+  confirmando = true;
+  carrito.cargando = true;
+
+  try {
+    // Antes de registrar se verifica el menú: si cambió un precio o un platillo se retiró,
+    // el operador revisa la orden actualizada en lugar de confirmar un importe obsoleto.
+    const huboCambios = await sincronizarMenu();
+
+    if (huboCambios === null) {
+      toast.error('No se pudo verificar el menú vigente. Revisa la conexión e intenta de nuevo.');
+      return;
+    }
+
+    if (huboCambios) {
+      toast.info('Revisa la orden actualizada y vuelve a confirmarla.', { duration: 6000 });
+      return;
+    }
+
+    const comanda = await carrito.enviarComanda();
+
+    if (comanda) {
+      sheetAbierto.value = false; // Cierra el sheet si estaba abierto en móvil
+      toast.success(`Comanda #${comanda.id} registrada`, {
+        description: 'La orden ya está en la cola de cocina.',
+        duration: 4000,
+      });
+    } else if (carrito.requiereRevision) {
+      // El precio cambió entre la verificación y el registro: el servidor no creó la comanda.
+      await sincronizarMenu();
+      toast.warning('Un precio cambió mientras se registraba la orden.', {
+        description: 'Revisa el ticket actualizado y vuelve a confirmarla.',
+        duration: 6000,
+      });
+    } else if (carrito.error) {
+      toast.error(carrito.error);
+    }
+  } finally {
+    carrito.cargando = false;
+    confirmando = false;
   }
 }
 
