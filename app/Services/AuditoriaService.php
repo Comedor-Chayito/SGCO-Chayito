@@ -3,12 +3,19 @@
 namespace App\Services;
 
 use App\Models\Auditoria;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class AuditoriaService
 {
+    /**
+     * Registros por página de la bitácora cuando no se indica otro valor.
+     */
+    public const REGISTROS_POR_PAGINA = 20;
+
     /**
      * Atributos que nunca se guardan en el registro de auditoría, aunque
      * hayan cambiado, para no dejar credenciales expuestas en el historial.
@@ -49,6 +56,76 @@ class AuditoriaService
             'datos_anteriores' => $this->filtrarAtributosSensibles($datosAnteriores),
             'datos_nuevos' => $this->filtrarAtributosSensibles($datosNuevos),
         ]);
+    }
+
+    /**
+     * Consulta la bitácora de auditoría, de lo más reciente a lo más antiguo, con filtros opcionales.
+     * Cada registro incluye el nombre del usuario y el nombre corto de la entidad (por ejemplo, "User").
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-11-17
+     * @módulo Administración – US-ADM-04 / CC-124
+     *
+     * @param  array $filtros Filtros validados por ListarAuditoriasRequest: usuario_id, accion,
+     *                        entidad, desde, hasta y por_pagina, todos opcionales.
+     * @return LengthAwarePaginator Página de registros de auditoría.
+     */
+    public function listar(array $filtros): LengthAwarePaginator
+    {
+        $consulta = Auditoria::query()->with('usuario:id,name');
+
+        if (! empty($filtros['usuario_id'])) {
+            $consulta->where('usuario_id', $filtros['usuario_id']);
+        }
+
+        if (! empty($filtros['accion'])) {
+            $consulta->where('accion', $filtros['accion']);
+        }
+
+        if (! empty($filtros['entidad'])) {
+            $consulta->whereIn('entidad_type', $this->tiposDeEntidad($filtros['entidad']));
+        }
+
+        // Rango por límites de fecha y hora, sin funciones sobre la columna, para que pueda usar índice
+        if (! empty($filtros['desde'])) {
+            $consulta->where('created_at', '>=', Carbon::parse($filtros['desde'])->startOfDay());
+        }
+
+        if (! empty($filtros['hasta'])) {
+            $consulta->where('created_at', '<', Carbon::parse($filtros['hasta'])->addDay()->startOfDay());
+        }
+
+        $pagina = $consulta
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate((int) ($filtros['por_pagina'] ?? self::REGISTROS_POR_PAGINA));
+
+        $pagina->getCollection()->each(
+            fn (Auditoria $auditoria) => $auditoria->setAttribute('entidad', class_basename($auditoria->entidad_type)),
+        );
+
+        return $pagina;
+    }
+
+    /**
+     * Traduce el nombre corto de una entidad (por ejemplo, "User") a los tipos completos
+     * guardados en la bitácora (por ejemplo, "App\Models\User").
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-11-17
+     * @módulo Administración – US-ADM-04 / CC-124
+     *
+     * @param  string $entidad Nombre corto del modelo auditado.
+     * @return array<int, string> Tipos completos que coinciden; vacío si no hay ninguno.
+     */
+    private function tiposDeEntidad(string $entidad): array
+    {
+        return Auditoria::query()
+            ->distinct()
+            ->pluck('entidad_type')
+            ->filter(fn (string $tipo) => class_basename($tipo) === $entidad)
+            ->values()
+            ->all();
     }
 
     /**
