@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AperturaCajaController;
+use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
@@ -50,6 +51,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/usuarios/{usuario}',                   [UsuarioController::class, 'update']);
         Route::delete('/usuarios/{usuario}',                [UsuarioController::class, 'destroy']);
         Route::patch('/usuarios/{usuario}/toggle-activo',   [UsuarioController::class, 'toggleActivo']);
+
+        // Bitácora de auditoría, solo lectura (US-ADM-04 / CC-124)
+        Route::get('/auditorias',                           [AuditoriaController::class, 'index']);
     });
 
     // Módulo POS — RF-POS-002 (Cobros y Ventas): solo cajero y administrador (CLAUDE.md §9)
