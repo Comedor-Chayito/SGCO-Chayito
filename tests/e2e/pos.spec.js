@@ -119,3 +119,157 @@ test.describe('POS - Regresiones responsive de acciones', () => {
     await page.screenshot({ path: 'test-results/pos-tablet-step2.png', fullPage: true });
   });
 });
+
+test.describe('POS - Cambios del catálogo con la pantalla abierta (US-ADM-03)', () => {
+  /**
+   * Mockea la API del POS con un menú mutable y cuenta los registros de comandas.
+   *
+   * @autor  Jeferson De La Cruz
+   * @fecha  2026-11-17
+   * @módulo POS – RF-POS-001 / US-ADM-03 (CC-112)
+   */
+  async function prepararApiMock(page, menu) {
+    // Sesión de cajero aislada: el guard del router exige token y rol para entrar al POS.
+    await page.addInitScript(() => {
+      localStorage.setItem('sgco_token', 'token-e2e-pos');
+      localStorage.setItem('sgco_usuario', JSON.stringify({ id: 1, name: 'Cajero E2E', rol: 'cajero' }));
+    });
+    await page.route('**/api/auth/usuario', (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'ok',
+        message: '',
+        data: { id: 1, name: 'Cajero E2E', rol: 'cajero', roles: [{ name: 'cajero' }] },
+      }),
+    }));
+
+    // retrasoMenuMs simula red lenta en GET /platillos; alRegistrar permite simular el rechazo del servidor.
+    const estado = {
+      menu,
+      comandasRegistradas: 0,
+      solicitudesComanda: [],
+      retrasoMenuMs: 0,
+      alRegistrar: null,
+    };
+    const respuesta = (data, status = 200) => ({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'ok', message: '', data }),
+    });
+
+    await page.route('**/api/platillos', async (route) => {
+      if (estado.retrasoMenuMs > 0) await new Promise((r) => setTimeout(r, estado.retrasoMenuMs));
+      return route.fulfill(respuesta(estado.menu));
+    });
+    await page.route('**/api/mesas', (route) => route.fulfill(respuesta([])));
+    await page.route('**/api/comandas', (route) => {
+      estado.solicitudesComanda.push(route.request().postDataJSON());
+
+      if (estado.alRegistrar) return estado.alRegistrar(route);
+
+      estado.comandasRegistradas += 1;
+      return route.fulfill(respuesta({ id: 321 }, 201));
+    });
+
+    return estado;
+  }
+
+  async function agregarPrimerPlatoALaCarta(page) {
+    await page.goto('/pos');
+    await entrarParaLlevar(page);
+    await page.getByRole('tab', { name: 'A la carta' }).click();
+    await page.getByRole('tabpanel').getByRole('button', { name: /^Agregar / }).first().click();
+  }
+
+  test('un cambio de precio con el carrito abierto se avisa y no se registra a ciegas', async ({ page }) => {
+    const sopa = { id: 901, nombre: 'Sopa de Prueba', descripcion: null, precio_unitario: '2.50', disponible: true };
+    const estado = await prepararApiMock(page, [sopa]);
+
+    await agregarPrimerPlatoALaCarta(page);
+    await expect(page.getByText('$2.50').first()).toBeVisible();
+
+    // Administración sube el precio mientras el POS sigue abierto.
+    estado.menu = [{ ...sopa, precio_unitario: '4.75' }];
+    await page.getByRole('button', { name: 'Registrar Orden' }).click();
+
+    await expect(page.getByText('El precio de Sopa de Prueba cambió')).toBeVisible();
+    await expect(page.getByText('Antes $2.50, ahora $4.75.')).toBeVisible();
+    await expect(page.getByText('$4.75').first()).toBeVisible();
+    expect(estado.comandasRegistradas).toBe(0);
+
+    // Con el importe ya visible y actualizado, la segunda confirmación sí registra.
+    await page.getByRole('button', { name: 'Registrar Orden' }).click();
+    await expect(page.getByText('Comanda #321 registrada')).toBeVisible();
+    expect(estado.comandasRegistradas).toBe(1);
+  });
+
+  test('un platillo desactivado con el carrito abierto se retira y no se registra', async ({ page }) => {
+    const sopa = { id: 901, nombre: 'Sopa de Prueba', descripcion: null, precio_unitario: '2.50', disponible: true };
+    const estado = await prepararApiMock(page, [sopa]);
+
+    await agregarPrimerPlatoALaCarta(page);
+
+    // Administración desactiva el platillo: el GET /platillos ya no lo devuelve.
+    estado.menu = [];
+    await page.getByRole('button', { name: 'Registrar Orden' }).click();
+
+    await expect(page.getByText('Sopa de Prueba ya no está disponible')).toBeVisible();
+    expect(estado.comandasRegistradas).toBe(0);
+  });
+
+  test('un doble clic con red lenta registra una sola comanda', async ({ page }) => {
+    const sopa = { id: 901, nombre: 'Sopa de Prueba', descripcion: null, precio_unitario: '2.50', disponible: true };
+    const estado = await prepararApiMock(page, [sopa]);
+
+    await agregarPrimerPlatoALaCarta(page);
+
+    // La verificación del menú tarda: el botón no debe aceptar un segundo envío mientras espera.
+    estado.retrasoMenuMs = 400;
+    await page.getByRole('button', { name: 'Registrar Orden' }).dblclick();
+
+    await expect(page.getByText('Comanda #321 registrada')).toBeVisible();
+    await page.waitForTimeout(800);
+
+    expect(estado.solicitudesComanda).toHaveLength(1);
+    expect(estado.comandasRegistradas).toBe(1);
+  });
+
+  test('envía el precio esperado y, si el servidor lo rechaza por cambio, no registra y actualiza', async ({ page }) => {
+    const sopa = { id: 901, nombre: 'Sopa de Prueba', descripcion: null, precio_unitario: '2.50', disponible: true };
+    const estado = await prepararApiMock(page, [sopa]);
+
+    await agregarPrimerPlatoALaCarta(page);
+
+    // El precio cambia después de la verificación del menú y antes de que el servidor registre:
+    // el servidor responde 422 sobre precio_esperado y no crea la comanda.
+    estado.alRegistrar = (route) => {
+      estado.menu = [{ ...sopa, precio_unitario: '4.75' }];
+
+      return route.fulfill({
+        status: 422,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'error',
+          message: 'El precio de Sopa de Prueba cambió a 4.75. Revisa la orden y vuelve a confirmarla.',
+          errors: { 'items.0.precio_esperado': ['El precio cambió.'] },
+          data: null,
+        }),
+      });
+    };
+    await page.getByRole('button', { name: 'Registrar Orden' }).click();
+
+    await expect(page.getByText('Un precio cambió mientras se registraba la orden.')).toBeVisible();
+    await expect(page.getByText('$4.75').first()).toBeVisible();
+    expect(estado.comandasRegistradas).toBe(0);
+    expect(estado.solicitudesComanda).toHaveLength(1);
+    expect(estado.solicitudesComanda[0].items[0].precio_esperado).toBe(2.5);
+
+    // Con el ticket actualizado, la reconfirmación envía el precio nuevo y registra.
+    estado.alRegistrar = null;
+    await page.getByRole('button', { name: 'Registrar Orden' }).click();
+
+    await expect(page.getByText('Comanda #321 registrada')).toBeVisible();
+    expect(estado.solicitudesComanda[1].items[0].precio_esperado).toBe(4.75);
+  });
+});

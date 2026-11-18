@@ -10,6 +10,7 @@ use App\Http\Controllers\ExportacionReporteController;
 use App\Http\Controllers\EgresoController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\MovimientoInventarioController;
+use App\Http\Controllers\PlatilloController;
 use App\Http\Controllers\RecetaController;
 use App\Http\Controllers\RequisicionController;
 use App\Http\Controllers\RetiroController;
@@ -82,6 +83,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Registro de facturas con correlativo único (CC-63 / US-CON-01)
         Route::post('/egresos', [EgresoController::class, 'store']);
+    });
+
+    // US-ADM-03 / CC-104 / CC-106: catálogo de platillos exclusivo de administración y socios.
+    // IMPORTANTE: /platillos/catalogo debe ir antes de /platillos/{platillo} para evitar conflicto de rutas
+    Route::middleware('role:administrador|socio')->group(function () {
+        Route::get('/platillos/catalogo',                    [PlatilloController::class, 'index']);
+        Route::post('/platillos',                            [PlatilloController::class, 'store']);
+        Route::get('/platillos/{platillo}',                  [PlatilloController::class, 'show']);
+        Route::put('/platillos/{platillo}',                  [PlatilloController::class, 'update']);
+        Route::delete('/platillos/{platillo}',               [PlatilloController::class, 'destroy']);
+        Route::patch('/platillos/{platillo}/disponibilidad', [PlatilloController::class, 'disponibilidad']);
     });
 
     // Módulo POS — RF-POS-001 (Comandas). Roles según CLAUDE.md §9 (CC-97)
