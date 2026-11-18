@@ -82,6 +82,18 @@ Route::middleware('auth:sanctum')->group(function () {
         // Registro de facturas con correlativo único (CC-63 / US-CON-01)
         Route::post('/egresos', [EgresoController::class, 'store']);
     });
+
+    // Panel de configuración — catálogo de subcategorías de egreso (US-ADM-03 / CC-108)
+    // Sin DELETE: los egresos históricos las referencian, por eso solo se desactivan.
+    Route::middleware('role:administrador|socio')->group(function () {
+        Route::get('/subcategorias-egreso/todas', [SubcategoriaEgresoController::class, 'todas']);
+        Route::post('/subcategorias-egreso',      [SubcategoriaEgresoController::class, 'store']);
+        Route::put('/subcategorias-egreso/{subcategoriaEgreso}', [SubcategoriaEgresoController::class, 'update']);
+        Route::patch(
+            '/subcategorias-egreso/{subcategoriaEgreso}/toggle-activo',
+            [SubcategoriaEgresoController::class, 'toggleActivo'],
+        );
+    });
 });
 
 // Módulo POS — RF-POS-001 (Comandas)
