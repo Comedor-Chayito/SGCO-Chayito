@@ -7,11 +7,12 @@
  * @fecha  2026-09-20
  * @módulo Admin – US-ADM-01 / RF-ADM-008
  */
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { obtenerRutaInicioPorRol } from '@/router/index.js';
 import { usePermisos } from '@/shared/composables/usePermisos.js';
 import MatrizPermisos from '@/features/admin/components/MatrizPermisos.vue';
+import BitacoraAuditoria from '@/features/admin/components/BitacoraAuditoria.vue';
 import {
   obtenerUsuarios,
   crearUsuario,
@@ -35,6 +36,7 @@ import {
   User as UserIcon,
   Trash2,
   AlertTriangle,
+  History,
 } from '@lucide/vue';
 import { toast, Toaster } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
@@ -48,10 +50,12 @@ const { puedeVer, rolActual } = usePermisos();
 // Pestañas de administración (US-ADM-01 / US-ADM-04)
 const pestanaActiva = ref(route.query.tab?.toString() || 'usuarios');
 const matrizRef = ref(null);
+const bitacoraRef = ref(null);
 
 const PESTANAS = [
   { id: 'usuarios', etiqueta: 'Cuentas de Usuarios', icono: Users },
   { id: 'matriz', etiqueta: 'Matriz de Permisos', icono: ShieldCheck },
+  { id: 'bitacora', etiqueta: 'Bitácora de Auditoría', icono: History },
 ];
 
 /**
@@ -68,6 +72,15 @@ function cambiarPestana(id) {
   router.replace({ query: { ...route.query, tab: id } });
 }
 
+watch(
+  () => route.query.tab,
+  (nuevaPestana) => {
+    if (nuevaPestana && ['usuarios', 'matriz', 'bitacora'].includes(String(nuevaPestana))) {
+      pestanaActiva.value = String(nuevaPestana);
+    }
+  }
+);
+
 /**
  * Refresca los datos según la pestaña activa en el panel de administración.
  *
@@ -82,6 +95,8 @@ async function refrescarVistaActual() {
     await recargarDatos();
   } else if (pestanaActiva.value === 'matriz') {
     await matrizRef.value?.cargarMatriz();
+  } else if (pestanaActiva.value === 'bitacora') {
+    await bitacoraRef.value?.cargarAuditorias();
   }
 }
 
@@ -368,6 +383,9 @@ async function ejecutarEliminarUsuario() {
 
       <!-- Pestaña: Matriz de Permisos (CC-123 / US-ADM-04) -->
       <MatrizPermisos ref="matrizRef" v-show="pestanaActiva === 'matriz'" />
+
+      <!-- Pestaña: Bitácora de Auditoría (CC-125 / US-ADM-04) -->
+      <BitacoraAuditoria ref="bitacoraRef" v-show="pestanaActiva === 'bitacora'" />
 
       <!-- Pestaña: Cuentas de Usuarios (US-ADM-01) -->
       <div v-show="pestanaActiva === 'usuarios'" class="space-y-6">

@@ -124,6 +124,18 @@ const routes = [
     meta: { roles: ['administrador', 'socio'], seccion: 'admin' },
   },
   {
+    path: '/admin/bitacora',
+    name: 'admin-bitacora',
+    redirect: { name: 'admin', query: { tab: 'bitacora' } },
+    meta: { roles: ['administrador', 'socio'], seccion: 'admin' },
+  },
+  {
+    path: '/bitacora',
+    name: 'bitacora',
+    redirect: { name: 'admin', query: { tab: 'bitacora' } },
+    meta: { roles: ['administrador', 'socio'], seccion: 'admin' },
+  },
+  {
     path: '/configuracion',
     name: 'configuracion',
     component: () => import('@/views/Configuracion.vue'),
