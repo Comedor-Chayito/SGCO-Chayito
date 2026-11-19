@@ -20,6 +20,19 @@ use Illuminate\Validation\ValidationException;
 class PlatilloService
 {
     /**
+     * Inicializa el servicio con la bitácora donde quedan los cambios de precio y disponibilidad.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-11-17
+     * @módulo Administración – US-ADM-03 / CC-109
+     *
+     * @param  AuditoriaService $auditoriaService Servicio de la bitácora de auditoría.
+     */
+    public function __construct(private readonly AuditoriaService $auditoriaService)
+    {
+    }
+
+    /**
      * Lista todos los platillos del catálogo (disponibles y no disponibles).
      * Filtros opcionales: busqueda por nombre y disponible (true/false).
      *
@@ -74,10 +87,11 @@ class PlatilloService
     /**
      * Actualiza nombre, descripción y precio de un platillo.
      * No modifica comanda_detalles ni comandas: el histórico conserva su precio original.
+     * Si el precio cambia, lo registra en la bitácora en la misma transacción (CC-109).
      *
      * @autor  Jeferson De La Cruz
      * @fecha  2026-11-17
-     * @módulo Administración – RF-ADM-008 / CC-104
+     * @módulo Administración – RF-ADM-008 / CC-104 / CC-109
      *
      * @param  Platillo             $platillo Platillo a modificar.
      * @param  array<string, mixed> $datos    Datos validados.
@@ -85,22 +99,38 @@ class PlatilloService
      */
     public function actualizar(Platillo $platillo, array $datos): Platillo
     {
-        $platillo->update([
-            'nombre'          => trim($datos['nombre']),
-            'descripcion'     => isset($datos['descripcion']) ? trim($datos['descripcion']) : null,
-            'precio_unitario' => $datos['precio_unitario'],
-        ]);
+        return DB::transaction(function () use ($platillo, $datos) {
+            $precioAnterior = $this->normalizarPrecio($platillo->precio_unitario);
 
-        return $platillo->refresh();
+            $platillo->update([
+                'nombre'          => trim($datos['nombre']),
+                'descripcion'     => isset($datos['descripcion']) ? trim($datos['descripcion']) : null,
+                'precio_unitario' => $datos['precio_unitario'],
+            ]);
+
+            $precioNuevo = $this->normalizarPrecio($datos['precio_unitario']);
+
+            if ($precioAnterior !== $precioNuevo) {
+                $this->auditoriaService->registrar(
+                    'precio_cambiado',
+                    $platillo,
+                    ['precio_unitario' => $precioAnterior],
+                    ['precio_unitario' => $precioNuevo],
+                );
+            }
+
+            return $platillo->refresh();
+        });
     }
 
     /**
      * Activa o desactiva un platillo del menú del día sin borrar nada del histórico.
      * Un platillo no disponible deja de aparecer en el POS y no admite nuevas comandas.
+     * Si la disponibilidad cambia, la registra en la bitácora en la misma transacción (CC-109).
      *
      * @autor  Jeferson De La Cruz
      * @fecha  2026-11-17
-     * @módulo Administración – RF-ADM-008 / CC-106
+     * @módulo Administración – RF-ADM-008 / CC-106 / CC-109
      *
      * @param  Platillo $platillo   Platillo a modificar.
      * @param  bool     $disponible Nuevo valor de disponibilidad.
@@ -108,9 +138,38 @@ class PlatilloService
      */
     public function cambiarDisponibilidad(Platillo $platillo, bool $disponible): Platillo
     {
-        $platillo->update(['disponible' => $disponible]);
+        return DB::transaction(function () use ($platillo, $disponible) {
+            $disponibleAnterior = (bool) $platillo->disponible;
 
-        return $platillo->refresh();
+            $platillo->update(['disponible' => $disponible]);
+
+            if ($disponibleAnterior !== $disponible) {
+                $this->auditoriaService->registrar(
+                    'disponibilidad_cambiada',
+                    $platillo,
+                    ['disponible' => $disponibleAnterior],
+                    ['disponible' => $disponible],
+                );
+            }
+
+            return $platillo->refresh();
+        });
+    }
+
+    /**
+     * Lleva un precio a texto con dos decimales para compararlo y guardarlo en la bitácora
+     * sin falsos cambios por formato (por ejemplo, "2.5" y "2.50" son el mismo precio).
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-11-17
+     * @módulo Administración – US-ADM-03 / CC-109
+     *
+     * @param  string|int|float $precio Precio tal como viene del modelo o de la solicitud.
+     * @return string Precio con dos decimales, por ejemplo "2.50".
+     */
+    private function normalizarPrecio(string|int|float $precio): string
+    {
+        return number_format((float) $precio, 2, '.', '');
     }
 
     /**

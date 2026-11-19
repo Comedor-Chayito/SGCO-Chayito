@@ -11,6 +11,7 @@ use App\Http\Controllers\ExportacionReporteController;
 use App\Http\Controllers\EgresoController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\MatrizPermisoController;
+use App\Http\Controllers\MesaController;
 use App\Http\Controllers\MovimientoInventarioController;
 use App\Http\Controllers\PlatilloController;
 use App\Http\Controllers\RecetaController;
@@ -90,6 +91,28 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Registro de facturas con correlativo único (CC-63 / US-CON-01)
         Route::post('/egresos', [EgresoController::class, 'store']);
+    });
+
+    // Panel de configuración — catálogo de subcategorías de egreso (US-ADM-03 / CC-108)
+    // Sin DELETE: los egresos históricos las referencian, por eso solo se desactivan.
+    Route::middleware('role:administrador|socio')->group(function () {
+        Route::get('/subcategorias-egreso/todas', [SubcategoriaEgresoController::class, 'todas']);
+        Route::post('/subcategorias-egreso',      [SubcategoriaEgresoController::class, 'store']);
+        Route::put('/subcategorias-egreso/{subcategoriaEgreso}', [SubcategoriaEgresoController::class, 'update']);
+        Route::patch(
+            '/subcategorias-egreso/{subcategoriaEgreso}/toggle-activo',
+            [SubcategoriaEgresoController::class, 'toggleActivo'],
+        );
+    });
+
+    // Panel de configuración — catálogo de mesas (US-ADM-03 / CC-107)
+    // IMPORTANTE: /mesas/todas debe ir antes de /mesas/{mesa} para evitar conflicto de rutas
+    Route::middleware('role:administrador|socio')->group(function () {
+        Route::get('/mesas/todas',                 [MesaController::class, 'todas']);
+        Route::post('/mesas',                      [MesaController::class, 'store']);
+        Route::put('/mesas/{mesa}',                [MesaController::class, 'update']);
+        Route::delete('/mesas/{mesa}',             [MesaController::class, 'destroy']);
+        Route::patch('/mesas/{mesa}/toggle-activo', [MesaController::class, 'toggleActivo']);
     });
 
     // US-ADM-03 / CC-104 / CC-106: catálogo de platillos exclusivo de administración y socios.

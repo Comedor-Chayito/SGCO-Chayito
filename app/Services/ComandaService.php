@@ -100,7 +100,7 @@ class ComandaService
     }
 
     /**
-     * Retorna todas las mesas del comedor con su estado actual.
+     * Retorna las mesas activas del comedor con su estado actual.
      *
      * @autor  Jeferson De La Cruz
      *
@@ -112,7 +112,9 @@ class ComandaService
      */
     public function listarMesas(): Collection
     {
-        return Mesa::orderBy('numero')
+        // Las mesas desactivadas desde el panel de configuración no se ofrecen en el POS (CC-107)
+        return Mesa::where('activa', true)
+            ->orderBy('numero')
             ->get(['id', 'numero', 'capacidad', 'estado']);
     }
 
@@ -174,8 +176,8 @@ class ComandaService
 
             $comanda->update(['estado' => $nuevoEstado]);
 
-            // Si pasa a pagada y tiene mesa, verificar liberación de mesa (CC-34)
-            if ($nuevoEstado === 'pagada' && $comanda->mesa_id) {
+            // Si pasa a pagada o cancelada y tiene mesa, verificar liberación de mesa (CC-34)
+            if (in_array($nuevoEstado, ['pagada', 'cancelada'], true) && $comanda->mesa_id) {
                 $otrasActivas = Comanda::where('mesa_id', $comanda->mesa_id)
                     ->where('id', '!=', $comanda->id)
                     ->whereIn('estado', ['pendiente', 'en_preparacion', 'lista'])
