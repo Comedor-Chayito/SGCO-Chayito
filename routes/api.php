@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AperturaCajaController;
+use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ComandaController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\DashboardGerencialController;
 use App\Http\Controllers\ExportacionReporteController;
 use App\Http\Controllers\EgresoController;
 use App\Http\Controllers\InsumoController;
+use App\Http\Controllers\MatrizPermisoController;
 use App\Http\Controllers\MesaController;
 use App\Http\Controllers\MovimientoInventarioController;
 use App\Http\Controllers\PlatilloController;
@@ -42,15 +44,26 @@ Route::middleware('auth:sanctum')->group(function () {
         'data'    => $request->user()->load(['roles:id,name', 'permissions:id,name']),
     ]));
 
-    // Módulo Administración y Seguridad — Gestión de Usuarios y Roles RBAC (US-ADM-01 / CC-84)
+    // Módulo Administración y Seguridad — Gestión de Usuarios, Roles RBAC y Matriz (US-ADM-01 / CC-84 / US-ADM-04 / CC-121)
     Route::middleware('role:administrador|socio')->group(function () {
         Route::get('/roles',                                [UsuarioController::class, 'roles']);
+        Route::get('/matriz-permisos',                      [MatrizPermisoController::class, 'index']);
+        Route::get('/roles/matriz',                         [MatrizPermisoController::class, 'index']);
         Route::get('/usuarios',                             [UsuarioController::class, 'index']);
         Route::post('/usuarios',                            [UsuarioController::class, 'store']);
         Route::get('/usuarios/{usuario}',                   [UsuarioController::class, 'show']);
         Route::put('/usuarios/{usuario}',                   [UsuarioController::class, 'update']);
         Route::delete('/usuarios/{usuario}',                [UsuarioController::class, 'destroy']);
         Route::patch('/usuarios/{usuario}/toggle-activo',   [UsuarioController::class, 'toggleActivo']);
+
+        // Bitácora de auditoría, solo lectura (US-ADM-04 / CC-124)
+        Route::get('/auditorias',                           [AuditoriaController::class, 'index']);
+    });
+
+    // Módulo Administración y Seguridad — Actualización de la matriz de permisos (US-ADM-04 / CC-122)
+    Route::middleware('role:administrador')->group(function () {
+        Route::put('/roles/{rol}/permisos',                 [MatrizPermisoController::class, 'actualizarPermisos']);
+        Route::put('/matriz-permisos/{rol}',                [MatrizPermisoController::class, 'actualizarPermisos']);
     });
 
     // Módulo POS — RF-POS-002 (Cobros y Ventas): solo cajero y administrador (CLAUDE.md §9)
