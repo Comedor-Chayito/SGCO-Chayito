@@ -647,48 +647,98 @@ class BitacoraAuditoriaTest extends TestCase
         $this->assertSame($this->admin->id, $asignado->usuario_id);
     }
 
-    // ─── Pendientes: modificación de la matriz (CC-122, aún sin implementar) ─
+    // ─── Modificación de la matriz de permisos auditada (CC-122) ────────────
 
     /**
-     * Criterio: solo el administrador modifica la matriz. Pendiente hasta que exista el endpoint.
+     * Criterio: solo el administrador modifica la matriz.
      *
      * @autor  Equipo SGCO-Chayito
      * @fecha  2026-11-18
-     * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
+     * @módulo Administración y Seguridad – RF-ADM-008 (CC-122 / CC-126)
      *
      * @return void
      */
     public function test_solo_el_administrador_puede_modificar_la_matriz(): void
     {
-        $this->markTestSkipped('Pendiente CC-122: no existe endpoint para modificar permisos de un rol.');
+        $this->app['auth']->forgetGuards();
+
+        // 1. Sin autenticación recibe 401
+        $this->putJson('/api/roles/cajero/permisos', [
+            'permisos' => ['cobros.ver'],
+        ])->assertStatus(401);
+
+        // 2. Roles no administradores (socio, cajero) reciben 403
+        foreach ([$this->socio, $this->cajero] as $usuario) {
+            Sanctum::actingAs($usuario);
+            $this->putJson('/api/roles/cajero/permisos', [
+                'permisos' => ['cobros.ver'],
+            ])->assertStatus(403);
+        }
+
+        // 3. Administrador autorizado recibe 200
+        Sanctum::actingAs($this->admin);
+        $respuesta = $this->putJson('/api/roles/cajero/permisos', [
+            'permisos' => ['cobros.ver', 'cobros.procesar'],
+        ]);
+
+        $respuesta->assertStatus(200)
+            ->assertJsonPath('status', 'ok')
+            ->assertJsonPath('data.name', 'cajero');
     }
 
     /**
-     * Criterio: todo cambio de la matriz queda en la bitácora. Hoy los cambios de permisos de un rol
-     * no generan registro, solo los de usuarios y asignación de roles.
+     * Criterio: todo cambio de la matriz queda en la bitácora de auditoría.
      *
      * @autor  Equipo SGCO-Chayito
      * @fecha  2026-11-18
-     * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
+     * @módulo Administración y Seguridad – RF-ADM-008 (CC-122 / CC-126)
      *
      * @return void
      */
     public function test_todo_cambio_de_la_matriz_queda_en_la_bitacora(): void
     {
-        $this->markTestSkipped('Pendiente CC-122: los cambios de permisos de un rol no se auditan todavía.');
+        Sanctum::actingAs($this->admin);
+
+        $this->putJson('/api/roles/cajero/permisos', [
+            'permisos' => ['cobros.ver', 'comandas.ver'],
+        ])->assertStatus(200);
+
+        $this->assertDatabaseHas('auditorias', [
+            'usuario_id' => $this->admin->id,
+            'accion'     => 'permisos_rol_actualizados',
+        ]);
+
+        $auditoria = Auditoria::where('accion', 'permisos_rol_actualizados')->latest('id')->first();
+        $this->assertNotNull($auditoria);
+        $this->assertSame($this->admin->id, $auditoria->usuario_id);
+        $this->assertSame('cajero', $auditoria->datos_nuevos['rol']);
+        $this->assertContains('cobros.ver', $auditoria->datos_nuevos['permisos']);
     }
 
     /**
-     * Criterio: el administrador no puede quitarse a sí mismo el acceso a la matriz.
+     * Criterio: el administrador no puede quitarse a sí mismo el acceso a la matriz ni a la administración.
      *
      * @autor  Equipo SGCO-Chayito
      * @fecha  2026-11-18
-     * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
+     * @módulo Administración y Seguridad – RF-ADM-008 (CC-122 / CC-126)
      *
      * @return void
      */
     public function test_administrador_no_puede_quitarse_el_acceso_a_la_matriz(): void
     {
-        $this->markTestSkipped('Pendiente CC-122: no existe permiso ni regla de auto-exclusión definidos.');
+        Sanctum::actingAs($this->admin);
+
+        // Intentar remover los permisos críticos usuarios.ver y usuarios.editar del rol administrador
+        $respuesta = $this->putJson('/api/roles/administrador/permisos', [
+            'permisos' => ['comandas.ver', 'cobros.ver'],
+        ]);
+
+        $respuesta->assertStatus(422)
+            ->assertJsonValidationErrors(['permisos']);
+
+        // El rol administrador conserva intactos sus permisos críticos
+        $rolAdmin = Role::findByName('administrador', 'web');
+        $this->assertTrue($rolAdmin->hasPermissionTo('usuarios.ver'));
+        $this->assertTrue($rolAdmin->hasPermissionTo('usuarios.editar'));
     }
 }

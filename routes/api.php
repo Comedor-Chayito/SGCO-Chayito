@@ -60,6 +60,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auditorias',                           [AuditoriaController::class, 'index']);
     });
 
+    // Módulo Administración y Seguridad — Actualización de la matriz de permisos (US-ADM-04 / CC-122)
+    Route::middleware('role:administrador')->group(function () {
+        Route::put('/roles/{rol}/permisos',                 [MatrizPermisoController::class, 'actualizarPermisos']);
+        Route::put('/matriz-permisos/{rol}',                [MatrizPermisoController::class, 'actualizarPermisos']);
+    });
+
     // Módulo POS — RF-POS-002 (Cobros y Ventas): solo cajero y administrador (CLAUDE.md §9)
     Route::middleware('role:cajero|administrador|socio')->group(function () {
         Route::post('/cobros',     [VentaController::class, 'cobrar']);
