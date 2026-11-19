@@ -25,7 +25,7 @@ export async function registrarRetiro(datos) {
 }
 
 /**
- * Obtiene los retiros del turno actual (día comercial) del usuario autenticado.
+ * Obtiene todos los retiros del turno actual (día comercial), con el usuario que los hizo.
  *
  * @autor  Jeferson De La Cruz
  * @fecha  2026-09-19
@@ -66,6 +66,23 @@ export async function registrarAperturaCaja(datos) {
 export async function obtenerAperturaTurno(fecha) {
   const params = fecha ? { fecha } : {};
   const respuesta = await api.get('/aperturas-caja/turno', { params });
+  return respuesta.data.data;
+}
+
+/**
+ * Obtiene el resumen de caja de un día: estado, saldo inicial, ventas por método de pago,
+ * retiros, efectivo esperado en gaveta y la lista de movimientos en orden de hora.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-11-18
+ * @módulo POS – US-POS-04 / RF-POS-002
+ *
+ * @param   {string} [fecha] Día a consultar (YYYY-MM-DD); por defecto hoy.
+ * @returns {Promise<{ fecha: string, estado: string, totales: Object, movimientos: Array }>}
+ */
+export async function obtenerMovimientosCaja(fecha) {
+  const params = fecha ? { fecha } : {};
+  const respuesta = await api.get('/movimientos-caja', { params });
   return respuesta.data.data;
 }
 

@@ -131,7 +131,10 @@ watch(abierto, (estaAbierto) => {
             >
               <div class="min-w-0">
                 <p class="font-medium text-[#3D3D3D] truncate">{{ retiro.motivo }}</p>
-                <p class="text-xs text-[#6B6B6B]">{{ formatearHora(retiro.created_at) }}</p>
+                <p class="text-xs text-[#6B6B6B]">
+                  {{ formatearHora(retiro.created_at) }}
+                  <template v-if="retiro.usuario"> · por {{ retiro.usuario.name }}</template>
+                </p>
               </div>
               <span class="shrink-0 font-semibold text-[#C62828]">
                 −{{ formatearMoneda(retiro.monto) }}

@@ -60,20 +60,25 @@ class RetiroService
     }
 
     /**
-     * Lista los retiros del turno actual (día comercial) del usuario, del más reciente al más antiguo.
+     * Lista todos los retiros del turno actual (día comercial), de cualquier usuario, del más
+     * reciente al más antiguo. Son los mismos que resta el cierre de caja.
      *
      * @autor  manuelmv15
      * @fecha  2026-10-14
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-37)
      *
-     * @param  User $usuario Cajero o administrador que consulta su turno.
-     * @return Collection<int, RetiroParcial>
+     * @return Collection<int, RetiroParcial> Retiros con el id y nombre de quien los registró.
      */
-    public function listarDelTurno(User $usuario): Collection
+    public function listarDelTurno(): Collection
     {
-        return RetiroParcial::where('usuario_id', $usuario->id)
+        $retiros = RetiroParcial::with('usuario:id,name')
             ->whereBetween('created_at', [today()->startOfDay(), today()->endOfDay()])
             ->latest()
             ->get();
+
+        // Del usuario solo interesa el nombre; sin rol ni permisos en la respuesta
+        $retiros->each(fn (RetiroParcial $retiro) => $retiro->usuario?->setAppends([]));
+
+        return $retiros;
     }
 }

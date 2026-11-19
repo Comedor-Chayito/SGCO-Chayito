@@ -28,12 +28,14 @@ import {
   Scale,
   AlertTriangle,
   Lock,
+  ClipboardList,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
 import { obtenerComandas, procesarCobro } from '@/features/pos/services/posService.js';
 import { describirEstadoCaja, obtenerAperturaTurno } from '@/features/pos/services/cajaService.js';
 import { useCalculoCambio } from '@/features/pos/composables/useCalculoCambio.js';
 import PanelRetiros from '@/features/pos/components/PanelRetiros.vue';
+import PanelMovimientosTurno from '@/features/pos/components/PanelMovimientosTurno.vue';
 import PanelSaldoInicial from '@/features/pos/components/PanelSaldoInicial.vue';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
@@ -56,6 +58,9 @@ const panelRetirosAbierto = ref(false);
 
 // Panel lateral de saldo inicial por denominación (CC-39)
 const panelSaldoInicialAbierto = ref(false);
+
+// Panel lateral con ventas, retiros y efectivo esperado del día
+const panelMovimientosAbierto = ref(false);
 
 // Estado de la caja del día; null mientras se consulta o si la consulta falla
 const estadoCaja = ref(null);
@@ -286,6 +291,20 @@ onUnmounted(() => {
         >
           <ArrowDownCircle :size="18" class="text-[#C62828]" stroke-width="2" />
           <span>Retiros</span>
+        </button>
+
+        <button
+          type="button"
+          id="btn-abrir-movimientos"
+          class="flex h-11 items-center gap-2 px-3
+            rounded-xl border border-[#E5E0DB] bg-white shadow-xs hover:bg-zinc-50
+            text-sm font-semibold text-[#3D3D3D]
+            active:scale-95 transition-all cursor-pointer"
+          title="Ventas, retiros y efectivo esperado de hoy"
+          @click="panelMovimientosAbierto = true"
+        >
+          <ClipboardList :size="18" class="text-[#2B6CB0]" stroke-width="2" />
+          <span class="hidden sm:inline">Movimientos</span>
         </button>
 
         <RouterLink
@@ -562,6 +581,7 @@ onUnmounted(() => {
     </main>
 
     <PanelRetiros v-model:abierto="panelRetirosAbierto" />
+    <PanelMovimientosTurno v-model:abierto="panelMovimientosAbierto" />
     <PanelSaldoInicial
       v-model:abierto="panelSaldoInicialAbierto"
       @apertura-registrada="cargarEstadoCaja"

@@ -1,6 +1,6 @@
 <script setup>
 /**
- * Vista de Contabilidad — egresos e IVA crédito fiscal.
+ * Vista de Contabilidad — egresos, IVA crédito fiscal y libro de movimientos.
  * Accesible para contadora y administrador.
  *
  * @autor  Equipo SGCO-Chayito
@@ -13,14 +13,16 @@ import { Landmark } from '@lucide/vue';
 import FormularioEgreso from '@/features/contabilidad/components/FormularioEgreso.vue';
 import ConfirmacionEgreso from '@/features/contabilidad/components/ConfirmacionEgreso.vue';
 import HistorialEgresos from '@/features/contabilidad/components/HistorialEgresos.vue';
+import LibroMovimientos from '@/features/contabilidad/components/LibroMovimientos.vue';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
 const ultimoEgreso = ref(null);
 const historialEgresos = ref(null);
+const libroMovimientos = ref(null);
 
 /**
  * Confirma el registro de un egreso con un aviso breve y la tarjeta con su correlativo,
- * y recarga el historial para que el egreso nuevo aparezca en la tabla y en los totales.
+ * y recarga el historial y el libro para que el egreso nuevo aparezca en tablas y totales.
  *
  * @autor  manuelmv15
  * @fecha  2026-10-24
@@ -33,6 +35,7 @@ function confirmarEgreso(egreso) {
   ultimoEgreso.value = egreso;
   toast.success(`Egreso ${egreso.correlativo} registrado`);
   historialEgresos.value?.recargar();
+  libroMovimientos.value?.recargar();
 }
 
 </script>
@@ -63,6 +66,9 @@ function confirmarEgreso(egreso) {
 
       <!-- Historial con desglose de IVA y totales del mes (CC-69 / US-CON-02) -->
       <HistorialEgresos ref="historialEgresos" />
+
+      <!-- Libro de movimientos: ventas cobradas y egresos con flujo neto (RF-CON-006) -->
+      <LibroMovimientos ref="libroMovimientos" />
 
     </div>
   </main>

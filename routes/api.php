@@ -12,6 +12,8 @@ use App\Http\Controllers\EgresoController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\MatrizPermisoController;
 use App\Http\Controllers\MesaController;
+use App\Http\Controllers\MovimientoCajaController;
+use App\Http\Controllers\MovimientoContableController;
 use App\Http\Controllers\MovimientoInventarioController;
 use App\Http\Controllers\PlatilloController;
 use App\Http\Controllers\RecetaController;
@@ -85,6 +87,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cierres-caja',        [CierreCajaController::class, 'cerrar']);
         Route::get('/cierres-caja',         [CierreCajaController::class, 'historial']);
         Route::get('/cierres-caja/{fecha}', [CierreCajaController::class, 'mostrar']);
+
+        // Resumen y movimientos de caja del día: ventas, retiros y efectivo esperado
+        Route::get('/movimientos-caja', [MovimientoCajaController::class, 'index']);
     });
 
     // Módulo Contabilidad — RF-CON-005 (Egresos): solo contadora y administrador (CLAUDE.md §9)
@@ -97,6 +102,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Registro de facturas con correlativo único (CC-63 / US-CON-01)
         Route::post('/egresos', [EgresoController::class, 'store']);
+
+        // Libro de movimientos: ventas cobradas (ingresos) y egresos, con flujo neto
+        Route::get('/movimientos-contables', [MovimientoContableController::class, 'index']);
     });
 
     // Panel de configuración — catálogo de subcategorías de egreso (US-ADM-03 / CC-108)
