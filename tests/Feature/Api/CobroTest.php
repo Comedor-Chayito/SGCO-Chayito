@@ -855,6 +855,12 @@ class CobroTest extends TestCase
      */
     public function test_comanda_pagada_se_excluye_de_cola_de_cocina_activa(): void
     {
+        // La cola es de cocina y el cobro de caja: cada consulta va con su rol (CC-97)
+        Role::firstOrCreate(['name' => 'cocinero', 'guard_name' => 'web']);
+        $cocinero = User::factory()->create();
+        $cocinero->assignRole('cocinero');
+        Sanctum::actingAs($cocinero);
+
         // Inicialmente está pendiente y debe figurar en la cola activa
         $resActivasAntes = $this->getJson('/api/comandas/cocina');
         $resActivasAntes->assertStatus(200);
@@ -862,12 +868,14 @@ class CobroTest extends TestCase
         $this->assertContains($this->comanda->id, $idsAntes);
 
         // Procesamos el cobro
+        Sanctum::actingAs($this->cajero);
         $this->postJson('/api/cobros', [
             'comanda_id' => $this->comanda->id,
             'monto_recibido' => 10.00,
         ])->assertStatus(201);
 
         // Ya no debe figurar en la cola activa
+        Sanctum::actingAs($cocinero);
         $resActivasDespues = $this->getJson('/api/comandas/cocina');
         $resActivasDespues->assertStatus(200);
         $idsDespues = collect($resActivasDespues->json('data.activas'))->pluck('id')->all();

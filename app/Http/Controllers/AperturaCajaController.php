@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegistrarAperturaCajaRequest;
-use App\Models\User;
 use App\Services\AperturaCajaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,9 +36,7 @@ class AperturaCajaController extends Controller
      */
     public function store(RegistrarAperturaCajaRequest $request): JsonResponse
     {
-        $usuarioId = auth('sanctum')->id() ?? auth()->id() ?? User::query()->value('id') ?? 1;
-
-        $apertura = $this->aperturaCajaService->abrirCaja($request->validated(), $usuarioId);
+        $apertura = $this->aperturaCajaService->abrirCaja($request->validated(), $request->user()->id);
 
         return response()->json([
             'status'  => 'ok',
