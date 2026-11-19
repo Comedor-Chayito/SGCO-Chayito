@@ -126,6 +126,8 @@ class DeduccionInventarioService
      */
     public function descontarPorComanda(Comanda $comanda, ?int $usuarioId = null): array
     {
+        $usuarioId ??= auth()->id() ?? $comanda->usuario_id;
+
         $consumos = $this->calcularConsumosPorComanda($comanda);
 
         if ($consumos === []) {
