@@ -6,6 +6,7 @@ use App\Http\Requests\ProcesarCobroRequest;
 use App\Models\Comanda;
 use App\Models\Venta;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CobroService
 {
@@ -45,6 +46,12 @@ class CobroService
             $datos = $request->validated();
             $comanda = Comanda::lockForUpdate()->findOrFail($datos['comanda_id']);
 
+            if (in_array($comanda->estado, ['pagada', 'cancelada'], true)) {
+                throw ValidationException::withMessages([
+                    'comanda_id' => 'No se puede cobrar una comanda pagada o cancelada.',
+                ]);
+            }
+
             $total = (float) $comanda->subtotal;
             $metodoPago = $datos['metodo_pago'] ?? Venta::METODO_EFECTIVO;
 
@@ -63,7 +70,7 @@ class CobroService
                 'metodo_pago' => $metodoPago,
             ]);
 
-            $this->deduccionInventarioService->descontarPorComanda($comanda);
+            $this->deduccionInventarioService->descontarPorComanda($comanda, $usuarioId);
             $comanda->update(['estado' => 'pagada']);
 
             // Liberar la mesa asociada si no quedan otras comandas activas (CC-34)

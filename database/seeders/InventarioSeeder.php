@@ -124,6 +124,7 @@ class InventarioSeeder extends Seeder
                     continue;
                 }
 
+                // unidad_consumo va explícita: con WithoutModelEvents el hook creating no corre
                 Receta::updateOrCreate(
                     ['platillo_id' => $idsPlatillo[$platillo], 'insumo_id' => $insumoId],
                     [
