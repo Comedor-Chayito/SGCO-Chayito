@@ -171,7 +171,7 @@ async function manejarRegistro() {
         errores.monto?.[0] ?? ''
       erroresValidacion.value.motivo =
         errores.motivo?.[0] ?? ''
-      // Regla de negocio sin campo propio: la caja del día ya está cerrada
+      // Regla de negocio sin campo propio: la caja del día no está abierta o ya se cerró
       error.value = errores.caja?.[0] ?? ''
     } else {
       error.value =

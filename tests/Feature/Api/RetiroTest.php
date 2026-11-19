@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
+use Tests\Concerns\AbreCajaDelDia;
 use Tests\TestCase;
 
 /**
@@ -19,6 +20,7 @@ use Tests\TestCase;
  */
 class RetiroTest extends TestCase
 {
+    use AbreCajaDelDia;
     use RefreshDatabase;
 
     protected User $cajero;
@@ -43,6 +45,7 @@ class RetiroTest extends TestCase
         $this->cajero = User::factory()->create();
         $this->cajero->assignRole('cajero');
         Sanctum::actingAs($this->cajero);
+        $this->abrirCajaDelDia($this->cajero);
     }
 
     /**

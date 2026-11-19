@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Models\AperturaCaja;
 use App\Models\CierreCaja;
+use App\Models\Comanda;
 use App\Models\RetiroParcial;
 use App\Models\Venta;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CierreCajaService
 {
@@ -44,6 +46,7 @@ class CierreCajaService
      * @param  int  $usuarioId  ID del cajero/administrador que realiza el cierre.
      * @return CierreCaja Registro de cierre con la relación de usuario cargada.
      *
+     * @throws ValidationException Si quedan comandas sin cobrar ni cancelar hasta esa fecha.
      * @throws \Throwable Si falla la transacción en base de datos.
      */
     public function cerrar(array $datos, int $usuarioId): CierreCaja
@@ -52,6 +55,8 @@ class CierreCajaService
             $fecha = Carbon::parse($datos['fecha']);
             $inicioDia = $fecha->copy()->startOfDay();
             $finDia = $fecha->copy()->endOfDay();
+
+            $this->asegurarSinComandasAbiertas($finDia);
 
             // Consolidar ventas del día agrupadas por método de pago
             $ventasPorMetodo = Venta::whereBetween('created_at', [$inicioDia, $finDia])
@@ -152,6 +157,38 @@ class CierreCajaService
         $cierres->getCollection()->each(fn (CierreCaja $cierre) => $this->soloNombreDeUsuario($cierre));
 
         return $cierres;
+    }
+
+    /**
+     * Impide cerrar la caja mientras existan comandas registradas hasta el final del día
+     * que no se han cobrado ni cancelado: esas ventas quedarían fuera del cuadre.
+     * Incluye comandas de días anteriores que quedaron abiertas.
+     *
+     * @autor  manuelmv15
+     * @fecha  2026-11-18
+     * @módulo POS – RF-POS-002 / US-POS-04
+     *
+     * @param  Carbon  $finDia  Último instante del día que se cierra.
+     * @return void
+     *
+     * @throws ValidationException Si hay comandas pendientes, en preparación o listas.
+     */
+    private function asegurarSinComandasAbiertas(Carbon $finDia): void
+    {
+        $abiertas = Comanda::whereIn('estado', ['pendiente', 'en_preparacion', 'lista'])
+            ->where('created_at', '<=', $finDia)
+            ->orderBy('id')
+            ->pluck('id');
+
+        if ($abiertas->isEmpty()) {
+            return;
+        }
+
+        $numeros = $abiertas->map(fn (int $id) => "#{$id}")->implode(', ');
+
+        throw ValidationException::withMessages([
+            'caja' => "Hay comandas sin cobrar: {$numeros}. Cóbralas o cancélalas antes de cerrar la caja.",
+        ]);
     }
 
     /**

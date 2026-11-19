@@ -12,6 +12,7 @@ use App\Services\InsumoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
+use Tests\Concerns\AbreCajaDelDia;
 use Tests\TestCase;
 
 /**
@@ -24,6 +25,7 @@ use Tests\TestCase;
  */
 class AlertaStockTest extends TestCase
 {
+    use AbreCajaDelDia;
     use RefreshDatabase;
 
     protected InsumoService $insumoService;
@@ -55,6 +57,7 @@ class AlertaStockTest extends TestCase
         $this->cocinero = User::factory()->create();
         $this->cocinero->assignRole('cocinero');
         Sanctum::actingAs($this->cocinero);
+        $this->abrirCajaDelDia($this->cajero);
 
         $this->mesa = Mesa::create([
             'numero'    => 1,

@@ -26,9 +26,12 @@ import {
   ArrowDownCircle,
   DollarSign,
   Scale,
+  AlertTriangle,
+  Lock,
 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
 import { obtenerComandas, procesarCobro } from '@/features/pos/services/posService.js';
+import { describirEstadoCaja, obtenerAperturaTurno } from '@/features/pos/services/cajaService.js';
 import { useCalculoCambio } from '@/features/pos/composables/useCalculoCambio.js';
 import PanelRetiros from '@/features/pos/components/PanelRetiros.vue';
 import PanelSaldoInicial from '@/features/pos/components/PanelSaldoInicial.vue';
@@ -53,6 +56,12 @@ const panelRetirosAbierto = ref(false);
 
 // Panel lateral de saldo inicial por denominación (CC-39)
 const panelSaldoInicialAbierto = ref(false);
+
+// Estado de la caja del día; null mientras se consulta o si la consulta falla
+const estadoCaja = ref(null);
+
+// Sin apertura o con cierre no se cobra ni se retira; el backend también lo rechaza
+const cajaBloqueada = computed(() => estadoCaja.value !== null && !estadoCaja.value.operable);
 
 // Métodos de pago aceptados por el comedor; el color acompaña al ícono y al texto
 const METODOS_PAGO = [
@@ -154,6 +163,24 @@ async function cargarComandasListas(esSilencioso = false) {
 }
 
 /**
+ * Consulta la apertura del turno para saber si la caja admite cobros y retiros.
+ * Si la consulta falla no bloquea la pantalla: el backend valida igual al cobrar.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-11-18
+ * @módulo POS – US-POS-04 / RF-POS-002
+ *
+ * @returns {Promise<void>}
+ */
+async function cargarEstadoCaja() {
+  try {
+    estadoCaja.value = describirEstadoCaja(await obtenerAperturaTurno());
+  } catch {
+    estadoCaja.value = null;
+  }
+}
+
+/**
  * Selecciona una comanda para cobrar y limpia el formulario anterior.
  *
  * @autor  Equipo SGCO-Chayito
@@ -177,7 +204,7 @@ function seleccionarComanda(comanda) {
  * @módulo POS – US-POS-03 / RF-POS-002
  */
 async function confirmarCobro() {
-  if (!comandaSeleccionada.value || !esSuficiente.value) return;
+  if (!comandaSeleccionada.value || !esSuficiente.value || cajaBloqueada.value) return;
 
   procesando.value = true;
   try {
@@ -213,6 +240,7 @@ function formatearMoneda(valor) {
 }
 
 onMounted(() => {
+  cargarEstadoCaja();
   cargarComandasListas();
   pollingTimer = setInterval(() => cargarComandasListas(true), INTERVALO_POLLING_MS);
 });
@@ -247,7 +275,13 @@ onUnmounted(() => {
         <button
           type="button"
           id="btn-abrir-retiros"
-          class="flex h-11 items-center gap-2 rounded-xl border border-[#E5E0DB] bg-white px-3 text-sm font-semibold text-[#3D3D3D] hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer shadow-xs"
+          class="flex h-11 items-center gap-2 px-3
+            rounded-xl border border-[#E5E0DB] bg-white shadow-xs hover:bg-zinc-50
+            text-sm font-semibold text-[#3D3D3D]
+            active:scale-95 transition-all cursor-pointer
+            disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="cajaBloqueada"
+          :title="cajaBloqueada ? estadoCaja.mensaje : 'Retiros parciales del turno'"
           @click="panelRetirosAbierto = true"
         >
           <ArrowDownCircle :size="18" class="text-[#C62828]" stroke-width="2" />
@@ -273,6 +307,40 @@ onUnmounted(() => {
         </span>
       </template>
     </EncabezadoOperacion>
+
+    <!-- Aviso de caja sin abrir o cerrada: icono + texto, nunca solo color (CLAUDE.md §10) -->
+    <div
+      v-if="cajaBloqueada"
+      id="aviso-estado-caja"
+      role="alert"
+      class="flex flex-wrap items-center gap-3 px-4 py-3 border-b"
+      :class="estadoCaja.estado === 'cerrada'
+        ? 'bg-red-50 border-[#C62828]/30'
+        : 'bg-amber-50 border-[#E0A800]/40'"
+    >
+      <Lock
+        v-if="estadoCaja.estado === 'cerrada'"
+        :size="20"
+        class="shrink-0 text-[#C62828]"
+        stroke-width="2.2"
+      />
+      <AlertTriangle v-else :size="20" class="shrink-0 text-[#E0A800]" stroke-width="2.2" />
+      <p class="flex-1 min-w-[200px] text-sm font-semibold text-[#3D3D3D]">
+        {{ estadoCaja.mensaje }}
+      </p>
+      <button
+        v-if="estadoCaja.estado === 'sin_abrir'"
+        type="button"
+        id="btn-aviso-abrir-caja"
+        class="min-h-[44px] px-4
+          rounded-xl bg-[#F26A21] hover:bg-[#FF8C42]
+          text-white text-sm font-bold
+          active:scale-95 transition-all cursor-pointer"
+        @click="panelSaldoInicialAbierto = true"
+      >
+        Abrir caja
+      </button>
+    </div>
 
     <!-- Layout principal: lista izquierda | formulario derecho -->
     <main class="flex-1 flex flex-col md:flex-row gap-0 overflow-hidden">
@@ -480,7 +548,7 @@ onUnmounted(() => {
             <button
               type="button"
               id="btn-confirmar-cobro"
-              :disabled="!esSuficiente || procesando"
+              :disabled="!esSuficiente || procesando || cajaBloqueada"
               class="w-full min-h-[52px] rounded-xl bg-[#F26A21] hover:bg-[#FF8C42] active:scale-[0.98] text-white font-bold text-base flex items-center justify-center gap-2.5 shadow-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               @click="confirmarCobro"
             >
@@ -494,6 +562,9 @@ onUnmounted(() => {
     </main>
 
     <PanelRetiros v-model:abierto="panelRetirosAbierto" />
-    <PanelSaldoInicial v-model:abierto="panelSaldoInicialAbierto" />
+    <PanelSaldoInicial
+      v-model:abierto="panelSaldoInicialAbierto"
+      @apertura-registrada="cargarEstadoCaja"
+    />
   </div>
 </template>

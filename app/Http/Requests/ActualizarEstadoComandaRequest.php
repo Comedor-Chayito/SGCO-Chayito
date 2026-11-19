@@ -27,6 +27,7 @@ class ActualizarEstadoComandaRequest extends FormRequest
      * Reglas de validación para actualizar el estado de una comanda.
      * Una comanda pagada o cancelada no puede cambiar de estado, por lo que una
      * comanda ya pagada no regresa a la cola de cocina (CC-28 / CC-34).
+     * "pagada" no se acepta aquí: solo el cobro la registra, junto con su venta.
      *
      * @autor  Equipo SGCO-Chayito
      * @fecha  2026-09-19
@@ -40,7 +41,7 @@ class ActualizarEstadoComandaRequest extends FormRequest
             'estado' => [
                 'required',
                 'string',
-                'in:pendiente,en_preparacion,lista,pagada,cancelada',
+                'in:pendiente,en_preparacion,lista,cancelada',
                 function (string $attribute, mixed $value, Closure $fail): void {
                     $comanda = $this->route('comanda');
                     if (! ($comanda instanceof Comanda) && is_numeric($comanda)) {
@@ -72,7 +73,8 @@ class ActualizarEstadoComandaRequest extends FormRequest
     {
         return [
             'estado.required' => 'El estado de la comanda es obligatorio.',
-            'estado.in'       => 'El estado debe ser: pendiente, en_preparacion, lista, pagada o cancelada.',
+            'estado.in'       => 'El estado debe ser: pendiente, en_preparacion, lista o cancelada. '
+                . 'Una comanda solo se marca pagada al cobrarla en caja.',
         ];
     }
 }

@@ -16,17 +16,17 @@ class ComandaService
     public const MONTO_MAXIMO_COMANDA = 99999999.99;
 
     /**
-     * Inicializa el servicio de comandas con la deducción automática de inventario.
+     * Inicializa el servicio de comandas con la verificación del estado de la caja.
      *
-     * @autor  Alexis
+     * @autor  manuelmv15
      *
-     * @fecha  2026-10-19
+     * @fecha  2026-11-18
      *
-     * @módulo Inventario – RF-INV-003 / CC-47
+     * @módulo POS – RF-POS-001 / US-POS-04
      *
-     * @param  DeduccionInventarioService  $deduccionInventarioService  Servicio de consumo por receta.
+     * @param  EstadoCajaService  $estadoCajaService  Servicio que valida apertura y cierre de caja.
      */
-    public function __construct(private readonly DeduccionInventarioService $deduccionInventarioService) {}
+    public function __construct(private readonly EstadoCajaService $estadoCajaService) {}
 
     /**
      * Registra una nueva comanda en estado "pendiente" dentro de una transacción.
@@ -42,10 +42,14 @@ class ComandaService
      * @param  int  $usuarioId  ID del usuario que registra la comanda.
      * @return Comanda La comanda creada con sus detalles cargados.
      *
+     * @throws ValidationException Si la caja del día ya fue cerrada.
      * @throws \Throwable Si falla la transacción de base de datos.
      */
     public function registrar(RegistrarComandaRequest $request, int $usuarioId): Comanda
     {
+        // Se admiten comandas antes de la apertura, pero no después del cierre del día
+        $this->estadoCajaService->asegurarNoCerrada();
+
         return DB::transaction(function () use ($request, $usuarioId) {
             $items = $request->validated()['items'];
             $platillos = $this->bloquearPlatillosDisponibles($items);
@@ -155,13 +159,12 @@ class ComandaService
      * @módulo POS – US-POS-02 / RF-POS-001
      *
      * @param  Comanda  $comanda  Instancia de la comanda a modificar.
-     * @param  string  $nuevoEstado  Nuevo valor para el campo estado.
-     * @param  int|null $usuarioId Actor del cambio; por defecto el usuario autenticado.
+     * @param  string  $nuevoEstado  Nuevo valor para el campo estado (nunca "pagada": eso lo hace el cobro).
      * @return Comanda Comanda actualizada con relaciones cargadas.
      */
-    public function actualizarEstado(Comanda $comanda, string $nuevoEstado, ?int $usuarioId = null): Comanda
+    public function actualizarEstado(Comanda $comanda, string $nuevoEstado): Comanda
     {
-        return DB::transaction(function () use ($comanda, $nuevoEstado, $usuarioId) {
+        return DB::transaction(function () use ($comanda, $nuevoEstado) {
             $comanda = Comanda::query()->lockForUpdate()->findOrFail($comanda->id);
 
             if (in_array($comanda->estado, ['pagada', 'cancelada'], true)) {
@@ -170,14 +173,10 @@ class ComandaService
                 ]);
             }
 
-            if ($nuevoEstado === 'pagada') {
-                $this->deduccionInventarioService->descontarPorComanda($comanda, $usuarioId);
-            }
-
             $comanda->update(['estado' => $nuevoEstado]);
 
-            // Si pasa a pagada o cancelada y tiene mesa, verificar liberación de mesa (CC-34)
-            if (in_array($nuevoEstado, ['pagada', 'cancelada'], true) && $comanda->mesa_id) {
+            // Si se cancela y tiene mesa, verificar liberación de mesa (CC-34)
+            if ($nuevoEstado === 'cancelada' && $comanda->mesa_id) {
                 $otrasActivas = Comanda::where('mesa_id', $comanda->mesa_id)
                     ->where('id', '!=', $comanda->id)
                     ->whereIn('estado', ['pendiente', 'en_preparacion', 'lista'])

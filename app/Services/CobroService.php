@@ -11,7 +11,8 @@ use Illuminate\Validation\ValidationException;
 class CobroService
 {
     /**
-     * Inicializa el servicio de cobro con la deducción automática de inventario.
+     * Inicializa el servicio de cobro con la deducción automática de inventario y la
+     * verificación del estado de la caja.
      *
      * @autor  Alexis
      *
@@ -20,8 +21,12 @@ class CobroService
      * @módulo Inventario – RF-INV-003 / CC-47
      *
      * @param  DeduccionInventarioService  $deduccionInventarioService  Servicio de consumo por receta.
+     * @param  EstadoCajaService  $estadoCajaService  Servicio que valida apertura y cierre de caja.
      */
-    public function __construct(private readonly DeduccionInventarioService $deduccionInventarioService) {}
+    public function __construct(
+        private readonly DeduccionInventarioService $deduccionInventarioService,
+        private readonly EstadoCajaService $estadoCajaService,
+    ) {}
 
     /**
      * Procesa el cobro de una comanda dentro de una transacción de base de datos.
@@ -38,10 +43,13 @@ class CobroService
      * @param  int  $usuarioId  ID del cajero que procesa la transacción.
      * @return Venta Registro de venta con comanda, detalles, mesa y cajero cargados.
      *
+     * @throws ValidationException Si la caja del día no está abierta o ya se cerró.
      * @throws \Throwable Si falla la transacción en base de datos.
      */
     public function procesarCobro(ProcesarCobroRequest $request, int $usuarioId): Venta
     {
+        $this->estadoCajaService->asegurarAbierta();
+
         return DB::transaction(function () use ($request, $usuarioId) {
             $datos = $request->validated();
             $comanda = Comanda::lockForUpdate()->findOrFail($datos['comanda_id']);

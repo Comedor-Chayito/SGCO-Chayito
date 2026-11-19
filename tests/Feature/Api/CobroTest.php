@@ -12,6 +12,7 @@ use App\Models\Venta;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
+use Tests\Concerns\AbreCajaDelDia;
 use Tests\TestCase;
 
 /**
@@ -25,6 +26,7 @@ use Tests\TestCase;
  */
 class CobroTest extends TestCase
 {
+    use AbreCajaDelDia;
     use RefreshDatabase;
 
     protected User $cajero;
@@ -54,6 +56,7 @@ class CobroTest extends TestCase
         $this->cajero = User::factory()->create();
         $this->cajero->assignRole('cajero');
         Sanctum::actingAs($this->cajero);
+        $this->abrirCajaDelDia($this->cajero);
 
         $this->mesa = Mesa::create([
             'numero' => 3,
@@ -178,15 +181,16 @@ class CobroTest extends TestCase
     }
 
     /**
-     * Valida que el cambio directo de estado a pagada también descuenta una sola vez.
+     * Valida que el cambio directo de estado a pagada se rechaza: sin cobro no hay venta,
+     * así que tampoco se descuenta inventario.
      *
-     * @autor  Alexis
+     * @autor  manuelmv15
      *
-     * @fecha  2026-10-19
+     * @fecha  2026-11-18
      *
-     * @módulo Inventario – RF-INV-003 / CC-47
+     * @módulo POS – RF-POS-002 / Inventario – RF-INV-003
      */
-    public function test_marcar_comanda_como_pagada_descuenta_inventario(): void
+    public function test_marcar_pagada_por_endpoint_de_estado_se_rechaza_y_no_descuenta(): void
     {
         $arroz = Insumo::create([
             'nombre' => 'Arroz',
@@ -204,10 +208,11 @@ class CobroTest extends TestCase
 
         $this->patchJson("/api/comandas/{$this->comanda->id}/estado", [
             'estado' => 'pagada',
-        ])->assertStatus(200);
+        ])->assertStatus(422)->assertJsonValidationErrors(['estado']);
 
-        // La comanda incluye 2 platillos: 2 × 125 g = 250 g.
-        $this->assertSame('750.000000', $arroz->fresh()->stock_actual);
+        $this->assertSame('1000.000000', $arroz->fresh()->stock_actual);
+        $this->assertSame('pendiente', $this->comanda->fresh()->estado);
+        $this->assertDatabaseCount('ventas', 0);
     }
 
     /**
@@ -889,7 +894,7 @@ class CobroTest extends TestCase
     }
 
     /**
-     * Valida que se rechaza la actualización de estado a 'pagada' si la comanda ya está pagada (CC-34).
+     * Valida que se rechaza cambiar el estado de una comanda que ya está pagada (CC-34).
      *
      * @autor  Equipo SGCO-Chayito
      *
@@ -897,12 +902,12 @@ class CobroTest extends TestCase
      *
      * @módulo POS – US-POS-03 / CC-34
      */
-    public function test_rechaza_actualizar_estado_a_pagada_si_ya_esta_pagada(): void
+    public function test_rechaza_cambiar_estado_si_comanda_ya_esta_pagada(): void
     {
         $this->comanda->update(['estado' => 'pagada']);
 
         $response = $this->patchJson('/api/comandas/'.$this->comanda->id.'/estado', [
-            'estado' => 'pagada',
+            'estado' => 'lista',
         ]);
 
         $response->assertStatus(422)
@@ -928,7 +933,7 @@ class CobroTest extends TestCase
         $this->comanda->update(['estado' => 'cancelada']);
 
         $response = $this->patchJson('/api/comandas/'.$this->comanda->id.'/estado', [
-            'estado' => 'pagada',
+            'estado' => 'lista',
         ]);
 
         $response->assertStatus(422)
@@ -941,20 +946,20 @@ class CobroTest extends TestCase
     }
 
     /**
-     * Valida que actualizar estado a pagada directamente vía endpoint PATCH libera la mesa (CC-34).
+     * Valida que cancelar la comanda vía endpoint PATCH libera la mesa (CC-34).
      *
-     * @autor  Equipo SGCO-Chayito
+     * @autor  manuelmv15
      *
-     * @fecha  2026-10-13
+     * @fecha  2026-11-18
      *
      * @módulo POS – US-POS-03 / CC-34
      */
-    public function test_actualizar_estado_a_pagada_via_endpoint_libera_mesa(): void
+    public function test_cancelar_comanda_via_endpoint_libera_mesa(): void
     {
         $this->assertSame('ocupada', $this->mesa->fresh()->estado);
 
         $response = $this->patchJson('/api/comandas/'.$this->comanda->id.'/estado', [
-            'estado' => 'pagada',
+            'estado' => 'cancelada',
         ]);
 
         $response->assertStatus(200)
@@ -963,11 +968,11 @@ class CobroTest extends TestCase
                 'message' => 'Estado de la comanda actualizado correctamente.',
                 'data' => [
                     'id' => $this->comanda->id,
-                    'estado' => 'pagada',
+                    'estado' => 'cancelada',
                 ],
             ]);
 
-        $this->assertSame('pagada', $this->comanda->fresh()->estado);
+        $this->assertSame('cancelada', $this->comanda->fresh()->estado);
         $this->assertSame('libre', $this->mesa->fresh()->estado);
     }
 }
