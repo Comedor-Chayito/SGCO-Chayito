@@ -1,0 +1,22 @@
+# Despliegue continuo de SGCO-Chayito. Lo dispara sgco-deploy.timer.
+# Instalación: ver infra/production/README.md, sección "Despliegue automático".
+#
+# Si deploy.sh todavía no existe en el checkout del servidor (primera vez), espera a que
+# llegue a origin/main, mueve el checkout ahí y lo ejecuta. Después deploy.sh se encarga solo.
+[Unit]
+Description=SGCO-Chayito: desplegar el último commit de main
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=REPO=%h/proyectos/SGCO-Chayito
+ExecStart=/bin/bash -c '\
+    f="$${REPO}/infra/production/deploy.sh"; \
+    if [ ! -x "$$f" ]; then \
+        git -C "$${REPO}" fetch -q origin main || exit 1; \
+        git -C "$${REPO}" cat-file -e origin/main:infra/production/deploy.sh 2>/dev/null || exit 0; \
+        git -C "$${REPO}" checkout -q --force --detach origin/main; \
+    fi; \
+    exec "$$f"'
+TimeoutStartSec=30min
