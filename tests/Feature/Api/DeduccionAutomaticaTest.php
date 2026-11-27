@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
+use Tests\Concerns\AbreCajaDelDia;
 use Tests\TestCase;
 
 /**
@@ -23,6 +24,7 @@ use Tests\TestCase;
  */
 class DeduccionAutomaticaTest extends TestCase
 {
+    use AbreCajaDelDia;
     use RefreshDatabase;
 
     protected User $cajero;
@@ -54,6 +56,7 @@ class DeduccionAutomaticaTest extends TestCase
         $this->cajero = User::factory()->create();
         $this->cajero->assignRole('cajero');
         Sanctum::actingAs($this->cajero);
+        $this->abrirCajaDelDia($this->cajero);
 
         $this->mesa = Mesa::create([
             'numero'    => 5,
@@ -321,15 +324,16 @@ class DeduccionAutomaticaTest extends TestCase
     }
 
     /**
-     * Valida que marcar comanda como pagada vía endpoint PATCH comanda también descuenta inventario (CC-50).
+     * Valida que el PATCH de estado no puede marcar pagada ni descontar inventario:
+     * la deducción solo ocurre al cobrar (CLAUDE.md §8.3).
      *
-     * @autor  Equipo SGCO-Chayito
-     * @fecha  2026-10-22
-     * @módulo Inventario – RF-INV-003 / CC-50
+     * @autor  manuelmv15
+     * @fecha  2026-11-18
+     * @módulo Inventario – RF-INV-003 / POS – RF-POS-002
      *
      * @return void
      */
-    public function test_marcar_comanda_como_pagada_via_endpoint_comandas_descuenta_inventario(): void
+    public function test_solo_el_cobro_marca_pagada_y_descuenta_inventario(): void
     {
         $comanda = Comanda::create([
             'mesa_id'    => $this->mesa->id,
@@ -345,11 +349,16 @@ class DeduccionAutomaticaTest extends TestCase
             'precio_unitario' => 5.00,
         ]);
 
-        $response = $this->patchJson("/api/comandas/{$comanda->id}/estado", [
+        $this->patchJson("/api/comandas/{$comanda->id}/estado", [
             'estado' => 'pagada',
-        ]);
+        ])->assertStatus(422);
 
-        $response->assertStatus(200);
+        $this->assertEquals(20.000000, (float) $this->insumoArroz->fresh()->stock_actual);
+
+        $this->postJson('/api/cobros', [
+            'comanda_id'     => $comanda->id,
+            'monto_recibido' => 10.00,
+        ])->assertStatus(201);
 
         // 20 kg - 0.4 kg = 19.6 kg
         $this->assertEquals(19.600000, (float) $this->insumoArroz->fresh()->stock_actual);

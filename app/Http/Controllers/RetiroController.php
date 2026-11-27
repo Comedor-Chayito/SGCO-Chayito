@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RegistrarRetiroRequest;
 use App\Services\RetiroService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class RetiroController extends Controller
 {
@@ -23,18 +22,17 @@ class RetiroController extends Controller
     }
 
     /**
-     * Devuelve los retiros del turno actual del usuario autenticado.
+     * Devuelve todos los retiros del turno actual, con el nombre de quien los registró.
      *
      * @autor  manuelmv15
      * @fecha  2026-10-14
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-37)
      *
-     * @param  Request $request Solicitud con el usuario autenticado.
      * @return JsonResponse Respuesta estructurada con la lista de retiros.
      */
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
-        $retiros = $this->retiroService->listarDelTurno($request->user());
+        $retiros = $this->retiroService->listarDelTurno();
 
         return response()->json([
             'status'  => 'ok',

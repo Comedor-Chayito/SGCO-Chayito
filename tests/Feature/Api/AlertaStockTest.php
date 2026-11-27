@@ -12,6 +12,7 @@ use App\Services\InsumoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
+use Tests\Concerns\AbreCajaDelDia;
 use Tests\TestCase;
 
 /**
@@ -24,10 +25,12 @@ use Tests\TestCase;
  */
 class AlertaStockTest extends TestCase
 {
+    use AbreCajaDelDia;
     use RefreshDatabase;
 
     protected InsumoService $insumoService;
     protected User $cajero;
+    protected User $cocinero;
     protected Mesa $mesa;
 
     /**
@@ -48,6 +51,13 @@ class AlertaStockTest extends TestCase
         Role::firstOrCreate(['name' => 'cajero', 'guard_name' => 'web']);
         $this->cajero = User::factory()->create();
         $this->cajero->assignRole('cajero');
+
+        // Insumos y alertas se consultan desde cocina (CLAUDE.md §9, CC-98)
+        Role::firstOrCreate(['name' => 'cocinero', 'guard_name' => 'web']);
+        $this->cocinero = User::factory()->create();
+        $this->cocinero->assignRole('cocinero');
+        Sanctum::actingAs($this->cocinero);
+        $this->abrirCajaDelDia($this->cajero);
 
         $this->mesa = Mesa::create([
             'numero'    => 1,
@@ -463,6 +473,7 @@ class AlertaStockTest extends TestCase
         $this->assertEquals(8.500, (float) $insumo->fresh()->stock_actual);
 
         // Ahora debe figurar en el endpoint de alertas con estado 'bajo'
+        Sanctum::actingAs($this->cocinero);
         $resAlertas = $this->getJson('/api/insumos/alertas');
         $resAlertas->assertStatus(200)
             ->assertJsonCount(1, 'data')

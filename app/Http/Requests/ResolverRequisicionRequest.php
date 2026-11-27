@@ -14,17 +14,17 @@ use Illuminate\Foundation\Http\FormRequest;
 class ResolverRequisicionRequest extends FormRequest
 {
     /**
-     * Determina si un administrador puede resolver la requisición solicitada.
+     * Determina si un administrador o socio puede resolver la requisición solicitada.
      *
      * @autor  Alexis
      * @fecha  2026-10-22
      * @módulo Inventario – RF-INV-004 / CC-53
      *
-     * @return bool True si el usuario posee el rol administrador.
+     * @return bool True si el usuario posee el rol administrador o socio.
      */
     public function authorize(): bool
     {
-        return $this->user()?->hasRole('administrador') ?? false;
+        return $this->user()?->hasAnyRole(['administrador', 'socio']) ?? false;
     }
 
     /**

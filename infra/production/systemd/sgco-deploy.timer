@@ -1,0 +1,11 @@
+# Revisa cada minuto si main tiene un commit nuevo aprobado por el CI.
+[Unit]
+Description=SGCO-Chayito: revisar main cada minuto
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=1min
+Persistent=false
+
+[Install]
+WantedBy=timers.target

@@ -11,6 +11,11 @@ class Mesa extends Model
         'numero',
         'capacidad',
         'estado',
+        'activa',
+    ];
+
+    protected $casts = [
+        'activa' => 'boolean',
     ];
 
     /**

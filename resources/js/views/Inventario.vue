@@ -9,22 +9,17 @@
  * @módulo Inventario – US-INV-01 / RF-INV-003
  */
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import {
   Package,
-  ArrowLeft,
   FlaskConical,
   ShoppingCart,
 } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
-
 import Insumos from '@/features/inventario/views/Insumos.vue';
 import RecetaPlatillo from '@/features/inventario/views/RecetaPlatillo.vue';
 import Compras from '@/features/inventario/views/Compras.vue';
 import { useInventarioStore } from '@/features/inventario/stores/useInventarioStore.js';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
-const router = useRouter();
 const inventario = useInventarioStore();
 
 onMounted(() => inventario.cargarAlertas());
@@ -46,19 +41,7 @@ const PESTANAS = [
       titulo="Inventario"
       subtitulo="Insumos, recetas y compras de bodega"
       :icono="Package"
-    >
-      <template #navegacion>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="rounded-xl hover:bg-zinc-100"
-          @click="router.back()"
-          title="Volver"
-        >
-          <ArrowLeft :size="20" />
-        </Button>
-      </template>
-    </EncabezadoOperacion>
+    />
 
     <!-- Navegación de pestañas -->
     <nav class="border-b border-[#E5E0DB] bg-white px-4 sm:px-6">

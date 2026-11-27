@@ -7,13 +7,11 @@
  * @módulo Inventario – RF-INV-004 / CC-52
  */
 import { onMounted, ref } from 'vue';
-import { ArrowLeft, ClipboardPlus, LoaderCircle, PackagePlus, Plus, Trash2 } from '@lucide/vue';
+import { ClipboardPlus, LoaderCircle, PackagePlus, Plus, Trash2 } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
-import { useRouter } from 'vue-router';
 import { crearRequisicion, obtenerInsumos } from '@/features/inventario/services/inventarioService.js';
 import EncabezadoOperacion from '@/shared/components/EncabezadoOperacion.vue';
 
-const router = useRouter();
 const insumos = ref([]);
 const cargandoInsumos = ref(true);
 const enviando = ref(false);
@@ -219,19 +217,7 @@ onMounted(cargarInsumos);
       titulo="Nueva requisición"
       subtitulo="Solicita insumos a bodega desde tu área."
       :icono="ClipboardPlus"
-    >
-      <template #navegacion>
-        <button
-          id="btn-volver-inventario"
-          type="button"
-          class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#E5E0DB] text-[#3D3D3D] transition hover:bg-[#FAF7F4]"
-          aria-label="Volver a inventario"
-          @click="router.push('/inventario')"
-        >
-          <ArrowLeft :size="20" />
-        </button>
-      </template>
-    </EncabezadoOperacion>
+    />
 
     <form class="mx-auto max-w-3xl space-y-4 p-4 pb-10 sm:p-6" @submit.prevent="enviarRequisicion">
       <section class="rounded-2xl border border-[#E5E0DB] bg-white p-4 shadow-sm sm:p-5">

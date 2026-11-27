@@ -28,7 +28,7 @@ class CrearRequisicionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['cocinero', 'administrador']) ?? false;
+        return $this->user()?->hasAnyRole(['cocinero', 'cocinera', 'administrador', 'socio']) ?? false;
     }
 
     /**

@@ -25,6 +25,19 @@ export async function obtenerMatrizPermisos() {
   return respuesta.data.data;
 }
 
+/**
+ * Actualiza los permisos asignados a un rol oficial y registra la auditoría (US-ADM-04 / CC-122).
+ *
+ * @param   {string|number} rol Nombre o identificador numérico del rol.
+ * @param   {string[]} permisos Lista de nombres de permisos a asignar.
+ * @returns {Promise<object>} Rol actualizado con sus nuevos permisos.
+ */
+export async function actualizarPermisosRol(rol, permisos) {
+  const respuesta = await api.put(`/roles/${rol}/permisos`, { permisos });
+  return respuesta.data.data;
+}
+
 export default {
   obtenerMatrizPermisos,
+  actualizarPermisosRol,
 };

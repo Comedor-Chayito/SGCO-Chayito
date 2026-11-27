@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
- * Servicio para consultar y consolidar la matriz de roles y permisos RBAC (US-ADM-04 / CC-121).
+ * Servicio para consultar y consolidar la matriz de roles y permisos RBAC (US-ADM-04 / CC-121 / CC-122).
  *
  * @autor  Equipo SGCO-Chayito
  * @fecha  2026-11-16
@@ -14,6 +17,17 @@ use Spatie\Permission\Models\Role;
  */
 class MatrizPermisoService
 {
+    /**
+     * Permisos administrativos críticos que no pueden ser revocados del rol administrador
+     * para evitar la pérdida irreversible del acceso al sistema (CC-122 / CC-126).
+     *
+     * @var list<string>
+     */
+    public const PERMISOS_CRITICOS_ADMIN = ['usuarios.ver', 'usuarios.editar'];
+
+    public function __construct(private readonly AuditoriaService $auditoriaService)
+    {
+    }
     /**
      * Mapeo de descripciones legibles para los permisos oficiales del sistema.
      *
@@ -115,5 +129,78 @@ class MatrizPermisoService
             'total_roles'    => count($rolesFormateados),
             'total_permisos' => count($permisosFormateados),
         ];
+    }
+
+    /**
+     * Actualiza los permisos asignados a un rol oficial y registra la bitácora de auditoría.
+     * Sincroniza los permisos en Spatie y limpia la caché interna de roles (US-ADM-04 / CC-122).
+     *
+     * @autor  Equipo SGCO-Chayito
+     * @fecha  2026-11-18
+     * @módulo Administración y Seguridad – RF-ADM-008 / CC-122
+     *
+     * @param  Role          $rol      Instancia del rol a modificar.
+     * @param  array<string> $permisos Lista de nombres de permisos válidos.
+     * @return array{id: int, name: string, permisos: list<string>, total_permisos: int}
+     *
+     * @throws ValidationException Si se intenta revocar permisos críticos del rol administrador.
+     */
+    public function actualizarPermisosRol(Role $rol, array $permisos): array
+    {
+        $permisosNormalizados = array_values(array_unique($permisos));
+
+        // Regla de consistencia: el rol administrador debe conservar sus permisos críticos
+        if ($rol->name === 'administrador') {
+            foreach (self::PERMISOS_CRITICOS_ADMIN as $permisoCritico) {
+                if (! in_array($permisoCritico, $permisosNormalizados, true)) {
+                    throw ValidationException::withMessages([
+                        'permisos' => "No es posible revocar permisos críticos ({$permisoCritico}) del rol administrador para evitar la pérdida de acceso al sistema.",
+                    ]);
+                }
+            }
+        }
+
+        return DB::transaction(function () use ($rol, $permisosNormalizados) {
+            $rolBloqueado = Role::query()->lockForUpdate()->findOrFail($rol->id);
+
+            $permisosAnteriores = $rolBloqueado->permissions->pluck('name')->sort()->values()->toArray();
+
+            // Sincronizar permisos en Spatie
+            $rolBloqueado->syncPermissions($permisosNormalizados);
+            $rolBloqueado->load('permissions');
+
+            $permisosNuevos = $rolBloqueado->permissions->pluck('name')->sort()->values()->toArray();
+
+            $agregados = array_values(array_diff($permisosNuevos, $permisosAnteriores));
+            $removidos = array_values(array_diff($permisosAnteriores, $permisosNuevos));
+
+            // Registrar en la bitácora de auditoría
+            $this->auditoriaService->registrar(
+                accion: 'permisos_rol_actualizados',
+                entidad: $rolBloqueado,
+                datosAnteriores: [
+                    'rol'      => $rolBloqueado->name,
+                    'permisos' => $permisosAnteriores,
+                    'total'    => count($permisosAnteriores),
+                ],
+                datosNuevos: [
+                    'rol'       => $rolBloqueado->name,
+                    'permisos'  => $permisosNuevos,
+                    'total'     => count($permisosNuevos),
+                    'agregados' => $agregados,
+                    'removidos' => $removidos,
+                ]
+            );
+
+            // Olvidar la caché de permisos de Spatie para reflejar cambios inmediatamente
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+            return [
+                'id'             => $rolBloqueado->id,
+                'name'           => $rolBloqueado->name,
+                'permisos'       => $permisosNuevos,
+                'total_permisos' => count($permisosNuevos),
+            ];
+        });
     }
 }

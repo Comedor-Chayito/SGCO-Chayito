@@ -7,12 +7,10 @@
  * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
  */
 import { onMounted, ref } from 'vue';
-import { ArrowLeft, Calculator, Landmark, LoaderCircle, ReceiptText, RefreshCw } from '@lucide/vue';
+import { Calculator, Landmark, LoaderCircle, ReceiptText, RefreshCw } from '@lucide/vue';
 import { Toaster, toast } from 'vue-sonner';
-import { useRouter } from 'vue-router';
 import { obtenerCompras, registrarCompra } from '@/features/contabilidad/services/compraService.js';
 
-const router = useRouter();
 const compras = ref([]);
 const cargando = ref(true);
 const guardando = ref(false);
@@ -143,15 +141,6 @@ onMounted(cargarCompras);
 
     <div class="mx-auto max-w-5xl space-y-5">
       <header class="flex flex-wrap items-center gap-3 rounded-2xl border border-[#E5E0DB] bg-white p-4 shadow-sm sm:p-5">
-        <button
-          id="btn-volver-inicio-contabilidad"
-          type="button"
-          class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#E5E0DB] text-[#3D3D3D] hover:bg-[#FAF7F4]"
-          aria-label="Volver al inicio"
-          @click="router.push('/')"
-        >
-          <ArrowLeft :size="20" />
-        </button>
         <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
           <Landmark :size="22" />
         </div>

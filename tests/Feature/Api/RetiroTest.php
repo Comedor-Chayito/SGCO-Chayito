@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
+use Tests\Concerns\AbreCajaDelDia;
 use Tests\TestCase;
 
 /**
@@ -19,6 +20,7 @@ use Tests\TestCase;
  */
 class RetiroTest extends TestCase
 {
+    use AbreCajaDelDia;
     use RefreshDatabase;
 
     protected User $cajero;
@@ -43,6 +45,7 @@ class RetiroTest extends TestCase
         $this->cajero = User::factory()->create();
         $this->cajero->assignRole('cajero');
         Sanctum::actingAs($this->cajero);
+        $this->abrirCajaDelDia($this->cajero);
     }
 
     /**
@@ -173,17 +176,18 @@ class RetiroTest extends TestCase
     }
 
     /**
-     * Valida que el listado del turno solo trae los retiros de hoy del usuario autenticado.
+     * Valida que el listado del turno trae los retiros de hoy de todos los usuarios, con su
+     * nombre, y deja fuera los de días anteriores: son los mismos que resta el cierre.
      *
      * @autor  manuelmv15
-     * @fecha  2026-10-14
+     * @fecha  2026-11-18
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
      *
      * @return void
      */
-    public function test_listado_del_turno_solo_incluye_mis_retiros_de_hoy(): void
+    public function test_listado_del_turno_incluye_retiros_de_hoy_de_todos_los_usuarios(): void
     {
-        $otroCajero = User::factory()->create();
+        $otroCajero = User::factory()->create(['name' => 'Otro Cajero']);
 
         $mioHoy = RetiroParcial::create([
             'usuario_id' => $this->cajero->id,
@@ -198,7 +202,7 @@ class RetiroTest extends TestCase
         ]);
         $mioAyer->forceFill(['created_at' => now()->subDay()])->save();
 
-        RetiroParcial::create([
+        $deOtro = RetiroParcial::create([
             'usuario_id' => $otroCajero->id,
             'monto'      => 3.00,
             'motivo'     => 'Retiro de otro cajero',
@@ -208,8 +212,14 @@ class RetiroTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('status', 'ok')
-            ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.id', $mioHoy->id);
+            ->assertJsonCount(2, 'data');
+
+        $ids = collect($response->json('data'))->pluck('id')->all();
+        $this->assertEqualsCanonicalizing([$mioHoy->id, $deOtro->id], $ids);
+
+        $retiroDeOtro = collect($response->json('data'))->firstWhere('id', $deOtro->id);
+        $this->assertSame('Otro Cajero', $retiroDeOtro['usuario']['name']);
+        $this->assertArrayNotHasKey('permisos', $retiroDeOtro['usuario']);
     }
 
     /**

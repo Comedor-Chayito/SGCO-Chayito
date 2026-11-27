@@ -23,6 +23,19 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
+
+        // El rol se evalúa antes del route model binding: un rol no autorizado recibe 403
+        // aunque el id no exista, en vez de 404 (no revela qué recursos existen).
+        foreach ([
+            \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            \Spatie\Permission\Middleware\RoleMiddleware::class,
+        ] as $middlewareDeRol) {
+            $middleware->prependToPriorityList(
+                before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
+                prepend: $middlewareDeRol,
+            );
+        }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {

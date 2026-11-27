@@ -114,7 +114,7 @@ function imprimirTicket() {
   <div class="min-h-[100dvh] bg-[#FAF7F4] flex flex-col" id="vista-ticket-venta">
 
     <!-- Barra de acciones (oculta al imprimir) -->
-    <header class="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[#E5E0DB] bg-white/95 px-4 py-3 backdrop-blur-md shadow-xs print:hidden">
+    <header class="sticky top-[var(--alto-shell,0px)] z-10 flex items-center justify-between gap-3 border-b border-[#E5E0DB] bg-white/95 px-4 py-3 backdrop-blur-md shadow-xs print:hidden">
       <div class="flex items-center gap-3">
         <RouterLink
           to="/caja"
@@ -164,7 +164,7 @@ function imprimirTicket() {
       <button
         type="button"
         class="mt-4 px-4 py-2 rounded-xl border border-[#E5E0DB] bg-white text-sm font-semibold hover:bg-zinc-50 cursor-pointer"
-        @click="router.back()"
+        @click="router.push('/caja')"
       >
         Regresar
       </button>

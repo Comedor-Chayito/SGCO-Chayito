@@ -25,7 +25,7 @@ export async function registrarRetiro(datos) {
 }
 
 /**
- * Obtiene los retiros del turno actual (día comercial) del usuario autenticado.
+ * Obtiene todos los retiros del turno actual (día comercial), con el usuario que los hizo.
  *
  * @autor  Jeferson De La Cruz
  * @fecha  2026-09-19
@@ -67,6 +67,54 @@ export async function obtenerAperturaTurno(fecha) {
   const params = fecha ? { fecha } : {};
   const respuesta = await api.get('/aperturas-caja/turno', { params });
   return respuesta.data.data;
+}
+
+/**
+ * Obtiene el resumen de caja de un día: estado, saldo inicial, ventas por método de pago,
+ * retiros, efectivo esperado en gaveta y la lista de movimientos en orden de hora.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-11-18
+ * @módulo POS – US-POS-04 / RF-POS-002
+ *
+ * @param   {string} [fecha] Día a consultar (YYYY-MM-DD); por defecto hoy.
+ * @returns {Promise<{ fecha: string, estado: string, totales: Object, movimientos: Array }>}
+ */
+export async function obtenerMovimientosCaja(fecha) {
+  const params = fecha ? { fecha } : {};
+  const respuesta = await api.get('/movimientos-caja', { params });
+  return respuesta.data.data;
+}
+
+/**
+ * Traduce la apertura del turno al estado operativo de la caja. Solo con la caja
+ * abierta y sin cierre se puede cobrar o retirar efectivo.
+ *
+ * @autor  manuelmv15
+ * @fecha  2026-11-18
+ * @módulo POS – US-POS-04 / RF-POS-002
+ *
+ * @param   {Object|null} apertura Apertura del turno devuelta por obtenerAperturaTurno().
+ * @returns {{ estado: string, operable: boolean, mensaje: string }} Estado y texto para la vista.
+ */
+export function describirEstadoCaja(apertura) {
+  if (!apertura) {
+    return {
+      estado: 'sin_abrir',
+      operable: false,
+      mensaje: 'La caja de hoy no se ha abierto. Registra el saldo inicial para poder cobrar.',
+    };
+  }
+
+  if (apertura.caja_cerrada) {
+    return {
+      estado: 'cerrada',
+      operable: false,
+      mensaje: 'La caja de hoy ya se cerró. No se admiten más cobros ni retiros.',
+    };
+  }
+
+  return { estado: 'abierta', operable: true, mensaje: '' };
 }
 
 /**

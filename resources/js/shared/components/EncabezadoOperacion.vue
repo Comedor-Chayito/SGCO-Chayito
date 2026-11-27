@@ -29,7 +29,7 @@ defineProps({
 
 <template>
   <header
-    class="sticky top-0 z-30 flex min-h-16 w-full items-center border-b border-[#E5E0DB] bg-white/95 px-4 py-3 shadow-xs backdrop-blur-md sm:px-6"
+    class="sticky top-[var(--alto-shell,0px)] z-10 flex min-h-16 w-full items-center border-b border-[#E5E0DB] bg-white/95 px-4 py-3 shadow-xs backdrop-blur-md sm:px-6"
   >
     <div class="flex w-full flex-wrap items-center justify-between gap-3">
       <div class="flex min-w-0 items-center gap-3">

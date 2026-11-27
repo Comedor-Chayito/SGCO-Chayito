@@ -21,7 +21,7 @@ class ActualizarUsuarioRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->hasRole('administrador') ?? false;
+        return $this->user()?->hasAnyRole(['administrador', 'socio']) ?? false;
     }
 
     /**

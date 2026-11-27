@@ -27,7 +27,7 @@ const routes = [
     path: '/pos',
     name: 'pos',
     component: () => import('@/features/pos/views/POS.vue'),
-    meta: { roles: ['mesero', 'administrador', 'socio'] },
+    meta: { roles: ['mesero', 'cajero', 'administrador', 'socio'] },
   },
   {
     path: '/cocina',
@@ -45,19 +45,19 @@ const routes = [
     path: '/caja/apertura',
     name: 'caja-apertura',
     component: () => import('@/features/pos/views/AperturaCaja.vue'),
-    meta: { roles: ['cajero', 'administrador', 'socio'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'], seccion: 'caja' },
   },
   {
     path: '/caja/ticket/:id',
     name: 'ticket-venta',
     component: () => import('@/features/pos/views/TicketVenta.vue'),
-    meta: { roles: ['cajero', 'administrador', 'socio'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'], seccion: 'caja' },
   },
   {
     path: '/caja/cierre',
     name: 'cierre-caja',
     component: () => import('@/features/pos/views/ReporteCierreCaja.vue'),
-    meta: { roles: ['cajero', 'administrador', 'socio'] },
+    meta: { roles: ['cajero', 'administrador', 'socio'], seccion: 'caja' },
   },
   {
     path: '/pos/cocina',
@@ -88,6 +88,12 @@ const routes = [
     meta: { roles: ['contadora', 'administrador', 'socio'] },
   },
   {
+    path: '/contabilidad/compras',
+    name: 'compras-iva',
+    component: () => import('@/features/contabilidad/views/ComprasIva.vue'),
+    meta: { roles: ['contadora', 'administrador', 'socio'] },
+  },
+  {
     path: '/reportes',
     name: 'reportes',
     component: () => import('@/features/reportes/views/DashboardGerencial.vue'),
@@ -103,6 +109,36 @@ const routes = [
     path: '/admin',
     name: 'admin',
     component: () => import('@/views/Admin.vue'),
+    meta: { roles: ['administrador', 'socio'] },
+  },
+  {
+    path: '/admin/permisos',
+    name: 'admin-permisos',
+    redirect: { name: 'admin', query: { tab: 'matriz' } },
+    meta: { roles: ['administrador', 'socio'], seccion: 'admin' },
+  },
+  {
+    path: '/matriz-permisos',
+    name: 'matriz-permisos',
+    redirect: { name: 'admin', query: { tab: 'matriz' } },
+    meta: { roles: ['administrador', 'socio'], seccion: 'admin' },
+  },
+  {
+    path: '/admin/bitacora',
+    name: 'admin-bitacora',
+    redirect: { name: 'admin', query: { tab: 'bitacora' } },
+    meta: { roles: ['administrador', 'socio'], seccion: 'admin' },
+  },
+  {
+    path: '/bitacora',
+    name: 'bitacora',
+    redirect: { name: 'admin', query: { tab: 'bitacora' } },
+    meta: { roles: ['administrador', 'socio'], seccion: 'admin' },
+  },
+  {
+    path: '/configuracion',
+    name: 'configuracion',
+    component: () => import('@/views/Configuracion.vue'),
     meta: { roles: ['administrador', 'socio'] },
   },
   {
@@ -132,8 +168,9 @@ export function obtenerRutaInicioPorRol(rol) {
       return { name: 'contabilidad' };
     case 'socio':
       return { name: 'reportes' };
-    case 'mesero':
     case 'cajero':
+      return { name: 'caja' };
+    case 'mesero':
     case 'administrador':
     default:
       return { name: 'pos' };
@@ -163,10 +200,9 @@ router.beforeEach(async (to) => {
 
   const rutaDestino = obtenerRutaInicioPorRol(sesion.rol);
 
-  // Rutas públicas (login, inicio)
+  // Rutas públicas (login, inicio): con sesión activa se va directo a la vista del rol
   if (to.meta.publica || to.name === 'inicio') {
-    // Si ya está autenticado, no permitir volver a login
-    if (to.name === 'login' && sesion.autenticado) {
+    if (sesion.autenticado) {
       return rutaDestino;
     }
     return true;
@@ -181,8 +217,9 @@ router.beforeEach(async (to) => {
   if (to.meta.roles && to.meta.roles.length > 0) {
     const rolActual = sesion.rol;
     if (!rolActual || !to.meta.roles.includes(rolActual)) {
-      // Si el usuario no tiene acceso a la ruta solicitada, redirigir a su vista permitida
+      // Un rol sin acceso ni a su propia vista de inicio cerraría un ciclo login ↔ destino
       if (to.name === rutaDestino.name) {
+        await sesion.cerrarSesion();
         return { name: 'login' };
       }
       return rutaDestino;
