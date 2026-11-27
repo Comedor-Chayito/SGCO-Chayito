@@ -37,3 +37,41 @@ servidor o plataforma de destino.
 3. Ejecute los mismos tres comandos del primer despliegue.
 4. Si falla el healthcheck, vuelva ambas referencias a la versión previa. No use
    `migrate:rollback` a ciegas: algunas migraciones productivas son irreversibles.
+
+## Despliegue automático (servidor actual)
+
+El servidor actual está en una red privada y publica la app por Cloudflare Tunnel, así
+que GitHub no puede entrar a él. En su lugar, el servidor sondea `main`:
+
+- `compose.server.yaml` es el override del servidor: construye las imágenes ahí mismo
+  (`APP_IMAGE`/`NGINX_IMAGE` apuntan a `sgco-chayito-*:local`) y agrega MySQL y el túnel.
+- `systemd/sgco-deploy.timer` ejecuta `deploy.sh` un minuto después de que termina el
+  ciclo anterior.
+- `deploy.sh` hace `git fetch` de `main` (el repo es público, no necesita credenciales). Si
+  hay un commit nuevo **y el CI de GitHub lo aprobó**, mueve el checkout a ese commit,
+  construye `app` y `nginx`, corre `migrate --force`, levanta el stack y espera que
+  `/up` responda 200. Si algo falla, restaura las imágenes `:rollback` y el commit anterior,
+  y no reintenta ese commit hasta que llegue uno nuevo.
+
+El estado vive en `~/.local/state/sgco-deploy/` (`desplegado`, `fallido`, `lock`).
+
+> Las migraciones corren solas. Revíselas en el Pull Request antes de mezclar a `main`.
+
+### Instalación (una sola vez)
+
+```bash
+mkdir -p ~/.config/systemd/user
+cp infra/production/systemd/sgco-deploy.* ~/.config/systemd/user/
+sudo loginctl enable-linger "$USER"   # el timer corre sin sesión abierta
+systemctl --user daemon-reload
+systemctl --user enable --now sgco-deploy.timer
+```
+
+### Operación
+
+```bash
+journalctl --user -u sgco-deploy -f              # ver despliegues en vivo
+infra/production/deploy.sh --forzar              # redesplegar el commit actual
+rm ~/.local/state/sgco-deploy/fallido            # reintentar un commit marcado como fallido
+DEPLOY_REQUIRE_CI=0 infra/production/deploy.sh   # desplegar sin esperar al CI (emergencia)
+```
