@@ -26,7 +26,9 @@ class Comanda extends Model
      * Obtiene la mesa asociada a la comanda, si el canal es "Mesa".
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return BelongsTo<Mesa, Comanda>
@@ -40,7 +42,9 @@ class Comanda extends Model
      * Obtiene el usuario (mesero o cajero) que registró la comanda.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return BelongsTo<User, Comanda>
@@ -54,7 +58,9 @@ class Comanda extends Model
      * Obtiene el detalle de platillos y cantidades de la comanda.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return HasMany<ComandaDetalle>
@@ -68,7 +74,9 @@ class Comanda extends Model
      * Obtiene el registro de venta (cobro) asociado a la comanda.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return HasOne<Venta>

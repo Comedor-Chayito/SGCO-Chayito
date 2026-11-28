@@ -55,7 +55,9 @@ class Insumo extends Model
      * Obtiene existencias de este insumo en las áreas operativas.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-54
      *
      * @return HasMany<ExistenciaAreaOperativa>
@@ -69,7 +71,9 @@ class Insumo extends Model
      * Obtiene el historial de movimientos de stock de este insumo.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-16
+     *
      * @módulo Inventario – US-INV-04 (CC-114)
      *
      * @return HasMany<MovimientoInventario>

@@ -26,7 +26,9 @@ use Tests\TestCase;
  * - HTTP 200/201/OK cuando el usuario cuenta con el rol autorizado según la matriz de acceso.
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-11-17
+ *
  * @módulo Seguridad y Administración — A1 (CC-102)
  */
 class ProteccionRutasTest extends TestCase
@@ -34,17 +36,27 @@ class ProteccionRutasTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $socio;
+
     protected User $cajero;
+
     protected User $mesero;
+
     protected User $cocinero;
+
     protected User $contadora;
 
     protected Platillo $platillo;
+
     protected Mesa $mesa;
+
     protected Comanda $comanda;
+
     protected Insumo $insumo;
+
     protected Receta $receta;
+
     protected Requisicion $requisicion;
 
     /**
@@ -72,18 +84,18 @@ class ProteccionRutasTest extends TestCase
         $this->receta = Receta::first();
 
         $this->comanda = Comanda::create([
-            'mesa_id'      => $this->mesa->id,
-            'usuario_id'   => $this->mesero->id,
-            'canal'        => 'mesa',
-            'estado'       => 'pendiente',
-            'subtotal'     => 5.00,
-            'observaciones'=> 'Sin cebolla',
+            'mesa_id' => $this->mesa->id,
+            'usuario_id' => $this->mesero->id,
+            'canal' => 'mesa',
+            'estado' => 'pendiente',
+            'subtotal' => 5.00,
+            'observaciones' => 'Sin cebolla',
         ]);
 
         $this->requisicion = Requisicion::create([
             'usuario_solicita_id' => $this->cocinero->id,
-            'area_solicitante'    => 'cocina',
-            'estado'              => 'pendiente',
+            'area_solicitante' => 'cocina',
+            'estado' => 'pendiente',
         ]);
     }
 
@@ -94,14 +106,14 @@ class ProteccionRutasTest extends TestCase
     {
         // Sesiones estándar
         $respSesiones = $this->postJson('/api/sesiones', [
-            'email'    => 'admin@sgco-chayito.local',
+            'email' => 'admin@sgco-chayito.local',
             'password' => 'Admin1234!',
         ]);
         $this->assertNotEquals(401, $respSesiones->status());
 
         // Alias frontend
         $respLogin = $this->postJson('/api/auth/login', [
-            'correo'     => 'admin@sgco-chayito.local',
+            'correo' => 'admin@sgco-chayito.local',
             'contrasena' => 'Admin1234!',
         ]);
         $this->assertNotEquals(401, $respLogin->status());
@@ -148,9 +160,9 @@ class ProteccionRutasTest extends TestCase
             $response = $this->json($metodo, $url);
             $response->assertStatus(401);
             $response->assertJson([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'No autenticado. Token ausente o inválido.',
-                'data'    => null,
+                'data' => null,
             ]);
         }
 
@@ -163,9 +175,9 @@ class ProteccionRutasTest extends TestCase
                 $response = $this->json($metodo, $url);
                 $this->assertEquals(403, $response->status(), "Ruta {$metodo} {$url} no devolvió 403 para {$usuario->email}");
                 $response->assertJson([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'No tienes permisos suficientes para realizar esta acción.',
-                    'data'    => null,
+                    'data' => null,
                 ]);
             }
         }
@@ -535,9 +547,9 @@ class ProteccionRutasTest extends TestCase
                 'data',
             ])
             ->assertJson([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'No autenticado. Token ausente o inválido.',
-                'data'    => null,
+                'data' => null,
             ]);
 
         // 403 con usuario autenticado pero rol insuficiente
@@ -550,9 +562,9 @@ class ProteccionRutasTest extends TestCase
                 'data',
             ])
             ->assertJson([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'No tienes permisos suficientes para realizar esta acción.',
-                'data'    => null,
+                'data' => null,
             ]);
     }
 }

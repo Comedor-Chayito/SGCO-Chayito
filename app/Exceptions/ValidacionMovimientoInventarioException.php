@@ -11,7 +11,9 @@ class ValidacionMovimientoInventarioException extends ValidationException
      * Conserva el contrato de tres campos al rechazar un movimiento de inventario.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113
      *
      * @return JsonResponse Errores de validacion dentro de data.

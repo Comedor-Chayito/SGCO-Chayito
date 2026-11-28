@@ -12,7 +12,9 @@ class SubcategoriaEgresoSeeder extends Seeder
      * Es idempotente: se puede ejecutar varias veces sin duplicar registros.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005
      *
      * @return void

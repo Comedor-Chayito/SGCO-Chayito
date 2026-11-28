@@ -12,7 +12,9 @@ class ListarEgresosRequest extends FormRequest
      * El acceso por rol (contadora o administrador) lo controla el middleware de la ruta.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Contabilidad – RF-CON-006 (CC-69)
      *
      * @return bool
@@ -27,7 +29,9 @@ class ListarEgresosRequest extends FormRequest
      * La subcategoría puede estar desactivada, porque sus egresos siguen en el historial.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Contabilidad – RF-CON-006 (CC-69)
      *
      * @return array<string, mixed>
@@ -35,8 +39,8 @@ class ListarEgresosRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'desde'                  => ['nullable', 'date_format:Y-m-d'],
-            'hasta'                  => ['nullable', 'date_format:Y-m-d', 'after_or_equal:desde'],
+            'desde' => ['nullable', 'date_format:Y-m-d'],
+            'hasta' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:desde'],
             'subcategoria_egreso_id' => ['nullable', 'integer', Rule::exists('subcategorias_egreso', 'id')],
         ];
     }
@@ -45,7 +49,9 @@ class ListarEgresosRequest extends FormRequest
      * Mensajes de error personalizados en español.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Contabilidad – RF-CON-006 (CC-69)
      *
      * @return array<string, string>
@@ -53,11 +59,11 @@ class ListarEgresosRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'desde.date_format'              => 'La fecha inicial debe tener el formato AAAA-MM-DD.',
-            'hasta.date_format'              => 'La fecha final debe tener el formato AAAA-MM-DD.',
-            'hasta.after_or_equal'           => 'La fecha final no puede ser anterior a la inicial.',
+            'desde.date_format' => 'La fecha inicial debe tener el formato AAAA-MM-DD.',
+            'hasta.date_format' => 'La fecha final debe tener el formato AAAA-MM-DD.',
+            'hasta.after_or_equal' => 'La fecha final no puede ser anterior a la inicial.',
             'subcategoria_egreso_id.integer' => 'La subcategoría no es válida.',
-            'subcategoria_egreso_id.exists'  => 'La subcategoría no existe.',
+            'subcategoria_egreso_id.exists' => 'La subcategoría no existe.',
         ];
     }
 }

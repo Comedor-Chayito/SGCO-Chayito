@@ -10,7 +10,9 @@ return new class extends Migration
      * Crea los comprobantes de compras con su desglose de IVA crédito fiscal.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      */
     public function up(): void
@@ -33,7 +35,9 @@ return new class extends Migration
      * Elimina los registros de compras y su desglose contable.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      */
     public function down(): void

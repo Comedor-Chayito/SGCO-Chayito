@@ -12,7 +12,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * por eso esta pantalla solo tiene corridas de captura.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Contabilidad – RF-CON-005 / RF-CON-006 / CC-177
  */
 class EgresoCrudTest extends CrudTestCase
@@ -21,7 +23,9 @@ class EgresoCrudTest extends CrudTestCase
      * Corridas de captura: monto total de la factura y desglose de IVA esperado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-005 / CC-177
      *
      * @return array<string, array{float, float, float}>
@@ -41,12 +45,14 @@ class EgresoCrudTest extends CrudTestCase
      * Captura una factura de proveedor y verifica el correlativo y el desglose de IVA guardado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-005 / RF-CON-006 / CC-177
      *
-     * @param  float $montoTotal Monto total de la factura.
-     * @param  float $costoNeto  Costo neto esperado.
-     * @param  float $iva        IVA crédito fiscal esperado.
+     * @param  float  $montoTotal  Monto total de la factura.
+     * @param  float  $costoNeto  Costo neto esperado.
+     * @param  float  $iva  IVA crédito fiscal esperado.
      * @return void
      */
     #[DataProvider('capturas')]

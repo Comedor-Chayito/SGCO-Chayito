@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +21,9 @@ class LibroMovimientosService
      * Flujo neto = Total de ingresos − Total de egresos (montos totales, con IVA).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @param  array  $filtros  Filtros validados: 'desde', 'hasta' y 'tipo', todos opcionales.
@@ -56,7 +57,7 @@ class LibroMovimientosService
 
         return [
             'movimientos' => $movimientos,
-            'totales'     => $this->calcularTotales($filtros, $tipo),
+            'totales' => $this->calcularTotales($filtros, $tipo),
         ];
     }
 
@@ -64,7 +65,9 @@ class LibroMovimientosService
      * Arma la consulta de ventas cobradas con las columnas comunes del libro.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @param  array  $filtros  Filtros validados del libro.
@@ -73,7 +76,7 @@ class LibroMovimientosService
     private function consultaIngresos(array $filtros): Builder
     {
         return $this->filtrarVentas(DB::table('ventas'), $filtros)
-            ->selectRaw("'" . self::TIPO_INGRESO . "' AS tipo")
+            ->selectRaw("'".self::TIPO_INGRESO."' AS tipo")
             ->selectRaw('DATE(ventas.created_at) AS fecha')
             ->selectRaw('ventas.created_at AS momento')
             ->selectRaw('ventas.id AS origen_id')
@@ -90,7 +93,9 @@ class LibroMovimientosService
      * Arma la consulta de egresos con las columnas comunes del libro.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @param  array  $filtros  Filtros validados del libro.
@@ -102,7 +107,7 @@ class LibroMovimientosService
             ->leftJoin('subcategorias_egreso', 'subcategorias_egreso.id', '=', 'egresos.subcategoria_egreso_id');
 
         return $this->filtrarEgresos($consulta, $filtros)
-            ->selectRaw("'" . self::TIPO_EGRESO . "' AS tipo")
+            ->selectRaw("'".self::TIPO_EGRESO."' AS tipo")
             ->selectRaw('egresos.fecha_comprobante AS fecha')
             ->selectRaw('egresos.created_at AS momento')
             ->selectRaw('egresos.id AS origen_id')
@@ -119,7 +124,9 @@ class LibroMovimientosService
      * Aplica el rango de fechas a las ventas usando el día completo de cobro.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @param  Builder  $consulta  Consulta sobre la tabla ventas.
@@ -151,7 +158,9 @@ class LibroMovimientosService
      * Aplica el rango de fechas a los egresos según la fecha del comprobante.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @param  Builder  $consulta  Consulta sobre la tabla egresos.
@@ -176,7 +185,9 @@ class LibroMovimientosService
      * Si se filtra por un tipo, el otro total queda en cero.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @param  array  $filtros  Filtros validados del libro.
@@ -206,10 +217,10 @@ class LibroMovimientosService
 
         return [
             'cantidad_ingresos' => (int) $ingresos->cantidad,
-            'cantidad_egresos'  => (int) $egresos->cantidad,
-            'total_ingresos'    => $totalIngresos,
-            'total_egresos'     => $totalEgresos,
-            'flujo_neto'        => round($totalIngresos - $totalEgresos, 2),
+            'cantidad_egresos' => (int) $egresos->cantidad,
+            'total_ingresos' => $totalIngresos,
+            'total_egresos' => $totalEgresos,
+            'flujo_neto' => round($totalIngresos - $totalEgresos, 2),
         ];
     }
 
@@ -217,7 +228,9 @@ class LibroMovimientosService
      * Convierte una fila de la unión en el renglón que muestra el libro.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @param  object  $fila  Fila cruda de la consulta unida.
@@ -228,15 +241,15 @@ class LibroMovimientosService
         $esIngreso = $fila->tipo === self::TIPO_INGRESO;
 
         return [
-            'tipo'       => $fila->tipo,
-            'fecha'      => Carbon::parse($fila->fecha)->toDateString(),
-            'origen_id'  => (int) $fila->origen_id,
+            'tipo' => $fila->tipo,
+            'fecha' => Carbon::parse($fila->fecha)->toDateString(),
+            'origen_id' => (int) $fila->origen_id,
             'referencia' => $esIngreso ? "Venta #{$fila->origen_id}" : $fila->correlativo,
-            'concepto'   => $esIngreso ? "Comanda #{$fila->comanda_id}" : $fila->proveedor,
-            'detalle'    => $esIngreso
+            'concepto' => $esIngreso ? "Comanda #{$fila->comanda_id}" : $fila->proveedor,
+            'detalle' => $esIngreso
                 ? ucfirst((string) $fila->metodo_pago)
-                : trim(($fila->subcategoria ?? '') . ' · Comprobante ' . $fila->numero_comprobante, ' ·'),
-            'monto'      => round((float) $fila->monto, 2),
+                : trim(($fila->subcategoria ?? '').' · Comprobante '.$fila->numero_comprobante, ' ·'),
+            'monto' => round((float) $fila->monto, 2),
         ];
     }
 }

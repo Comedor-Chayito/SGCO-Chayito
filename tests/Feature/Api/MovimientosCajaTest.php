@@ -27,7 +27,9 @@ class MovimientosCajaTest extends TestCase
      * Prepara los roles y un cajero autenticado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return void
@@ -49,10 +51,12 @@ class MovimientosCajaTest extends TestCase
      * Registra una venta cobrada con el método indicado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002
      *
-     * @param  float   $total       Total de la venta.
+     * @param  float  $total  Total de la venta.
      * @param  string  $metodoPago  efectivo, tarjeta o transferencia.
      * @return Venta Venta creada.
      */
@@ -60,18 +64,18 @@ class MovimientosCajaTest extends TestCase
     {
         $comanda = Comanda::create([
             'usuario_id' => $this->cajero->id,
-            'canal'      => 'para_llevar',
-            'estado'     => 'pagada',
-            'subtotal'   => $total,
+            'canal' => 'para_llevar',
+            'estado' => 'pagada',
+            'subtotal' => $total,
         ]);
 
         return Venta::create([
-            'comanda_id'     => $comanda->id,
-            'usuario_id'     => $this->cajero->id,
-            'total'          => $total,
+            'comanda_id' => $comanda->id,
+            'usuario_id' => $this->cajero->id,
+            'total' => $total,
             'monto_recibido' => $total,
-            'cambio'         => 0,
-            'metodo_pago'    => $metodoPago,
+            'cambio' => 0,
+            'metodo_pago' => $metodoPago,
         ]);
     }
 
@@ -79,7 +83,9 @@ class MovimientosCajaTest extends TestCase
      * Valida los totales por método, los retiros de cualquier usuario y el efectivo esperado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return void
@@ -128,7 +134,9 @@ class MovimientosCajaTest extends TestCase
      * Valida que el estado refleja una caja sin abrir y una caja cerrada.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return void
@@ -142,16 +150,16 @@ class MovimientosCajaTest extends TestCase
 
         $this->abrirCajaDelDia($this->cajero);
         CierreCaja::create([
-            'usuario_id'                 => $this->cajero->id,
-            'fecha'                      => today()->toDateString(),
-            'saldo_inicial'              => 0,
-            'total_ventas_efectivo'      => 0,
-            'total_ventas_tarjeta'       => 0,
+            'usuario_id' => $this->cajero->id,
+            'fecha' => today()->toDateString(),
+            'saldo_inicial' => 0,
+            'total_ventas_efectivo' => 0,
+            'total_ventas_tarjeta' => 0,
             'total_ventas_transferencia' => 0,
-            'total_retiros'              => 0,
-            'saldo_final'                => 0,
-            'venta_del_dia'              => 0,
-            'diferencia'                 => 0,
+            'total_retiros' => 0,
+            'saldo_final' => 0,
+            'venta_del_dia' => 0,
+            'diferencia' => 0,
         ]);
 
         $respuesta = $this->getJson('/api/movimientos-caja')->assertJsonPath('data.estado', 'cerrada');
@@ -165,7 +173,9 @@ class MovimientosCajaTest extends TestCase
      * Valida la consulta de un día anterior y el rechazo de fechas futuras o mal formadas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return void
@@ -175,11 +185,11 @@ class MovimientosCajaTest extends TestCase
         $ventaAyer = $this->crearVenta(9.00, 'efectivo');
         $ventaAyer->forceFill(['created_at' => now()->subDay()])->save();
 
-        $this->getJson('/api/movimientos-caja?fecha=' . today()->subDay()->toDateString())
+        $this->getJson('/api/movimientos-caja?fecha='.today()->subDay()->toDateString())
             ->assertStatus(200)
             ->assertJsonPath('data.totales.cantidad_ventas', 1);
 
-        $this->getJson('/api/movimientos-caja?fecha=' . today()->addDay()->toDateString())
+        $this->getJson('/api/movimientos-caja?fecha='.today()->addDay()->toDateString())
             ->assertStatus(422)
             ->assertJsonValidationErrors(['fecha']);
 
@@ -192,7 +202,9 @@ class MovimientosCajaTest extends TestCase
      * Valida que sin sesión responde 401 y los roles fuera de caja reciben 403 (CLAUDE.md §9).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / RF-ADM-008
      *
      * @return void

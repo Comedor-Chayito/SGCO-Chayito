@@ -34,7 +34,9 @@ class Egreso extends Model
      * Obtiene la subcategoría con que se clasificó el egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005
      *
      * @return BelongsTo<SubcategoriaEgreso, Egreso>
@@ -48,7 +50,9 @@ class Egreso extends Model
      * Obtiene el usuario que registró el egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005
      *
      * @return BelongsTo<User, Egreso>
@@ -62,7 +66,9 @@ class Egreso extends Model
      * Obtiene las entradas a bodega registradas a partir de este egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-16
+     *
      * @módulo Inventario – US-INV-04 (CC-114)
      *
      * @return HasMany<MovimientoInventario>

@@ -10,7 +10,9 @@ return new class extends Migration
      * Pasa la porción base de las recetas a 3 decimales (ej. 0.125 kg por porción).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo Inventario – RF-INV-003 (CC-46)
      */
     public function up(): void
@@ -24,7 +26,9 @@ return new class extends Migration
      * Regresa la porción base de las recetas a 2 decimales.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo Inventario – RF-INV-003 (CC-46)
      */
     public function down(): void

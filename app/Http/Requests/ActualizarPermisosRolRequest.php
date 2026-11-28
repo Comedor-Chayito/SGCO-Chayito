@@ -11,7 +11,9 @@ class ActualizarPermisosRolRequest extends FormRequest
      * Solo los administradores pueden modificar los permisos asignados a un rol (US-ADM-04 / CC-122).
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-122
      *
      * @return bool
@@ -25,7 +27,9 @@ class ActualizarPermisosRolRequest extends FormRequest
      * Reglas de validación para actualizar los permisos de un rol.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-122
      *
      * @return array<string, mixed>
@@ -33,7 +37,7 @@ class ActualizarPermisosRolRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'permisos'   => ['present', 'array'],
+            'permisos' => ['present', 'array'],
             'permisos.*' => ['string', 'exists:permissions,name'],
         ];
     }
@@ -42,7 +46,9 @@ class ActualizarPermisosRolRequest extends FormRequest
      * Mensajes descriptivos en español para los errores de validación.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-122
      *
      * @return array<string, string>
@@ -50,9 +56,9 @@ class ActualizarPermisosRolRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'permisos.present'  => 'La lista de permisos es obligatoria.',
+            'permisos.present' => 'La lista de permisos es obligatoria.',
             'permisos.required' => 'La lista de permisos es obligatoria.',
-            'permisos.array'    => 'Los permisos deben enviarse como un arreglo.',
+            'permisos.array' => 'Los permisos deben enviarse como un arreglo.',
             'permisos.*.string' => 'Cada permiso debe ser una cadena de texto válida.',
             'permisos.*.exists' => 'Uno o más permisos especificados no existen en el catálogo oficial del sistema.',
         ];

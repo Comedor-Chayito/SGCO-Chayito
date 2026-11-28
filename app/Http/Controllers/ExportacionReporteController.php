@@ -10,7 +10,9 @@ use Illuminate\Http\Response;
  * Entrega como archivo descargable el reporte consolidado de un período.
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-10-24
+ *
  * @módulo Reportes – Sec-3.1.3 / Sec-3.5.1 / CC-79
  */
 class ExportacionReporteController extends Controller
@@ -19,7 +21,9 @@ class ExportacionReporteController extends Controller
      * Inicializa el controlador con el servicio de exportación.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79
      *
      * @param  ExportacionReporteService  $exportacionReporteService  Servicio que genera el archivo.
@@ -32,7 +36,9 @@ class ExportacionReporteController extends Controller
      * de validación sí responden con el contrato.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79 / CC-80
      *
      * @param  ExportarReporteRequest  $request  Período y formato ya validados.

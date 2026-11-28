@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Models\Auditoria;
 use App\Models\Platillo;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
@@ -16,7 +17,9 @@ use Tests\TestCase;
  * y el usuario que lo hizo, y que los cambios sin efecto no ensucien la bitácora.
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-11-17
+ *
  * @módulo Administración – US-ADM-03 / CC-109
  */
 class AuditoriaPlatilloTest extends TestCase
@@ -29,7 +32,9 @@ class AuditoriaPlatilloTest extends TestCase
      * Crea los roles, inicia sesión como administrador y deja la bitácora vacía.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-109
      *
      * @return void
@@ -54,19 +59,21 @@ class AuditoriaPlatilloTest extends TestCase
      * Crea un platillo de prueba disponible.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-109
      *
-     * @param  string $precio Precio unitario inicial.
+     * @param  string  $precio  Precio unitario inicial.
      * @return Platillo
      */
     private function crearPlatillo(string $precio = '2.50'): Platillo
     {
         return Platillo::create([
-            'nombre'          => 'Pupusa revuelta',
-            'descripcion'     => 'Pupusa de prueba',
+            'nombre' => 'Pupusa revuelta',
+            'descripcion' => 'Pupusa de prueba',
             'precio_unitario' => $precio,
-            'disponible'      => true,
+            'disponible' => true,
         ]);
     }
 
@@ -74,12 +81,14 @@ class AuditoriaPlatilloTest extends TestCase
      * Devuelve los registros de la bitácora de un platillo para una acción.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-109
      *
-     * @param  Platillo $platillo Platillo auditado.
-     * @param  string   $accion   Acción registrada.
-     * @return \Illuminate\Database\Eloquent\Collection<int, Auditoria>
+     * @param  Platillo  $platillo  Platillo auditado.
+     * @param  string  $accion  Acción registrada.
+     * @return Collection<int, Auditoria>
      */
     private function auditoriasDe(Platillo $platillo, string $accion)
     {
@@ -94,7 +103,9 @@ class AuditoriaPlatilloTest extends TestCase
      * Verifica que un cambio de precio deje un registro con el precio anterior, el nuevo y el usuario.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-109
      *
      * @return void
@@ -104,7 +115,7 @@ class AuditoriaPlatilloTest extends TestCase
         $platillo = $this->crearPlatillo('2.50');
 
         $this->putJson("/api/platillos/{$platillo->id}", [
-            'nombre'          => 'Pupusa revuelta',
+            'nombre' => 'Pupusa revuelta',
             'precio_unitario' => 3.00,
         ])->assertOk();
 
@@ -120,7 +131,9 @@ class AuditoriaPlatilloTest extends TestCase
      * Verifica que editar solo el nombre o la descripción no registre un cambio de precio.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-109
      *
      * @return void
@@ -130,8 +143,8 @@ class AuditoriaPlatilloTest extends TestCase
         $platillo = $this->crearPlatillo('2.50');
 
         $this->putJson("/api/platillos/{$platillo->id}", [
-            'nombre'          => 'Pupusa de queso',
-            'descripcion'     => 'Nueva descripción',
+            'nombre' => 'Pupusa de queso',
+            'descripcion' => 'Nueva descripción',
             'precio_unitario' => 2.50,
         ])->assertOk();
 
@@ -142,7 +155,9 @@ class AuditoriaPlatilloTest extends TestCase
      * Verifica que el mismo precio escrito con otro formato ("2.5" contra "2.50") no cuente como cambio.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-109
      *
      * @return void
@@ -152,7 +167,7 @@ class AuditoriaPlatilloTest extends TestCase
         $platillo = $this->crearPlatillo('2.50');
 
         $this->putJson("/api/platillos/{$platillo->id}", [
-            'nombre'          => 'Pupusa revuelta',
+            'nombre' => 'Pupusa revuelta',
             'precio_unitario' => '2.5',
         ])->assertOk();
 
@@ -163,7 +178,9 @@ class AuditoriaPlatilloTest extends TestCase
      * Verifica que una edición rechazada por validación no deje registro ni cambie el precio.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-109
      *
      * @return void
@@ -173,7 +190,7 @@ class AuditoriaPlatilloTest extends TestCase
         $platillo = $this->crearPlatillo('2.50');
 
         $this->putJson("/api/platillos/{$platillo->id}", [
-            'nombre'          => 'Pupusa revuelta',
+            'nombre' => 'Pupusa revuelta',
             'precio_unitario' => 0,
         ])->assertStatus(422);
 
@@ -185,7 +202,9 @@ class AuditoriaPlatilloTest extends TestCase
      * Verifica que desactivar y reactivar un platillo dejen un registro cada uno, con su valor anterior y nuevo.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-109
      *
      * @return void
@@ -211,7 +230,9 @@ class AuditoriaPlatilloTest extends TestCase
      * Verifica que enviar la misma disponibilidad que ya tiene el platillo no registre nada.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-109
      *
      * @return void
@@ -229,7 +250,9 @@ class AuditoriaPlatilloTest extends TestCase
      * Verifica que un rol sin acceso al catálogo reciba 403 y no deje registro en la bitácora.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-109
      *
      * @return void
@@ -243,7 +266,7 @@ class AuditoriaPlatilloTest extends TestCase
         Sanctum::actingAs($mesero);
 
         $this->putJson("/api/platillos/{$platillo->id}", [
-            'nombre'          => 'Pupusa revuelta',
+            'nombre' => 'Pupusa revuelta',
             'precio_unitario' => 9.99,
         ])->assertForbidden();
 

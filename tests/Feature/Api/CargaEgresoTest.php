@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\Auditoria;
 use App\Models\Egreso;
 use App\Models\SubcategoriaEgreso;
 use App\Models\User;
@@ -17,7 +16,9 @@ use Tests\TestCase;
  * Pruebas integrales de carga rápida categorizada de egresos y facturas.
  *
  * @autor  Cesar
+ *
  * @fecha  2026-10-25
+ *
  * @módulo Contabilidad – US-CON-01 / RF-CON-005 / CC-61 / CC-62 / CC-63 / CC-64 / CC-65
  */
 class CargaEgresoTest extends TestCase
@@ -40,7 +41,9 @@ class CargaEgresoTest extends TestCase
      * Prepara el entorno con roles oficiales, subcategorías del catálogo y usuarios autenticables.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-65
      */
     protected function setUp(): void
@@ -71,7 +74,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que la contadora obtiene el catálogo de subcategorías activas ordenado alfabéticamente.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-61 / CC-62 / CC-65
      */
     public function test_contadora_obtiene_catalogo_de_subcategorias_activas_ordenadas_alfabeticamente(): void
@@ -106,7 +111,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que el catálogo de subcategorías excluye elementos inactivos o dados de baja.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-62 / CC-65
      */
     public function test_catalogo_de_subcategorias_excluye_subcategorias_inactivas(): void
@@ -127,7 +134,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que la consulta del catálogo de subcategorías requiere autenticación y rol autorizado.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-62 / CC-65
      */
     public function test_consulta_de_subcategorias_requiere_autenticacion_y_rol_autorizado(): void
@@ -161,7 +170,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que la contadora registra un egreso con correlativo automático y formato oficial EG-000001.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-64 / CC-65
      */
     public function test_contadora_registra_egreso_con_datos_validos_y_correlativo_automatico(): void
@@ -204,7 +215,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que los roles administrador y socio también tienen autorización para registrar egresos.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-65
      */
     public function test_administrador_y_socio_tambien_pueden_registrar_egresos(): void
@@ -246,7 +259,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que los correlativos se generan de forma secuencial con ceros a la izquierda.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-60 / CC-63 / CC-65
      */
     public function test_generacion_secuencial_de_correlativos_con_relleno_de_ceros(): void
@@ -273,7 +288,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que se calculan y persisten automáticamente el costo neto y el IVA crédito fiscal al 13%.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-65 / US-CON-02
      */
     public function test_calcula_automaticamente_costo_neto_e_iva_credito_fiscal(): void
@@ -320,7 +337,9 @@ class CargaEgresoTest extends TestCase
      * Verifica la coherencia de redondeo de costo neto e IVA para montos fraccionarios.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-65
      */
     public function test_redondeo_exacto_de_iva_y_costo_neto_para_montos_fraccionarios(): void
@@ -345,7 +364,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que cada registro de egreso genera su correspondiente asiento en la bitácora de auditoría.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-65 / RF-ADM-008
      */
     public function test_registro_de_egreso_genera_bitacora_de_auditoria(): void
@@ -373,7 +394,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que la solicitud rechaza peticiones con campos obligatorios vacíos o faltantes.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-65
      */
     public function test_rechaza_registro_con_campos_obligatorios_faltantes(): void
@@ -397,7 +420,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que no se permite duplicar el mismo número de comprobante para el mismo proveedor.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-60 / CC-63 / CC-65
      */
     public function test_rechaza_comprobante_duplicado_para_el_mismo_proveedor(): void
@@ -430,7 +455,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que se permite el mismo número de comprobante si los proveedores son distintos.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-60 / CC-63 / CC-65
      */
     public function test_permite_mismo_numero_de_comprobante_para_proveedores_distintos(): void
@@ -460,7 +487,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que se rechazan fechas futuras o que no cumplan el formato AAAA-MM-DD.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-65
      */
     public function test_rechaza_fechas_futuras_o_con_formato_invalido(): void
@@ -492,7 +521,9 @@ class CargaEgresoTest extends TestCase
      * Verifica validación de montos: rechaza cero, negativos, exceso de decimales y valores desmedidos.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-65
      */
     public function test_rechaza_montos_invalidos_cero_negativos_o_con_exceso_de_decimales(): void
@@ -534,7 +565,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que rechaza subcategorías inexistentes o que se encuentran desactivadas.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-62 / CC-63 / CC-65
      */
     public function test_rechaza_subcategoria_inexistente_o_inactiva(): void
@@ -566,7 +599,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que la descripción es opcional y no puede superar los 500 caracteres.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-65
      */
     public function test_descripcion_es_opcional_pero_valida_longitud_maxima(): void
@@ -602,7 +637,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que los espacios en blanco sobrantes en proveedor y comprobante se limpian con trim.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-65
      */
     public function test_trimea_espacios_en_blanco_en_proveedor_y_comprobante(): void
@@ -627,7 +664,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que usuarios sin autenticación o con roles no autorizados son rechazados al registrar egresos.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-63 / CC-65
      */
     public function test_seguridad_rbac_bloquea_a_usuarios_no_autenticados_y_roles_no_autorizados(): void
@@ -667,7 +706,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que la contadora puede consultar el historial con filtros de fecha y subcategoría.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-65 / US-CON-02 / CC-69
      */
     public function test_contadora_consulta_historial_de_egresos_con_totales_y_paginacion(): void
@@ -730,7 +771,9 @@ class CargaEgresoTest extends TestCase
      * Verifica que el historial de egresos bloquea accesos no autorizados y sin sesión.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-01 / CC-65 / US-CON-02 / CC-69
      */
     public function test_historial_de_egresos_bloquea_a_roles_no_autorizados(): void
@@ -742,4 +785,3 @@ class CargaEgresoTest extends TestCase
         $this->getJson('/api/egresos')->assertForbidden();
     }
 }
-

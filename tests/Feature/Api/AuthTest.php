@@ -11,7 +11,9 @@ use Tests\TestCase;
  * Pruebas de autenticación segura y cifrado de credenciales (US-ADM-02 / Sec. 3.5.1 / CC-93).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-19
+ *
  * @módulo Administración y Seguridad – Sec. 3.5.1
  */
 class AuthTest extends TestCase
@@ -19,13 +21,16 @@ class AuthTest extends TestCase
     use RefreshDatabase;
 
     protected User $usuario;
+
     protected string $passwordPlano;
 
     /**
      * Configuración inicial antes de cada prueba de autenticación.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -37,8 +42,8 @@ class AuthTest extends TestCase
         $this->passwordPlano = 'PasswordSeguro123!';
 
         $this->usuario = User::factory()->create([
-            'name'     => 'Administrador General',
-            'email'    => 'admin@sgco-chayito.local',
+            'name' => 'Administrador General',
+            'email' => 'admin@sgco-chayito.local',
             'password' => Hash::make($this->passwordPlano),
         ]);
     }
@@ -48,7 +53,9 @@ class AuthTest extends TestCase
      * Criterio de aceptación: Contraseña cifrada con Bcrypt.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -75,7 +82,9 @@ class AuthTest extends TestCase
      * Criterios: Login por correo corporativo y Token de sesión seguro.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -83,7 +92,7 @@ class AuthTest extends TestCase
     public function test_usuario_puede_iniciar_sesion_con_credenciales_validas(): void
     {
         $payload = [
-            'email'    => 'admin@sgco-chayito.local',
+            'email' => 'admin@sgco-chayito.local',
             'password' => $this->passwordPlano,
         ];
 
@@ -99,11 +108,11 @@ class AuthTest extends TestCase
                 ],
             ])
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Sesión iniciada correctamente.',
-                'data'    => [
+                'data' => [
                     'usuario' => [
-                        'id'    => $this->usuario->id,
+                        'id' => $this->usuario->id,
                         'email' => 'admin@sgco-chayito.local',
                     ],
                 ],
@@ -117,8 +126,8 @@ class AuthTest extends TestCase
         // Verificar que el token existe en la base de datos (tabla personal_access_tokens)
         $this->assertDatabaseHas('personal_access_tokens', [
             'tokenable_type' => User::class,
-            'tokenable_id'   => $this->usuario->id,
-            'name'           => 'token-sesion',
+            'tokenable_id' => $this->usuario->id,
+            'name' => 'token-sesion',
         ]);
     }
 
@@ -127,7 +136,9 @@ class AuthTest extends TestCase
      * Soporte para el frontend FSD SGCO-Chayito.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -135,7 +146,7 @@ class AuthTest extends TestCase
     public function test_usuario_puede_iniciar_sesion_con_campos_en_espanol_y_ruta_auth_login(): void
     {
         $payload = [
-            'correo'     => 'admin@sgco-chayito.local',
+            'correo' => 'admin@sgco-chayito.local',
             'contrasena' => $this->passwordPlano,
         ];
 
@@ -143,7 +154,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Sesión iniciada correctamente.',
             ]);
 
@@ -155,7 +166,9 @@ class AuthTest extends TestCase
      * Verifica que el inicio de sesión falle cuando la contraseña es incorrecta.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -163,7 +176,7 @@ class AuthTest extends TestCase
     public function test_login_rechaza_contrasena_incorrecta(): void
     {
         $payload = [
-            'email'    => 'admin@sgco-chayito.local',
+            'email' => 'admin@sgco-chayito.local',
             'password' => 'ClaveTotalmenteErronea!',
         ];
 
@@ -177,7 +190,9 @@ class AuthTest extends TestCase
      * Verifica que el inicio de sesión falle con mensaje genérico si el correo no existe.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -185,7 +200,7 @@ class AuthTest extends TestCase
     public function test_login_rechaza_correo_inexistente(): void
     {
         $payload = [
-            'email'    => 'noexiste@sgco-chayito.local',
+            'email' => 'noexiste@sgco-chayito.local',
             'password' => 'CualquierClave123!',
         ];
 
@@ -199,7 +214,9 @@ class AuthTest extends TestCase
      * Verifica validación de formato de correo corporativo no válido.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -207,7 +224,7 @@ class AuthTest extends TestCase
     public function test_login_rechaza_formato_de_correo_invalido(): void
     {
         $payload = [
-            'email'    => 'correo-no-valido',
+            'email' => 'correo-no-valido',
             'password' => 'Password123!',
         ];
 
@@ -224,7 +241,9 @@ class AuthTest extends TestCase
      * Verifica validación cuando los campos requeridos están ausentes.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -236,7 +255,7 @@ class AuthTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['email', 'password'])
             ->assertJsonFragment([
-                'email'    => ['El correo es obligatorio.'],
+                'email' => ['El correo es obligatorio.'],
                 'password' => ['La contraseña es obligatoria.'],
             ]);
     }
@@ -245,7 +264,9 @@ class AuthTest extends TestCase
      * Verifica que el token Sanctum emitido permita acceder a rutas protegidas.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -254,22 +275,22 @@ class AuthTest extends TestCase
     {
         // 1. Iniciar sesión y obtener token
         $loginResponse = $this->postJson('/api/sesiones', [
-            'email'    => 'admin@sgco-chayito.local',
+            'email' => 'admin@sgco-chayito.local',
             'password' => $this->passwordPlano,
         ]);
 
         $token = $loginResponse->json('data.token');
 
         // 2. Consultar ruta protegida con Bearer Token
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/auth/usuario');
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Usuario autenticado obtenido.',
-                'data'    => [
-                    'id'    => $this->usuario->id,
+                'data' => [
+                    'id' => $this->usuario->id,
                     'email' => 'admin@sgco-chayito.local',
                 ],
             ]);
@@ -279,7 +300,9 @@ class AuthTest extends TestCase
      * Verifica que el acceso a rutas protegidas sin token devuelva 401 Unauthorized.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -295,7 +318,9 @@ class AuthTest extends TestCase
      * Verifica que el cierre de sesión revoque el token de acceso y bloquee accesos subsiguientes.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -304,21 +329,21 @@ class AuthTest extends TestCase
     {
         // 1. Iniciar sesión
         $loginResponse = $this->postJson('/api/sesiones', [
-            'email'    => 'admin@sgco-chayito.local',
+            'email' => 'admin@sgco-chayito.local',
             'password' => $this->passwordPlano,
         ]);
 
         $token = $loginResponse->json('data.token');
 
         // 2. Cerrar sesión vía DELETE /api/sesiones
-        $logoutResponse = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $logoutResponse = $this->withHeader('Authorization', 'Bearer '.$token)
             ->deleteJson('/api/sesiones');
 
         $logoutResponse->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Sesión cerrada correctamente.',
-                'data'    => null,
+                'data' => null,
             ]);
 
         // Verificar que el token se eliminó de la base de datos
@@ -331,7 +356,7 @@ class AuthTest extends TestCase
         app('auth')->forgetGuards();
 
         // 3. Verificar que el token ya no permita acceder a rutas protegidas
-        $intentoProtegido = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $intentoProtegido = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/auth/usuario');
 
         $intentoProtegido->assertStatus(401);
@@ -341,7 +366,9 @@ class AuthTest extends TestCase
      * Verifica cierre de sesión con alias de ruta POST /api/auth/logout.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – Sec. 3.5.1
      *
      * @return void
@@ -349,18 +376,18 @@ class AuthTest extends TestCase
     public function test_usuario_puede_cerrar_sesion_con_ruta_auth_logout(): void
     {
         $loginResponse = $this->postJson('/api/auth/login', [
-            'correo'     => 'admin@sgco-chayito.local',
+            'correo' => 'admin@sgco-chayito.local',
             'contrasena' => $this->passwordPlano,
         ]);
 
         $token = $loginResponse->json('data.token');
 
-        $logoutResponse = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $logoutResponse = $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/auth/logout');
 
         $logoutResponse->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Sesión cerrada correctamente.',
             ]);
 
@@ -371,10 +398,9 @@ class AuthTest extends TestCase
 
         app('auth')->forgetGuards();
 
-        $intentoProtegido = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $intentoProtegido = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/auth/usuario');
 
         $intentoProtegido->assertStatus(401);
     }
 }
-

@@ -16,7 +16,9 @@ use OpenSpout\Writer\XLSX\Writer;
  * El reporte se divide en secciones: una hoja por sección en Excel, bloques sucesivos en CSV.
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-10-24
+ *
  * @módulo Reportes – Sec-3.1.3 / Sec-3.5.1 / CC-79 / CC-80 / CC-81
  */
 class ExportacionReporteService
@@ -62,7 +64,9 @@ class ExportacionReporteService
      * Inicializa el servicio con las fuentes de los indicadores y del estado de stock.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79 / CC-81
      *
      * @param  DashboardGerencialService  $dashboardGerencialService  Servicio de indicadores financieros.
@@ -78,7 +82,9 @@ class ExportacionReporteService
      * el tipo de sus columnas; los valores numéricos van como float o int.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79 / CC-81
      *
      * @param  string  $fechaDesde  Inicio inclusivo del período (YYYY-MM-DD).
@@ -104,7 +110,9 @@ class ExportacionReporteService
      * separada de la siguiente por una línea en blanco.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79 / CC-81
      *
      * @param  string  $fechaDesde  Inicio inclusivo del período (YYYY-MM-DD).
@@ -142,7 +150,9 @@ class ExportacionReporteService
      * cantidades se escriben como números para que se puedan sumar en la hoja.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-80 / CC-81
      *
      * @param  string  $fechaDesde  Inicio inclusivo del período (YYYY-MM-DD).
@@ -174,7 +184,9 @@ class ExportacionReporteService
      * Genera el archivo del reporte en el formato indicado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-80
      *
      * @param  string  $formato  Formato validado: csv o xlsx.
@@ -193,7 +205,9 @@ class ExportacionReporteService
      * Devuelve el tipo MIME con que se descarga cada formato.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-80
      *
      * @param  string  $formato  Formato validado: csv o xlsx.
@@ -208,7 +222,9 @@ class ExportacionReporteService
      * Construye el nombre del archivo descargable a partir del período y el formato.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79
      *
      * @param  string  $fechaDesde  Inicio del período (YYYY-MM-DD).
@@ -226,7 +242,9 @@ class ExportacionReporteService
      * Valor mezcla fechas, montos y conteos; el formato de monto solo se aplica a los float.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79 / CC-81
      *
      * @param  string  $fechaDesde  Inicio inclusivo del período.
@@ -259,7 +277,9 @@ class ExportacionReporteService
      * Arma el detalle de egresos del período por fecha de comprobante, base del libro de compras.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-81
      *
      * @param  string  $fechaDesde  Inicio inclusivo del período.
@@ -312,7 +332,9 @@ class ExportacionReporteService
      * Arma los totales de gasto neto por subcategoría de egreso del período.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-81
      *
      * @param  array<int, array{nombre: string, egresos: int, gasto_neto: float, porcentaje: float}>  $gastos  Gasto por subcategoría del dashboard.
@@ -342,7 +364,9 @@ class ExportacionReporteService
      * Arma el detalle de comprobantes de compra del período con su desglose de IVA.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-81
      *
      * @param  string  $fechaDesde  Inicio inclusivo del período.
@@ -385,7 +409,9 @@ class ExportacionReporteService
      * el inventario no guarda histórico por fecha.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-81
      *
      * @return array<string, mixed> Sección del reporte.
@@ -420,7 +446,9 @@ class ExportacionReporteService
      * Arma las existencias actuales en las áreas operativas (insumos ya transferidos desde bodega).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-81
      *
      * @return array<string, mixed> Sección del reporte.
@@ -460,7 +488,9 @@ class ExportacionReporteService
      * Escribe en la hoja actual del libro los encabezados, filas y total de una sección.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-81
      *
      * @param  Writer  $escritor  Libro de Excel abierto.
@@ -486,7 +516,9 @@ class ExportacionReporteService
      * Crea una fila de Excel aplicando a cada número decimal el formato de su columna.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-81
      *
      * @param  array<int, string|int|float>  $fila  Valores de la fila.
@@ -512,7 +544,9 @@ class ExportacionReporteService
      * Devuelve las filas de una sección con su fila de total al final, si la tiene.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-81
      *
      * @param  array<string, mixed>  $seccion  Sección del reporte.
@@ -529,7 +563,9 @@ class ExportacionReporteService
      * Convierte una fila a texto CSV con los decimales que corresponden al tipo de cada columna.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79 / CC-81
      *
      * @param  array<int, string|int|float>  $fila  Valores de la fila.
@@ -551,7 +587,9 @@ class ExportacionReporteService
      * Escribe un número con punto decimal, sin separador de miles.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79 / CC-81
      *
      * @param  float  $valor  Número a escribir.

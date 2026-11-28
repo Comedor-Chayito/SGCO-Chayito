@@ -10,7 +10,9 @@ use Illuminate\Http\JsonResponse;
  * Orquesta el registro y consulta de compras con IVA crédito fiscal calculado.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
  */
 class CompraController extends Controller
@@ -19,7 +21,9 @@ class CompraController extends Controller
      * Inicializa el controlador con el servicio de compras contables.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @param  CompraService  $compraService  Servicio que calcula y persiste compras.
@@ -30,7 +34,9 @@ class CompraController extends Controller
      * Devuelve las compras registradas con sus valores de IVA crédito fiscal.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @return JsonResponse Lista estructurada de compras contables.
@@ -48,7 +54,9 @@ class CompraController extends Controller
      * Registra una compra y guarda el costo neto e IVA calculados por el servicio.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @param  RegistrarCompraRequest  $request  Datos validados del comprobante de compra.

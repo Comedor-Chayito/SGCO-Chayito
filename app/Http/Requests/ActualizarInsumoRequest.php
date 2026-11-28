@@ -9,7 +9,9 @@ use Illuminate\Validation\Rule;
  * Valida los datos de entrada para actualizar un insumo de bodega existente.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-13
+ *
  * @módulo Inventario – RF-INV-003 / CC-45
  */
 class ActualizarInsumoRequest extends FormRequest
@@ -32,15 +34,15 @@ class ActualizarInsumoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre'        => [
+            'nombre' => [
                 'required',
                 'string',
                 'max:100',
                 Rule::unique('insumos', 'nombre')->ignore($this->route('insumo')),
             ],
             'unidad_medida' => ['required', 'string', 'max:20'],
-            'stock_actual'  => ['prohibited'],
-            'stock_minimo'  => ['required', 'numeric', 'min:0'],
+            'stock_actual' => ['prohibited'],
+            'stock_minimo' => ['required', 'numeric', 'min:0'],
         ];
     }
 
@@ -52,15 +54,15 @@ class ActualizarInsumoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nombre.required'        => 'El nombre del insumo es obligatorio.',
-            'nombre.max'             => 'El nombre del insumo no puede superar los 100 caracteres.',
-            'nombre.unique'          => 'Ya existe un insumo con ese nombre.',
+            'nombre.required' => 'El nombre del insumo es obligatorio.',
+            'nombre.max' => 'El nombre del insumo no puede superar los 100 caracteres.',
+            'nombre.unique' => 'Ya existe un insumo con ese nombre.',
             'unidad_medida.required' => 'La unidad de medida es obligatoria (ej: kg, lt, unidad).',
-            'unidad_medida.max'      => 'La unidad de medida no puede superar los 20 caracteres.',
+            'unidad_medida.max' => 'La unidad de medida no puede superar los 20 caracteres.',
             'stock_actual.prohibited' => 'El stock actual solo se modifica mediante movimientos de inventario.',
-            'stock_minimo.required'  => 'El stock mínimo es obligatorio.',
-            'stock_minimo.numeric'   => 'El stock mínimo debe ser un número.',
-            'stock_minimo.min'       => 'El stock mínimo no puede ser negativo.',
+            'stock_minimo.required' => 'El stock mínimo es obligatorio.',
+            'stock_minimo.numeric' => 'El stock mínimo debe ser un número.',
+            'stock_minimo.min' => 'El stock mínimo no puede ser negativo.',
         ];
     }
 }

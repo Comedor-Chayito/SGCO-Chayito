@@ -39,9 +39,9 @@ class AperturaCajaController extends Controller
         $apertura = $this->aperturaCajaService->abrirCaja($request->validated(), $request->user()->id);
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Apertura de caja registrada correctamente.',
-            'data'    => $apertura,
+            'data' => $apertura,
         ], 201);
     }
 
@@ -63,9 +63,9 @@ class AperturaCajaController extends Controller
         $apertura = $this->aperturaCajaService->obtenerAperturaPorFecha($fecha);
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => $apertura ? 'Apertura de caja obtenida.' : 'No hay apertura registrada para esta fecha.',
-            'data'    => $apertura,
+            'data' => $apertura,
         ]);
     }
 }

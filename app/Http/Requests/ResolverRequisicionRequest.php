@@ -8,7 +8,9 @@ use Illuminate\Foundation\Http\FormRequest;
  * Valida la aprobación o el rechazo de una requisición de insumos.
  *
  * @autor  Alexis
+ *
  * @fecha  2026-10-22
+ *
  * @módulo Inventario – RF-INV-004 / CC-53
  */
 class ResolverRequisicionRequest extends FormRequest
@@ -17,7 +19,9 @@ class ResolverRequisicionRequest extends FormRequest
      * Determina si un administrador o socio puede resolver la requisición solicitada.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53
      *
      * @return bool True si el usuario posee el rol administrador o socio.
@@ -31,7 +35,9 @@ class ResolverRequisicionRequest extends FormRequest
      * Define cantidades aprobadas obligatorias cuando la decisión es aprobar.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53
      *
      * @return array<string, mixed> Reglas de validación de la resolución.
@@ -55,7 +61,9 @@ class ResolverRequisicionRequest extends FormRequest
      * Devuelve mensajes en español para los errores de aprobación.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53
      *
      * @return array<string, string> Mensajes personalizados por regla.

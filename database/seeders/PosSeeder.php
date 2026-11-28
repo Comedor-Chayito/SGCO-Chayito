@@ -13,7 +13,9 @@ class PosSeeder extends Seeder
      * 10 mesas del comedor y 8 platillos del menú diario típico.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-18
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void

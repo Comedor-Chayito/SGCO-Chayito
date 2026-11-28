@@ -18,7 +18,9 @@ use Tests\TestCase;
  * Caja blanca: 3 ejecuciones sobre signo inválido, ajuste sin motivo y saldo negativo.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Inventario – RF-INV-003 / US-INV-04 / CC-113 / CC-143
  */
 class MovimientoInventarioServiceTest extends TestCase
@@ -33,7 +35,9 @@ class MovimientoInventarioServiceTest extends TestCase
      * Resuelve el servicio y crea al responsable de los movimientos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-143
      *
      * @return void
@@ -50,7 +54,9 @@ class MovimientoInventarioServiceTest extends TestCase
      * Casos de caja negra: stock inicial, delta firmado, tipo, motivo y stock resultante esperado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-143
      *
      * @return array<string, array{float, float, string, ?string, string}>
@@ -69,14 +75,16 @@ class MovimientoInventarioServiceTest extends TestCase
      * Verifica que el movimiento actualice el saldo y deje un registro con el delta y el saldo resultante.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-143
      *
-     * @param  float       $stockInicial  Existencia antes del movimiento.
-     * @param  float       $cantidad      Delta firmado.
-     * @param  string      $tipo          Tipo de movimiento.
-     * @param  string|null $motivo        Motivo (obligatorio en ajustes).
-     * @param  string      $stockEsperado Existencia esperada con seis decimales.
+     * @param  float  $stockInicial  Existencia antes del movimiento.
+     * @param  float  $cantidad  Delta firmado.
+     * @param  string  $tipo  Tipo de movimiento.
+     * @param  string|null  $motivo  Motivo (obligatorio en ajustes).
+     * @param  string  $stockEsperado  Existencia esperada con seis decimales.
      * @return void
      */
     #[DataProvider('casosCajaNegra')]
@@ -101,7 +109,9 @@ class MovimientoInventarioServiceTest extends TestCase
      * CB-MOV-01: rama de signo inválido; una entrada con cantidad negativa se rechaza.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-143
      *
      * @return void
@@ -115,7 +125,9 @@ class MovimientoInventarioServiceTest extends TestCase
      * CB-MOV-02: rama de motivo obligatorio; un ajuste con motivo en blanco se rechaza.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-143
      *
      * @return void
@@ -129,7 +141,9 @@ class MovimientoInventarioServiceTest extends TestCase
      * CB-MOV-03: rama de saldo negativo; una requisición mayor a la existencia se rechaza sin tocar el saldo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-143
      *
      * @return void
@@ -143,10 +157,12 @@ class MovimientoInventarioServiceTest extends TestCase
      * Registra un insumo en kilogramos con la existencia indicada.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-143
      *
-     * @param  float $stock Existencia inicial.
+     * @param  float  $stock  Existencia inicial.
      * @return Insumo Insumo creado.
      */
     private function crearInsumo(float $stock): Insumo
@@ -158,14 +174,16 @@ class MovimientoInventarioServiceTest extends TestCase
      * Afirma que el movimiento se rechaza en el campo indicado sin alterar saldo ni historial.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-143
      *
-     * @param  float                $stock       Existencia inicial.
-     * @param  float                $cantidad    Delta firmado.
-     * @param  string               $tipo        Tipo de movimiento.
-     * @param  array<string, mixed> $referencias Referencias del movimiento.
-     * @param  string               $campo       Campo que debe reportar el error.
+     * @param  float  $stock  Existencia inicial.
+     * @param  float  $cantidad  Delta firmado.
+     * @param  string  $tipo  Tipo de movimiento.
+     * @param  array<string, mixed>  $referencias  Referencias del movimiento.
+     * @param  string  $campo  Campo que debe reportar el error.
      * @return void
      */
     private function assertMovimientoFalla(

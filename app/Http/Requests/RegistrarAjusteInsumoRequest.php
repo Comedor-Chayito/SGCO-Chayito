@@ -8,7 +8,9 @@ class RegistrarAjusteInsumoRequest extends MovimientoInventarioRequest
      * Valida el delta firmado y el motivo obligatorio de un ajuste.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113 / CC-116
      *
      * @return array<string, mixed> Reglas del ajuste.

@@ -68,10 +68,10 @@ class AperturaCajaTest extends TestCase
                 ['denominacion' => 10,  'tipo' => 'billete', 'cantidad' => 2], // $20.00
                 ['denominacion' => 5,   'tipo' => 'billete', 'cantidad' => 2], // $10.00
                 ['denominacion' => 1,   'tipo' => 'billete', 'cantidad' => 5], // $5.00
-                ['denominacion' => 0.25,'tipo' => 'moneda',  'cantidad' => 10], // $2.50
-                ['denominacion' => 0.10,'tipo' => 'moneda',  'cantidad' => 10], // $1.00
-                ['denominacion' => 0.05,'tipo' => 'moneda',  'cantidad' => 8], // $0.40
-                ['denominacion' => 0.01,'tipo' => 'moneda',  'cantidad' => 10], // $0.10
+                ['denominacion' => 0.25, 'tipo' => 'moneda',  'cantidad' => 10], // $2.50
+                ['denominacion' => 0.10, 'tipo' => 'moneda',  'cantidad' => 10], // $1.00
+                ['denominacion' => 0.05, 'tipo' => 'moneda',  'cantidad' => 8], // $0.40
+                ['denominacion' => 0.01, 'tipo' => 'moneda',  'cantidad' => 10], // $0.10
             ],
             'observaciones' => 'Apertura con fondo de cambio completo',
         ];
@@ -81,25 +81,25 @@ class AperturaCajaTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Apertura de caja registrada correctamente.',
-                'data'    => [
-                    'usuario_id'    => $this->cajero->id,
-                    'fecha'         => today()->toDateString(),
+                'data' => [
+                    'usuario_id' => $this->cajero->id,
+                    'fecha' => today()->toDateString(),
                     'saldo_inicial' => '299.00',
                     'observaciones' => 'Apertura con fondo de cambio completo',
                 ],
             ]);
 
         $this->assertDatabaseHas('aperturas_caja', [
-            'usuario_id'    => $this->cajero->id,
-            'fecha'         => today()->toDateString(),
+            'usuario_id' => $this->cajero->id,
+            'fecha' => today()->toDateString(),
             'saldo_inicial' => 299.00,
         ]);
 
         $this->assertDatabaseHas('auditorias', [
-            'usuario_id'   => $this->cajero->id,
-            'accion'       => 'apertura_caja',
+            'usuario_id' => $this->cajero->id,
+            'accion' => 'apertura_caja',
             'entidad_type' => AperturaCaja::class,
         ]);
     }
@@ -110,10 +110,10 @@ class AperturaCajaTest extends TestCase
     public function test_no_permite_duplicar_apertura_en_la_misma_fecha(): void
     {
         AperturaCaja::create([
-            'usuario_id'    => $this->cajero->id,
-            'fecha'         => today()->toDateString(),
+            'usuario_id' => $this->cajero->id,
+            'fecha' => today()->toDateString(),
             'saldo_inicial' => 100.00,
-            'denominaciones'=> [
+            'denominaciones' => [
                 ['denominacion' => 50, 'tipo' => 'billete', 'cantidad' => 2, 'subtotal' => 100.00],
             ],
         ]);
@@ -137,15 +137,15 @@ class AperturaCajaTest extends TestCase
     public function test_no_permite_apertura_si_la_caja_del_dia_ya_fue_cerrada(): void
     {
         CierreCaja::create([
-            'usuario_id'                 => $this->cajero->id,
-            'fecha'                      => today()->toDateString(),
-            'saldo_inicial'              => 50.00,
-            'total_ventas_efectivo'      => 100.00,
+            'usuario_id' => $this->cajero->id,
+            'fecha' => today()->toDateString(),
+            'saldo_inicial' => 50.00,
+            'total_ventas_efectivo' => 100.00,
             'total_ventas_transferencia' => 0.00,
-            'total_retiros'              => 20.00,
-            'saldo_final'                => 130.00,
-            'venta_del_dia'              => 100.00,
-            'diferencia'                 => 0.00,
+            'total_retiros' => 20.00,
+            'saldo_final' => 130.00,
+            'venta_del_dia' => 100.00,
+            'diferencia' => 0.00,
         ]);
 
         $payload = [
@@ -167,10 +167,10 @@ class AperturaCajaTest extends TestCase
     public function test_cajero_obtiene_apertura_del_turno_actual(): void
     {
         $apertura = AperturaCaja::create([
-            'usuario_id'    => $this->cajero->id,
-            'fecha'         => today()->toDateString(),
+            'usuario_id' => $this->cajero->id,
+            'fecha' => today()->toDateString(),
             'saldo_inicial' => 150.00,
-            'denominaciones'=> [
+            'denominaciones' => [
                 ['denominacion' => 50, 'tipo' => 'billete', 'cantidad' => 3, 'subtotal' => 150.00],
             ],
             'observaciones' => 'Turno mañana',
@@ -180,13 +180,13 @@ class AperturaCajaTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Apertura de caja obtenida.',
-                'data'    => [
-                    'id'            => $apertura->id,
+                'data' => [
+                    'id' => $apertura->id,
                     'saldo_inicial' => '150.00',
                     'observaciones' => 'Turno mañana',
-                    'caja_cerrada'  => false,
+                    'caja_cerrada' => false,
                 ],
             ]);
     }
@@ -196,7 +196,9 @@ class AperturaCajaTest extends TestCase
      * el cierre del día, para que el panel no muestre "Caja Abierta".
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -206,9 +208,9 @@ class AperturaCajaTest extends TestCase
         $hoy = today()->toDateString();
 
         AperturaCaja::create([
-            'usuario_id'     => $this->cajero->id,
-            'fecha'          => $hoy,
-            'saldo_inicial'  => 50.00,
+            'usuario_id' => $this->cajero->id,
+            'fecha' => $hoy,
+            'saldo_inicial' => 50.00,
             'denominaciones' => [
                 ['denominacion' => 50, 'tipo' => 'billete', 'cantidad' => 1, 'subtotal' => 50.00],
             ],
@@ -219,14 +221,14 @@ class AperturaCajaTest extends TestCase
             ->assertJsonPath('data.caja_cerrada', false);
 
         CierreCaja::create([
-            'usuario_id'            => $this->cajero->id,
-            'fecha'                 => $hoy,
-            'saldo_inicial'         => 50.00,
+            'usuario_id' => $this->cajero->id,
+            'fecha' => $hoy,
+            'saldo_inicial' => 50.00,
             'total_ventas_efectivo' => 0.00,
-            'total_retiros'         => 0.00,
-            'saldo_final'           => 50.00,
-            'venta_del_dia'         => 0.00,
-            'diferencia'            => 0.00,
+            'total_retiros' => 0.00,
+            'saldo_final' => 50.00,
+            'venta_del_dia' => 0.00,
+            'diferencia' => 0.00,
         ]);
 
         $this->getJson('/api/aperturas-caja/turno')

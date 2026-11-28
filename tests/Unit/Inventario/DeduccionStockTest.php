@@ -20,7 +20,9 @@ use Tests\TestCase;
  * Caja blanca: 3 ejecuciones sobre las ramas de platillo sin receta, doble descuento y consolidación.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Inventario – RF-INV-003 / US-INV-01 / CC-141
  */
 class DeduccionStockTest extends TestCase
@@ -35,7 +37,9 @@ class DeduccionStockTest extends TestCase
      * Resuelve el servicio desde el contenedor y crea el usuario que figura en los movimientos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
      * @return void
@@ -53,7 +57,9 @@ class DeduccionStockTest extends TestCase
      * stock inicial, unidades vendidas y stock final esperado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
      * @return array<string, array{float, string, string, float, int, string}>
@@ -72,15 +78,17 @@ class DeduccionStockTest extends TestCase
      * Verifica que al pagar la comanda se reste porción × unidades vendidas, convertida a la unidad de bodega.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
-     * @param  float  $porcion         Cantidad del insumo por platillo, en la unidad de consumo.
-     * @param  string $unidadConsumo   Unidad en la que la receta expresa la porción.
-     * @param  string $unidadBodega    Unidad en la que se almacena el insumo.
-     * @param  float  $stockInicial    Existencia antes de la venta.
-     * @param  int    $vendidas        Unidades vendidas del platillo.
-     * @param  string $stockEsperado   Existencia esperada con seis decimales.
+     * @param  float  $porcion  Cantidad del insumo por platillo, en la unidad de consumo.
+     * @param  string  $unidadConsumo  Unidad en la que la receta expresa la porción.
+     * @param  string  $unidadBodega  Unidad en la que se almacena el insumo.
+     * @param  float  $stockInicial  Existencia antes de la venta.
+     * @param  int  $vendidas  Unidades vendidas del platillo.
+     * @param  string  $stockEsperado  Existencia esperada con seis decimales.
      * @return void
      */
     #[DataProvider('casosCajaNegra')]
@@ -108,7 +116,9 @@ class DeduccionStockTest extends TestCase
      * CB-DED-01: rama de consumos vacíos; un platillo sin receta no descuenta ni registra movimientos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
      * @return void
@@ -126,7 +136,9 @@ class DeduccionStockTest extends TestCase
      * CB-DED-02: rama de idempotencia; si la comanda ya tiene movimiento de venta, no descuenta otra vez.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
      * @return void
@@ -150,7 +162,9 @@ class DeduccionStockTest extends TestCase
      * con la suma de ambos consumos, y se marca alerta cuando el saldo queda en o bajo el mínimo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / US-INV-03 / CC-141
      *
      * @return void
@@ -175,13 +189,15 @@ class DeduccionStockTest extends TestCase
      * Registra un insumo de bodega con su existencia y mínimo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
-     * @param  string $nombre      Nombre del insumo.
-     * @param  string $unidad      Unidad de almacenamiento.
-     * @param  float  $stock       Existencia inicial.
-     * @param  float  $stockMinimo Existencia mínima para alerta.
+     * @param  string  $nombre  Nombre del insumo.
+     * @param  string  $unidad  Unidad de almacenamiento.
+     * @param  float  $stock  Existencia inicial.
+     * @param  float  $stockMinimo  Existencia mínima para alerta.
      * @return Insumo Insumo creado.
      */
     private function crearInsumo(string $nombre, string $unidad, float $stock, float $stockMinimo = 0): Insumo
@@ -198,11 +214,13 @@ class DeduccionStockTest extends TestCase
      * Crea un platillo y le vincula los renglones de receta indicados.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
-     * @param  string                                $nombre    Nombre del platillo.
-     * @param  array<int, array{Insumo, float, string}> $renglones Insumo, porción y unidad de consumo.
+     * @param  string  $nombre  Nombre del platillo.
+     * @param  array<int, array{Insumo, float, string}>  $renglones  Insumo, porción y unidad de consumo.
      * @return Platillo Platillo con receta.
      */
     private function crearPlatilloConReceta(string $nombre, array $renglones): Platillo
@@ -225,10 +243,12 @@ class DeduccionStockTest extends TestCase
      * Crea una comanda para llevar ya pagada con los platillos y cantidades indicados.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
-     * @param  array<int, array{Platillo, int}> $items Platillo y unidades vendidas.
+     * @param  array<int, array{Platillo, int}>  $items  Platillo y unidades vendidas.
      * @return Comanda Comanda con sus detalles.
      */
     private function crearComandaPagada(array $items): Comanda

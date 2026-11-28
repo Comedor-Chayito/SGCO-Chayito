@@ -8,7 +8,9 @@ class RegistrarEntradaInsumoRequest extends MovimientoInventarioRequest
      * Valida una entrada positiva y su comprobante de egreso opcional.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113 / CC-115
      *
      * @return array<string, mixed> Reglas de la entrada.

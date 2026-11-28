@@ -23,7 +23,9 @@ class RequisicionDetalle extends Model
      * Obtiene la requisición a la que pertenece este renglón.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-004
      *
      * @return BelongsTo<Requisicion, RequisicionDetalle>
@@ -37,7 +39,9 @@ class RequisicionDetalle extends Model
      * Obtiene el insumo solicitado en este renglón de la requisición.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-004
      *
      * @return BelongsTo<Insumo, RequisicionDetalle>

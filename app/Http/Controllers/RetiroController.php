@@ -12,20 +12,22 @@ class RetiroController extends Controller
      * Inicializa el controlador con el servicio de retiros inyectado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-37)
      *
-     * @param  RetiroService $retiroService Servicio de lógica de negocio para retiros.
+     * @param  RetiroService  $retiroService  Servicio de lógica de negocio para retiros.
      */
-    public function __construct(private readonly RetiroService $retiroService)
-    {
-    }
+    public function __construct(private readonly RetiroService $retiroService) {}
 
     /**
      * Devuelve todos los retiros del turno actual, con el nombre de quien los registró.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-37)
      *
      * @return JsonResponse Respuesta estructurada con la lista de retiros.
@@ -35,9 +37,9 @@ class RetiroController extends Controller
         $retiros = $this->retiroService->listarDelTurno();
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Retiros del turno obtenidos.',
-            'data'    => $retiros,
+            'data' => $retiros,
         ]);
     }
 
@@ -45,10 +47,12 @@ class RetiroController extends Controller
      * Registra un retiro parcial de efectivo asociado al turno del usuario autenticado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-37)
      *
-     * @param  RegistrarRetiroRequest $request Datos validados del retiro.
+     * @param  RegistrarRetiroRequest  $request  Datos validados del retiro.
      * @return JsonResponse Respuesta estructurada con el retiro creado (201).
      */
     public function store(RegistrarRetiroRequest $request): JsonResponse
@@ -56,9 +60,9 @@ class RetiroController extends Controller
         $retiro = $this->retiroService->registrar($request->validated(), $request->user());
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Retiro registrado correctamente.',
-            'data'    => $retiro,
+            'data' => $retiro,
         ], 201);
     }
 }

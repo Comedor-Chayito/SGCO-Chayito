@@ -8,7 +8,9 @@ use Illuminate\Foundation\Http\FormRequest;
  * Valida los filtros del catálogo administrativo de platillos.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-17
+ *
  * @módulo Administración – RF-ADM-008 / CC-104 (US-ADM-03)
  */
 class ListarPlatillosRequest extends FormRequest
@@ -18,7 +20,9 @@ class ListarPlatillosRequest extends FormRequest
      * El acceso por rol (administrador|socio) lo aplica el middleware de la ruta.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-104 (US-ADM-03)
      *
      * @return bool
@@ -32,7 +36,9 @@ class ListarPlatillosRequest extends FormRequest
      * Reglas de validación de los filtros ?busqueda= y ?disponible=.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-104 (US-ADM-03)
      *
      * @return array<string, mixed>
@@ -40,7 +46,7 @@ class ListarPlatillosRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'busqueda'   => ['nullable', 'string', 'max:100'],
+            'busqueda' => ['nullable', 'string', 'max:100'],
             'disponible' => ['nullable', 'boolean'],
         ];
     }
@@ -49,7 +55,9 @@ class ListarPlatillosRequest extends FormRequest
      * Mensajes de validación en español.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-104 (US-ADM-03)
      *
      * @return array<string, string>
@@ -57,8 +65,8 @@ class ListarPlatillosRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'busqueda.string'    => 'La búsqueda debe ser un texto.',
-            'busqueda.max'       => 'La búsqueda no puede superar los 100 caracteres.',
+            'busqueda.string' => 'La búsqueda debe ser un texto.',
+            'busqueda.max' => 'La búsqueda no puede superar los 100 caracteres.',
             'disponible.boolean' => 'El filtro de disponibilidad debe ser verdadero o falso (1/0).',
         ];
     }

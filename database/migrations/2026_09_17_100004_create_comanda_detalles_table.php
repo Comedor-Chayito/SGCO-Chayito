@@ -10,7 +10,9 @@ return new class extends Migration
      * Crea la tabla de detalle de comandas: platillos y cantidades por comanda.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -32,7 +34,9 @@ return new class extends Migration
      * Elimina la tabla de detalle de comandas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void

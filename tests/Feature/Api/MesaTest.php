@@ -10,7 +10,6 @@ use Database\Seeders\PosSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -27,7 +26,9 @@ use Tests\TestCase;
  * - Control de acceso RBAC estricto (403 a roles no autorizados, 401 sin sesión).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-11-18
+ *
  * @módulo Administración – US-ADM-03 (CC-107 / CC-112)
  */
 class MesaTest extends TestCase
@@ -35,10 +36,15 @@ class MesaTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $socio;
+
     protected User $cajero;
+
     protected User $mesero;
+
     protected User $cocinero;
+
     protected User $contadora;
 
     /**
@@ -113,7 +119,7 @@ class MesaTest extends TestCase
             ->assertJsonPath('status', 'ok');
 
         $crear = $this->postJson('/api/mesas', [
-            'numero'    => 88,
+            'numero' => 88,
             'capacidad' => 4,
         ]);
         $crear->assertStatus(201)
@@ -158,7 +164,7 @@ class MesaTest extends TestCase
     public function test_administrador_crea_mesa_correctamente_con_codigo_201(): void
     {
         $response = $this->postJson('/api/mesas', [
-            'numero'    => 25,
+            'numero' => 25,
             'capacidad' => 6,
         ]);
 
@@ -171,10 +177,10 @@ class MesaTest extends TestCase
             ->assertJsonPath('data.activa', true);
 
         $this->assertDatabaseHas('mesas', [
-            'numero'    => 25,
+            'numero' => 25,
             'capacidad' => 6,
-            'estado'    => 'libre',
-            'activa'    => 1,
+            'estado' => 'libre',
+            'activa' => 1,
         ]);
     }
 
@@ -215,7 +221,7 @@ class MesaTest extends TestCase
         $mesaExistente = Mesa::first();
 
         $response = $this->postJson('/api/mesas', [
-            'numero'    => $mesaExistente->numero,
+            'numero' => $mesaExistente->numero,
             'capacidad' => 4,
         ]);
 
@@ -229,14 +235,14 @@ class MesaTest extends TestCase
     public function test_administrador_actualiza_numero_y_capacidad_de_mesa(): void
     {
         $mesa = Mesa::create([
-            'numero'    => 77,
+            'numero' => 77,
             'capacidad' => 2,
-            'estado'    => 'libre',
-            'activa'    => true,
+            'estado' => 'libre',
+            'activa' => true,
         ]);
 
         $response = $this->putJson("/api/mesas/{$mesa->id}", [
-            'numero'    => 78,
+            'numero' => 78,
             'capacidad' => 8,
         ]);
 
@@ -247,8 +253,8 @@ class MesaTest extends TestCase
             ->assertJsonPath('data.capacidad', 8);
 
         $this->assertDatabaseHas('mesas', [
-            'id'        => $mesa->id,
-            'numero'    => 78,
+            'id' => $mesa->id,
+            'numero' => 78,
             'capacidad' => 8,
         ]);
     }
@@ -259,14 +265,14 @@ class MesaTest extends TestCase
     public function test_actualizar_mesa_permite_conservar_el_mismo_numero(): void
     {
         $mesa = Mesa::create([
-            'numero'    => 65,
+            'numero' => 65,
             'capacidad' => 4,
-            'estado'    => 'libre',
-            'activa'    => true,
+            'estado' => 'libre',
+            'activa' => true,
         ]);
 
         $response = $this->putJson("/api/mesas/{$mesa->id}", [
-            'numero'    => 65,
+            'numero' => 65,
             'capacidad' => 6,
         ]);
 
@@ -296,10 +302,10 @@ class MesaTest extends TestCase
     public function test_elimina_fisicamente_mesa_sin_comandas(): void
     {
         $mesa = Mesa::create([
-            'numero'    => 90,
+            'numero' => 90,
             'capacidad' => 4,
-            'estado'    => 'libre',
-            'activa'    => true,
+            'estado' => 'libre',
+            'activa' => true,
         ]);
 
         $response = $this->deleteJson("/api/mesas/{$mesa->id}");
@@ -318,19 +324,19 @@ class MesaTest extends TestCase
     public function test_eliminar_mesa_con_comandas_historicas_la_desactiva_automaticamente(): void
     {
         $mesa = Mesa::create([
-            'numero'    => 91,
+            'numero' => 91,
             'capacidad' => 4,
-            'estado'    => 'libre',
-            'activa'    => true,
+            'estado' => 'libre',
+            'activa' => true,
         ]);
 
         // Comanda histórica ya pagada
         Comanda::create([
-            'mesa_id'      => $mesa->id,
-            'usuario_id'   => $this->mesero->id,
-            'canal'        => 'mesa',
-            'estado'       => 'pagada',
-            'subtotal'     => 10.00,
+            'mesa_id' => $mesa->id,
+            'usuario_id' => $this->mesero->id,
+            'canal' => 'mesa',
+            'estado' => 'pagada',
+            'subtotal' => 10.00,
         ]);
 
         $response = $this->deleteJson("/api/mesas/{$mesa->id}");
@@ -342,7 +348,7 @@ class MesaTest extends TestCase
             ->assertJsonPath('data.activa', false);
 
         $this->assertDatabaseHas('mesas', [
-            'id'     => $mesa->id,
+            'id' => $mesa->id,
             'activa' => 0,
         ]);
     }
@@ -353,18 +359,18 @@ class MesaTest extends TestCase
     public function test_eliminar_mesa_con_comandas_abiertas_es_rechazado_con_422(): void
     {
         $mesa = Mesa::create([
-            'numero'    => 92,
+            'numero' => 92,
             'capacidad' => 4,
-            'estado'    => 'ocupada',
-            'activa'    => true,
+            'estado' => 'ocupada',
+            'activa' => true,
         ]);
 
         Comanda::create([
-            'mesa_id'      => $mesa->id,
-            'usuario_id'   => $this->mesero->id,
-            'canal'        => 'mesa',
-            'estado'       => 'pendiente',
-            'subtotal'     => 12.50,
+            'mesa_id' => $mesa->id,
+            'usuario_id' => $this->mesero->id,
+            'canal' => 'mesa',
+            'estado' => 'pendiente',
+            'subtotal' => 12.50,
         ]);
 
         $response = $this->deleteJson("/api/mesas/{$mesa->id}");
@@ -373,7 +379,7 @@ class MesaTest extends TestCase
             ->assertJsonValidationErrors(['mesa']);
 
         $this->assertDatabaseHas('mesas', [
-            'id'     => $mesa->id,
+            'id' => $mesa->id,
             'activa' => 1,
         ]);
     }
@@ -384,10 +390,10 @@ class MesaTest extends TestCase
     public function test_administrador_desactiva_y_reactiva_mesa(): void
     {
         $mesa = Mesa::create([
-            'numero'    => 93,
+            'numero' => 93,
             'capacidad' => 4,
-            'estado'    => 'libre',
-            'activa'    => true,
+            'estado' => 'libre',
+            'activa' => true,
         ]);
 
         // 1. Desactivar
@@ -413,18 +419,18 @@ class MesaTest extends TestCase
     public function test_desactivar_mesa_con_comandas_abiertas_es_rechazado_con_422(): void
     {
         $mesa = Mesa::create([
-            'numero'    => 94,
+            'numero' => 94,
             'capacidad' => 4,
-            'estado'    => 'ocupada',
-            'activa'    => true,
+            'estado' => 'ocupada',
+            'activa' => true,
         ]);
 
         Comanda::create([
-            'mesa_id'      => $mesa->id,
-            'usuario_id'   => $this->mesero->id,
-            'canal'        => 'mesa',
-            'estado'       => 'en_preparacion',
-            'subtotal'     => 8.00,
+            'mesa_id' => $mesa->id,
+            'usuario_id' => $this->mesero->id,
+            'canal' => 'mesa',
+            'estado' => 'en_preparacion',
+            'subtotal' => 8.00,
         ]);
 
         $response = $this->patchJson("/api/mesas/{$mesa->id}/toggle-activo");
@@ -439,10 +445,10 @@ class MesaTest extends TestCase
     public function test_mesa_inactiva_se_excluye_de_lista_activa_de_pos(): void
     {
         $mesa = Mesa::create([
-            'numero'    => 95,
+            'numero' => 95,
             'capacidad' => 4,
-            'estado'    => 'libre',
-            'activa'    => false,
+            'estado' => 'libre',
+            'activa' => false,
         ]);
 
         Sanctum::actingAs($this->mesero);
@@ -460,22 +466,22 @@ class MesaTest extends TestCase
     public function test_mesa_inactiva_no_permite_registrar_comandas_en_pos(): void
     {
         $mesa = Mesa::create([
-            'numero'    => 96,
+            'numero' => 96,
             'capacidad' => 4,
-            'estado'    => 'libre',
-            'activa'    => false,
+            'estado' => 'libre',
+            'activa' => false,
         ]);
 
         $platillo = Platillo::where('disponible', true)->first();
 
         Sanctum::actingAs($this->mesero);
         $response = $this->postJson('/api/comandas', [
-            'canal'   => 'mesa',
+            'canal' => 'mesa',
             'mesa_id' => $mesa->id,
-            'items'   => [
+            'items' => [
                 [
-                    'platillo_id'     => $platillo->id,
-                    'cantidad'        => 1,
+                    'platillo_id' => $platillo->id,
+                    'cantidad' => 1,
                     'precio_esperado' => (float) $platillo->precio_unitario,
                 ],
             ],

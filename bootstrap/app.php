@@ -1,10 +1,16 @@
 <?php
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Exceptions\UnauthorizedException;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,44 +25,45 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : '/login');
 
         $middleware->alias([
-            'role'               => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'role' => RoleMiddleware::class,
+            'permission' => PermissionMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
 
         // El rol se evalúa antes del route model binding: un rol no autorizado recibe 403
         // aunque el id no exista, en vez de 404 (no revela qué recursos existen).
         foreach ([
-            \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-            \Spatie\Permission\Middleware\PermissionMiddleware::class,
-            \Spatie\Permission\Middleware\RoleMiddleware::class,
+            RoleOrPermissionMiddleware::class,
+            PermissionMiddleware::class,
+            RoleMiddleware::class,
         ] as $middlewareDeRol) {
             $middleware->prependToPriorityList(
-                before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
+                before: SubstituteBindings::class,
                 prepend: $middlewareDeRol,
             );
         }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+        $exceptions->render(function (AuthenticationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'No autenticado. Token ausente o inválido.',
-                    'data'    => null,
+                    'data' => null,
                 ], 401);
             }
         });
 
-        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {
+        $exceptions->render(function (UnauthorizedException $e, $request) {
             if ($request->is('api/*')) {
                 $codigo = auth()->check() ? 403 : 401;
+
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => auth()->check()
                         ? 'No tienes permisos suficientes para realizar esta acción.'
                         : 'No autenticado.',
-                    'data'    => null,
+                    'data' => null,
                 ], $codigo);
             }
         });
@@ -64,10 +71,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ValidationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => $e->getMessage(),
-                    'errors'  => $e->errors(),
-                    'data'    => ['errores' => $e->errors()],
+                    'errors' => $e->errors(),
+                    'data' => ['errores' => $e->errors()],
                 ], $e->status);
             }
         });
@@ -82,14 +89,14 @@ return Application::configure(basePath: dirname(__DIR__))
             // Los mensajes internos (SQL, nombres de clases) no se exponen al cliente; quedan en el log.
             $mensaje = match (true) {
                 $codigo === 404 => 'El recurso solicitado no existe.',
-                $codigo >= 500  => 'Ocurrió un error inesperado.',
-                default         => $e->getMessage() ?: 'Solicitud no válida.',
+                $codigo >= 500 => 'Ocurrió un error inesperado.',
+                default => $e->getMessage() ?: 'Solicitud no válida.',
             };
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => $mensaje,
-                'data'    => null,
+                'data' => null,
             ], $codigo);
         });
     })->create();

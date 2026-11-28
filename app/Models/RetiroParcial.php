@@ -23,7 +23,9 @@ class RetiroParcial extends Model
      * Obtiene el usuario (cajero) que realizó el retiro.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return BelongsTo<User, RetiroParcial>

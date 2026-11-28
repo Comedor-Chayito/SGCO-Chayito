@@ -31,15 +31,17 @@ class AuditoriaService
      * creación o modificación de usuario deja registro de auditoría.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
-     * @param  string     $accion           Acción realizada: creado, actualizado,
-     *                                       desactivado, reactivado, eliminado,
-     *                                       rol_asignado o rol_removido.
-     * @param  Model      $entidad          Modelo auditado (por ejemplo, un usuario).
-     * @param  array|null $datosAnteriores  Estado previo relevante, o null si no aplica.
-     * @param  array|null $datosNuevos      Estado nuevo relevante, o null si no aplica.
+     * @param  string  $accion  Acción realizada: creado, actualizado,
+     *                          desactivado, reactivado, eliminado,
+     *                          rol_asignado o rol_removido.
+     * @param  Model  $entidad  Modelo auditado (por ejemplo, un usuario).
+     * @param  array|null  $datosAnteriores  Estado previo relevante, o null si no aplica.
+     * @param  array|null  $datosNuevos  Estado nuevo relevante, o null si no aplica.
      * @return Auditoria
      */
     public function registrar(
@@ -63,11 +65,13 @@ class AuditoriaService
      * Cada registro incluye el nombre del usuario y el nombre corto de la entidad (por ejemplo, "User").
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-04 / CC-124
      *
-     * @param  array $filtros Filtros validados por ListarAuditoriasRequest: usuario_id, accion,
-     *                        entidad, desde, hasta y por_pagina, todos opcionales.
+     * @param  array  $filtros  Filtros validados por ListarAuditoriasRequest: usuario_id, accion,
+     *                          entidad, desde, hasta y por_pagina, todos opcionales.
      * @return LengthAwarePaginator Página de registros de auditoría.
      */
     public function listar(array $filtros): LengthAwarePaginator
@@ -112,10 +116,12 @@ class AuditoriaService
      * guardados en la bitácora (por ejemplo, "App\Models\User").
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-04 / CC-124
      *
-     * @param  string $entidad Nombre corto del modelo auditado.
+     * @param  string  $entidad  Nombre corto del modelo auditado.
      * @return array<int, string> Tipos completos que coinciden; vacío si no hay ninguno.
      */
     private function tiposDeEntidad(string $entidad): array
@@ -133,10 +139,12 @@ class AuditoriaService
      * conservando únicamente si el campo sensible cambió o no.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
-     * @param  array|null $atributos Atributos crudos del modelo auditado.
+     * @param  array|null  $atributos  Atributos crudos del modelo auditado.
      * @return array|null Atributos sin credenciales, o null si no había nada que filtrar.
      */
     private function filtrarAtributosSensibles(?array $atributos): ?array

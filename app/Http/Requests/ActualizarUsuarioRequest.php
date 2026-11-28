@@ -9,7 +9,9 @@ use Illuminate\Validation\Rule;
  * Validación de actualización de usuario en el panel administrativo (US-ADM-01 / CC-84).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-20
+ *
  * @módulo Administración y Seguridad – RF-ADM-008
  */
 class ActualizarUsuarioRequest extends FormRequest
@@ -35,8 +37,8 @@ class ActualizarUsuarioRequest extends FormRequest
         $usuarioId = is_object($usuarioParam) ? $usuarioParam->id : $usuarioParam;
 
         return [
-            'name'     => ['sometimes', 'required', 'string', 'max:255'],
-            'email'    => [
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'email' => [
                 'sometimes',
                 'required',
                 'string',
@@ -45,8 +47,8 @@ class ActualizarUsuarioRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($usuarioId),
             ],
             'password' => ['nullable', 'string', 'min:8'],
-            'rol'      => ['sometimes', 'required', 'string', 'exists:roles,name'],
-            'activo'   => ['sometimes', 'boolean'],
+            'rol' => ['sometimes', 'required', 'string', 'exists:roles,name'],
+            'activo' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -58,15 +60,14 @@ class ActualizarUsuarioRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'     => 'El nombre completo es obligatorio.',
-            'name.max'          => 'El nombre no puede exceder 255 caracteres.',
-            'email.required'    => 'El correo electrónico es obligatorio.',
-            'email.email'       => 'El formato del correo electrónico no es válido.',
-            'email.unique'      => 'Este correo electrónico ya está registrado por otro usuario.',
-            'password.min'      => 'La contraseña debe contener al menos 8 caracteres.',
-            'rol.required'      => 'Debe asignar un rol al usuario.',
-            'rol.exists'        => 'El rol seleccionado no es válido en el sistema.',
+            'name.required' => 'El nombre completo es obligatorio.',
+            'name.max' => 'El nombre no puede exceder 255 caracteres.',
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'El formato del correo electrónico no es válido.',
+            'email.unique' => 'Este correo electrónico ya está registrado por otro usuario.',
+            'password.min' => 'La contraseña debe contener al menos 8 caracteres.',
+            'rol.required' => 'Debe asignar un rol al usuario.',
+            'rol.exists' => 'El rol seleccionado no es válido en el sistema.',
         ];
     }
 }
-

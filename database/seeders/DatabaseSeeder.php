@@ -14,7 +14,9 @@ class DatabaseSeeder extends Seeder
      * Ejecuta todos los seeders del sistema SGCO-Chayito.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-18
+     *
      * @módulo Core
      *
      * @return void
@@ -23,7 +25,7 @@ class DatabaseSeeder extends Seeder
     {
         // Usuario de prueba base
         User::factory()->create([
-            'name'  => 'Test User',
+            'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
 

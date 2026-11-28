@@ -23,16 +23,18 @@ class Venta extends Model
     ];
 
     protected $casts = [
-        'total'          => 'decimal:2',
+        'total' => 'decimal:2',
         'monto_recibido' => 'decimal:2',
-        'cambio'         => 'decimal:2',
+        'cambio' => 'decimal:2',
     ];
 
     /**
      * Obtiene la comanda asociada a la venta.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return BelongsTo<Comanda, Venta>
@@ -46,7 +48,9 @@ class Venta extends Model
      * Obtiene el usuario (cajero) que procesó el cobro de la venta.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return BelongsTo<User, Venta>
@@ -56,4 +60,3 @@ class Venta extends Model
         return $this->belongsTo(User::class);
     }
 }
-

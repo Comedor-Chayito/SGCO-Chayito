@@ -9,7 +9,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * Scripts de captura (5 corridas) y edición (5 corridas) de la pantalla de mesas (CC-177).
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Administración – US-ADM-03 / CC-107 / CC-177
  */
 class MesaCrudTest extends CrudTestCase
@@ -18,7 +20,9 @@ class MesaCrudTest extends CrudTestCase
      * Corridas de captura: número y capacidad de la mesa nueva.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-177
      *
      * @return array<string, array{int, ?int}>
@@ -38,7 +42,9 @@ class MesaCrudTest extends CrudTestCase
      * Corridas de edición: nuevo número y capacidad para una mesa existente.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-177
      *
      * @return array<string, array{int, ?int}>
@@ -58,11 +64,13 @@ class MesaCrudTest extends CrudTestCase
      * Captura una mesa y verifica que quede libre y activa.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-177
      *
-     * @param  int      $numero    Número de la mesa.
-     * @param  int|null $capacidad Capacidad de comensales.
+     * @param  int  $numero  Número de la mesa.
+     * @param  int|null  $capacidad  Capacidad de comensales.
      * @return void
      */
     #[DataProvider('capturas')]
@@ -83,11 +91,13 @@ class MesaCrudTest extends CrudTestCase
      * Edita una mesa existente y verifica el número y la capacidad nuevos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-177
      *
-     * @param  int      $numero    Nuevo número.
-     * @param  int|null $capacidad Nueva capacidad.
+     * @param  int  $numero  Nuevo número.
+     * @param  int|null  $capacidad  Nueva capacidad.
      * @return void
      */
     #[DataProvider('ediciones')]

@@ -10,7 +10,9 @@ return new class extends Migration
      * Crea el inventario operativo que recibe transferencias desde la bodega central.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-54
      */
     public function up(): void
@@ -30,7 +32,9 @@ return new class extends Migration
      * Elimina el inventario operativo de las áreas.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-54
      */
     public function down(): void

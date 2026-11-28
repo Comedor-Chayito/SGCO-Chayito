@@ -112,7 +112,7 @@ class DeduccionInventarioService
      * @módulo Inventario – RF-INV-003 / CC-47 / CC-49
      *
      * @param  Comanda  $comanda  Comanda cuyos platillos ya fueron cobrados.
-     * @param  int|null $usuarioId Actor del descuento; por defecto el usuario autenticado.
+     * @param  int|null  $usuarioId  Actor del descuento; por defecto el usuario autenticado.
      * @return array<int, array{
      *     insumo_id: int,
      *     nombre: string,

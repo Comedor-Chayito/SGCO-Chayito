@@ -10,7 +10,9 @@ return new class extends Migration
      * Crea la tabla de detalle de requisiciones: insumos y cantidades solicitadas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-004
      *
      * @return void
@@ -31,7 +33,9 @@ return new class extends Migration
      * Elimina la tabla de detalle de requisiciones.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-004
      *
      * @return void

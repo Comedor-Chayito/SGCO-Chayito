@@ -11,7 +11,9 @@ use Illuminate\Validation\ValidationException;
  * Servicio de lógica de negocio del catálogo de mesas del comedor (US-ADM-03 / CC-107).
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-11-17
+ *
  * @módulo Administración – US-ADM-03 / CC-107
  */
 class MesaService
@@ -27,7 +29,9 @@ class MesaService
      * Lista todas las mesas, activas e inactivas, para el panel de configuración.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
      * @return Collection<int, Mesa> Mesas ordenadas por número.
@@ -43,19 +47,21 @@ class MesaService
      * Registra una mesa nueva, libre y activa.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
-     * @param  array{numero: int, capacidad?: int|null} $datos Datos validados por CrearMesaRequest.
+     * @param  array{numero: int, capacidad?: int|null}  $datos  Datos validados por CrearMesaRequest.
      * @return Mesa Mesa creada.
      */
     public function crear(array $datos): Mesa
     {
         $mesa = Mesa::create([
-            'numero'    => $datos['numero'],
+            'numero' => $datos['numero'],
             'capacidad' => $datos['capacidad'] ?? null,
-            'estado'    => 'libre',
-            'activa'    => true,
+            'estado' => 'libre',
+            'activa' => true,
         ]);
 
         return $mesa->refresh();
@@ -65,17 +71,19 @@ class MesaService
      * Cambia el número o la capacidad de una mesa. El estado libre/ocupada lo administra el POS.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
-     * @param  Mesa                                     $mesa  Mesa a editar.
-     * @param  array{numero: int, capacidad?: int|null} $datos Datos validados por ActualizarMesaRequest.
+     * @param  Mesa  $mesa  Mesa a editar.
+     * @param  array{numero: int, capacidad?: int|null}  $datos  Datos validados por ActualizarMesaRequest.
      * @return Mesa Mesa actualizada.
      */
     public function actualizar(Mesa $mesa, array $datos): Mesa
     {
         $mesa->update([
-            'numero'    => $datos['numero'],
+            'numero' => $datos['numero'],
             'capacidad' => $datos['capacidad'] ?? null,
         ]);
 
@@ -86,10 +94,12 @@ class MesaService
      * Borra una mesa sin comandas; si tiene comandas históricas, la desactiva en su lugar.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
-     * @param  Mesa $mesa Mesa a retirar.
+     * @param  Mesa  $mesa  Mesa a retirar.
      * @return Mesa|null null si se borró; la mesa desactivada si tenía comandas.
      *
      * @throws ValidationException Si la mesa tiene comandas abiertas.
@@ -113,10 +123,12 @@ class MesaService
      * Activa o desactiva una mesa. No se puede desactivar mientras tenga comandas abiertas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
-     * @param  Mesa $mesa Mesa a alternar.
+     * @param  Mesa  $mesa  Mesa a alternar.
      * @return Mesa Mesa con su nuevo estado.
      *
      * @throws ValidationException Si se intenta desactivar una mesa con comandas abiertas.
@@ -137,10 +149,12 @@ class MesaService
      * Se revisan las comandas y no la columna estado, que puede quedar desfasada.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
-     * @param  Mesa $mesa Mesa a revisar.
+     * @param  Mesa  $mesa  Mesa a revisar.
      * @return void
      *
      * @throws ValidationException Si la mesa tiene comandas abiertas.

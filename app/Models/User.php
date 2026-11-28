@@ -15,7 +15,9 @@ use Spatie\Permission\Traits\HasRoles;
  * Modelo de Usuario del Sistema con autenticación Sanctum y RBAC Spatie (US-ADM-01 / US-ADM-02).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-20
+ *
  * @módulo Administración y Seguridad – RF-ADM-008
  */
 class User extends Authenticatable
@@ -74,7 +76,9 @@ class User extends Authenticatable
      * (creación, modificación, desactivación, cambios de rol).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
      * @return MorphMany<Auditoria>

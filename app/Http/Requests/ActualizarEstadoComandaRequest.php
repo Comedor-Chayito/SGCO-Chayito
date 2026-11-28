@@ -13,7 +13,9 @@ class ActualizarEstadoComandaRequest extends FormRequest
      * La autorización granular por rol se complementa en US-ADM-02 con Sanctum.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
      * @return bool
@@ -30,7 +32,9 @@ class ActualizarEstadoComandaRequest extends FormRequest
      * "pagada" no se acepta aquí: solo el cobro la registra, junto con su venta.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
      * @return array<string, mixed>
@@ -64,7 +68,9 @@ class ActualizarEstadoComandaRequest extends FormRequest
      * Mensajes de error personalizados en español.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
      * @return array<string, string>
@@ -73,8 +79,8 @@ class ActualizarEstadoComandaRequest extends FormRequest
     {
         return [
             'estado.required' => 'El estado de la comanda es obligatorio.',
-            'estado.in'       => 'El estado debe ser: pendiente, en_preparacion, lista o cancelada. '
-                . 'Una comanda solo se marca pagada al cobrarla en caja.',
+            'estado.in' => 'El estado debe ser: pendiente, en_preparacion, lista o cancelada. '
+                .'Una comanda solo se marca pagada al cobrarla en caja.',
         ];
     }
 }

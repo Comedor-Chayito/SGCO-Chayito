@@ -11,7 +11,9 @@ return new class extends Migration
      * deja un registro con tipo, cantidad con signo, stock resultante y usuario.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-16
+     *
      * @módulo Inventario – US-INV-04 (CC-114)
      *
      * @return void
@@ -43,7 +45,9 @@ return new class extends Migration
      * Elimina la tabla de movimientos de inventario.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-16
+     *
      * @módulo Inventario – US-INV-04 (CC-114)
      *
      * @return void

@@ -18,7 +18,9 @@ use Tests\TestCase;
  * y la recepción automática y ordenada de pedidos en la cola de cocina.
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-20
+ *
  * @módulo POS – US-POS-02 / RF-POS-001 (CC-30)
  */
 class ImpresionComandaTest extends TestCase
@@ -26,9 +28,13 @@ class ImpresionComandaTest extends TestCase
     use RefreshDatabase;
 
     protected User $usuario;
+
     protected Mesa $mesa;
+
     protected Platillo $platillo1;
+
     protected Platillo $platillo2;
+
     protected Comanda $comanda;
 
     /**
@@ -41,7 +47,7 @@ class ImpresionComandaTest extends TestCase
         parent::setUp();
 
         $this->usuario = User::factory()->create([
-            'name'  => 'Mesero Roberto',
+            'name' => 'Mesero Roberto',
             'email' => 'roberto.mesero@sgco-chayito.local',
         ]);
 
@@ -52,52 +58,52 @@ class ImpresionComandaTest extends TestCase
         Sanctum::actingAs($cocinero);
 
         $this->mesa = Mesa::create([
-            'numero'    => 4,
+            'numero' => 4,
             'capacidad' => 4,
-            'estado'    => 'ocupada',
+            'estado' => 'ocupada',
         ]);
 
         $this->platillo1 = Platillo::create([
-            'nombre'          => 'Puyaso con Guarnición',
-            'descripcion'     => 'Corte fino de res al término',
+            'nombre' => 'Puyaso con Guarnición',
+            'descripcion' => 'Corte fino de res al término',
             'precio_unitario' => 6.50,
-            'disponible'      => true,
+            'disponible' => true,
         ]);
 
         $this->platillo2 = Platillo::create([
-            'nombre'          => 'Sopa de Gallina India',
-            'descripcion'     => 'Tradicional con verduras',
+            'nombre' => 'Sopa de Gallina India',
+            'descripcion' => 'Tradicional con verduras',
             'precio_unitario' => 4.00,
-            'disponible'      => true,
+            'disponible' => true,
         ]);
 
         $this->comanda = Comanda::create([
-            'usuario_id'    => $this->usuario->id,
-            'mesa_id'       => $this->mesa->id,
-            'mesa'          => 'Mesa 4',
-            'canal'         => 'mesa',
-            'estado'        => 'pendiente',
+            'usuario_id' => $this->usuario->id,
+            'mesa_id' => $this->mesa->id,
+            'mesa' => 'Mesa 4',
+            'canal' => 'mesa',
+            'estado' => 'pendiente',
             'observaciones' => 'Cliente es alérgico a la cebolla cruda',
-            'subtotal'      => 17.00,
-            'total'         => 17.00,
+            'subtotal' => 17.00,
+            'total' => 17.00,
         ]);
 
         ComandaDetalle::create([
-            'comanda_id'      => $this->comanda->id,
-            'platillo_id'     => $this->platillo1->id,
-            'cantidad'        => 2,
+            'comanda_id' => $this->comanda->id,
+            'platillo_id' => $this->platillo1->id,
+            'cantidad' => 2,
             'precio_unitario' => 6.50,
-            'subtotal'        => 13.00,
-            'observaciones'   => 'Término medio, sin sal añadida',
+            'subtotal' => 13.00,
+            'observaciones' => 'Término medio, sin sal añadida',
         ]);
 
         ComandaDetalle::create([
-            'comanda_id'      => $this->comanda->id,
-            'platillo_id'     => $this->platillo2->id,
-            'cantidad'        => 1,
+            'comanda_id' => $this->comanda->id,
+            'platillo_id' => $this->platillo2->id,
+            'cantidad' => 1,
             'precio_unitario' => 4.00,
-            'subtotal'        => 4.00,
-            'observaciones'   => null,
+            'subtotal' => 4.00,
+            'observaciones' => null,
         ]);
     }
 
@@ -112,12 +118,12 @@ class ImpresionComandaTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Ticket de cocina generado correctamente.',
-                'data'    => [
+                'data' => [
                     'comanda_id' => $this->comanda->id,
-                    'ancho_mm'   => 58,
-                    'columnas'   => 32,
+                    'ancho_mm' => 58,
+                    'columnas' => 32,
                 ],
             ])
             ->assertJsonStructure([
@@ -156,11 +162,11 @@ class ImpresionComandaTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
-                'data'    => [
+                'status' => 'ok',
+                'data' => [
                     'comanda_id' => $this->comanda->id,
-                    'ancho_mm'   => 80,
-                    'columnas'   => 48,
+                    'ancho_mm' => 80,
+                    'columnas' => 48,
                 ],
             ]);
 
@@ -245,7 +251,7 @@ class ImpresionComandaTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Cola de cocina obtenida.',
             ])
             ->assertJsonStructure([
@@ -271,11 +277,11 @@ class ImpresionComandaTest extends TestCase
         // Crear comanda posterior
         $comandaPosterior = Comanda::create([
             'usuario_id' => $this->usuario->id,
-            'mesa'       => 'Mesa 1',
-            'canal'      => 'mesa',
-            'estado'     => 'pendiente',
-            'subtotal'   => 5.00,
-            'total'      => 5.00,
+            'mesa' => 'Mesa 1',
+            'canal' => 'mesa',
+            'estado' => 'pendiente',
+            'subtotal' => 5.00,
+            'total' => 5.00,
             'created_at' => now()->addMinutes(5),
         ]);
 
@@ -313,11 +319,11 @@ class ImpresionComandaTest extends TestCase
         // Comanda completada (despachada)
         $comandaPagada = Comanda::create([
             'usuario_id' => $this->usuario->id,
-            'mesa'       => 'Mesa 2',
-            'canal'      => 'mesa',
-            'estado'     => 'pagada',
-            'subtotal'   => 8.00,
-            'total'      => 8.00,
+            'mesa' => 'Mesa 2',
+            'canal' => 'mesa',
+            'estado' => 'pagada',
+            'subtotal' => 8.00,
+            'total' => 8.00,
         ]);
 
         $response = $this->getJson('/api/comandas/cocina');

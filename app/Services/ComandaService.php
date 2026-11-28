@@ -258,8 +258,8 @@ class ComandaService
             if ($precioEsperado !== null && (int) round((float) $precioEsperado * 100) !== $centavosVigentes) {
                 throw ValidationException::withMessages([
                     "items.{$indice}.precio_esperado" => "El precio de {$platillo->nombre} cambió a "
-                        . number_format((float) $platillo->precio_unitario, 2)
-                        . '. Revisa la orden y vuelve a confirmarla.',
+                        .number_format((float) $platillo->precio_unitario, 2)
+                        .'. Revisa la orden y vuelve a confirmarla.',
                 ]);
             }
         }

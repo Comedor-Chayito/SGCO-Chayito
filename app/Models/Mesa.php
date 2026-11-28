@@ -22,7 +22,9 @@ class Mesa extends Model
      * Obtiene las comandas registradas para esta mesa.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return HasMany<Comanda>

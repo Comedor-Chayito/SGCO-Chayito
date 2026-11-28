@@ -9,7 +9,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * Scripts de captura (5 corridas) y edición (5 corridas) de la pantalla de insumos (CC-177).
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Inventario – RF-INV-003 / CC-177
  */
 class InsumoCrudTest extends CrudTestCase
@@ -18,7 +20,9 @@ class InsumoCrudTest extends CrudTestCase
      * Corridas de captura: datos del formulario de alta de insumo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-177
      *
      * @return array<string, array{array<string, mixed>}>
@@ -46,7 +50,9 @@ class InsumoCrudTest extends CrudTestCase
      * Corridas de edición: datos nuevos para un insumo sin existencias ni movimientos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-177
      *
      * @return array<string, array{array<string, mixed>}>
@@ -68,10 +74,12 @@ class InsumoCrudTest extends CrudTestCase
      * Captura un insumo: se registra con existencia cero y el mínimo indicado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-177
      *
-     * @param  array<string, mixed> $datos Datos del formulario.
+     * @param  array<string, mixed>  $datos  Datos del formulario.
      * @return void
      */
     #[DataProvider('capturas')]
@@ -91,10 +99,12 @@ class InsumoCrudTest extends CrudTestCase
      * Edita un insumo existente y verifica que se guarden los datos nuevos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-177
      *
-     * @param  array<string, mixed> $datos Datos del formulario de edición.
+     * @param  array<string, mixed>  $datos  Datos del formulario de edición.
      * @return void
      */
     #[DataProvider('ediciones')]

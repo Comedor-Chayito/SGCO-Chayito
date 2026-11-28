@@ -23,7 +23,9 @@ use Tests\TestCase;
  * Caja blanca: 3 ejecuciones sobre comandas abiertas, métodos no efectivo y movimientos de otro día.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo POS – RF-POS-002 / US-POS-04 / CC-140
  */
 class CuadreCajaTest extends TestCase
@@ -38,7 +40,9 @@ class CuadreCajaTest extends TestCase
      * Resuelve el servicio y autentica al cajero, que queda como actor en la bitácora del cierre.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-140
      *
      * @return void
@@ -57,7 +61,9 @@ class CuadreCajaTest extends TestCase
      * venta del día esperada y diferencia esperada.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-140
      *
      * @return array<string, array{float, array<int, float>, array<int, float>, float, string, string}>
@@ -76,15 +82,17 @@ class CuadreCajaTest extends TestCase
      * Verifica que el cierre aplique la fórmula de venta del día y calcule la diferencia de arqueo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-140
      *
-     * @param  float             $saldoInicial        Saldo registrado en la apertura.
-     * @param  array<int, float> $ventasEfectivo      Totales de ventas cobradas en efectivo.
-     * @param  array<int, float> $retiros             Montos de retiros parciales.
-     * @param  float             $saldoFinal          Efectivo contado al cerrar.
-     * @param  string            $ventaDelDiaEsperada Venta del día esperada.
-     * @param  string            $diferenciaEsperada  Diferencia esperada.
+     * @param  float  $saldoInicial  Saldo registrado en la apertura.
+     * @param  array<int, float>  $ventasEfectivo  Totales de ventas cobradas en efectivo.
+     * @param  array<int, float>  $retiros  Montos de retiros parciales.
+     * @param  float  $saldoFinal  Efectivo contado al cerrar.
+     * @param  string  $ventaDelDiaEsperada  Venta del día esperada.
+     * @param  string  $diferenciaEsperada  Diferencia esperada.
      * @return void
      */
     #[DataProvider('casosCajaNegra')]
@@ -120,7 +128,9 @@ class CuadreCajaTest extends TestCase
      * CB-CUA-01: rama de comandas abiertas; no se puede cerrar con una comanda pendiente y no se guarda cierre.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-140
      *
      * @return void
@@ -150,7 +160,9 @@ class CuadreCajaTest extends TestCase
      * y no entran en la diferencia de efectivo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-140
      *
      * @return void
@@ -178,7 +190,9 @@ class CuadreCajaTest extends TestCase
      * y, sin apertura del día, el saldo inicial es cero.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-140
      *
      * @return void
@@ -205,10 +219,12 @@ class CuadreCajaTest extends TestCase
      * Registra la apertura de caja de hoy con el saldo inicial indicado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-140
      *
-     * @param  float $saldoInicial Saldo inicial de la gaveta.
+     * @param  float  $saldoInicial  Saldo inicial de la gaveta.
      * @return void
      */
     private function abrirCaja(float $saldoInicial): void
@@ -225,11 +241,13 @@ class CuadreCajaTest extends TestCase
      * Registra una venta cobrada (con su comanda pagada) por el total y método indicados.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-140
      *
-     * @param  float  $total      Total cobrado.
-     * @param  string $metodoPago efectivo, tarjeta o transferencia.
+     * @param  float  $total  Total cobrado.
+     * @param  string  $metodoPago  efectivo, tarjeta o transferencia.
      * @return void
      */
     private function registrarVenta(float $total, string $metodoPago): void

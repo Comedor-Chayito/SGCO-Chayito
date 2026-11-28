@@ -9,7 +9,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * Scripts de captura (5 corridas) y edición (5 corridas) de la pantalla de subcategorías de egreso (CC-177).
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Contabilidad – RF-CON-005 / CC-103 / CC-177
  */
 class SubcategoriaEgresoCrudTest extends CrudTestCase
@@ -18,7 +20,9 @@ class SubcategoriaEgresoCrudTest extends CrudTestCase
      * Corridas de captura: nombre enviado y nombre esperado tras recortar espacios.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-005 / CC-177
      *
      * @return array<string, array{string, string}>
@@ -38,7 +42,9 @@ class SubcategoriaEgresoCrudTest extends CrudTestCase
      * Corridas de edición: nombre nuevo para una subcategoría existente.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-005 / CC-177
      *
      * @return array<string, array{string, string}>
@@ -58,11 +64,13 @@ class SubcategoriaEgresoCrudTest extends CrudTestCase
      * Captura una subcategoría y verifica que quede activa con el nombre normalizado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-005 / CC-177
      *
-     * @param  string $nombre   Nombre enviado.
-     * @param  string $esperado Nombre guardado.
+     * @param  string  $nombre  Nombre enviado.
+     * @param  string  $esperado  Nombre guardado.
      * @return void
      */
     #[DataProvider('capturas')]
@@ -77,11 +85,13 @@ class SubcategoriaEgresoCrudTest extends CrudTestCase
      * Renombra una subcategoría existente y verifica el nombre nuevo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-005 / CC-177
      *
-     * @param  string $nombre   Nombre enviado.
-     * @param  string $esperado Nombre guardado.
+     * @param  string  $nombre  Nombre enviado.
+     * @param  string  $esperado  Nombre guardado.
      * @return void
      */
     #[DataProvider('ediciones')]

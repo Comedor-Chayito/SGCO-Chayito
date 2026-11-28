@@ -9,7 +9,9 @@ use Illuminate\Foundation\Http\FormRequest;
  * Soporta nombres de campos en español (correo, contrasena) y estándar (email, password).
  *
  * @autor  manuelmv15 / Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-18
+ *
  * @módulo Administración y Seguridad – CC-91 / US-ADM-02
  */
 class LoginRequest extends FormRequest
@@ -33,7 +35,7 @@ class LoginRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'email'    => $this->input('email', $this->input('correo')),
+            'email' => $this->input('email', $this->input('correo')),
             'password' => $this->input('password', $this->input('contrasena')),
         ]);
     }
@@ -46,7 +48,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ];
     }
@@ -59,8 +61,8 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required'    => 'El correo es obligatorio.',
-            'email.email'       => 'El correo no tiene un formato válido.',
+            'email.required' => 'El correo es obligatorio.',
+            'email.email' => 'El correo no tiene un formato válido.',
             'password.required' => 'La contraseña es obligatoria.',
         ];
     }

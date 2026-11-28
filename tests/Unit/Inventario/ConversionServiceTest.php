@@ -14,7 +14,9 @@ use PHPUnit\Framework\TestCase;
  * Caja blanca: 3 ejecuciones sobre las ramas de misma unidad, familias distintas y unidad desconocida.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Inventario – RF-INV-003 / US-INV-01 / CC-141
  */
 class ConversionServiceTest extends TestCase
@@ -23,7 +25,9 @@ class ConversionServiceTest extends TestCase
      * Casos de caja negra: cantidad, unidad de origen, unidad de destino y resultado esperado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
      * @return array<string, array{float, string, string, float}>
@@ -42,12 +46,14 @@ class ConversionServiceTest extends TestCase
      * Verifica que la conversión dentro de una familia devuelva la magnitud equivalente.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
      * @param  float  $cantidad  Cantidad en la unidad de origen.
-     * @param  string $desde     Unidad de origen.
-     * @param  string $hasta     Unidad de destino.
+     * @param  string  $desde  Unidad de origen.
+     * @param  string  $hasta  Unidad de destino.
      * @param  float  $esperado  Cantidad esperada en la unidad de destino.
      * @return void
      */
@@ -65,7 +71,9 @@ class ConversionServiceTest extends TestCase
      * CB-CONV-01: rama de misma unidad tras normalizar alias ('GR ' ≡ 'g'); solo redondea a 6 decimales.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
      * @return void
@@ -79,7 +87,9 @@ class ConversionServiceTest extends TestCase
      * CB-CONV-02: rama de familias distintas (masa → volumen) lanza InvalidArgumentException.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
      * @return void
@@ -97,7 +107,9 @@ class ConversionServiceTest extends TestCase
      * CB-CONV-03: rama de unidad desconocida (familia null): no es compatible y se ofrece a sí misma.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-141
      *
      * @return void

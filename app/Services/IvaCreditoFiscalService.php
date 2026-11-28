@@ -6,7 +6,9 @@ namespace App\Services;
  * Calcula el costo neto e IVA crédito fiscal contenidos en una compra gravada.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
  */
 class IvaCreditoFiscalService
@@ -20,7 +22,9 @@ class IvaCreditoFiscalService
      * conserva coherencia aun en importes donde redondear el neto primero agregaría un centavo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @param  float  $montoTotal  Monto total del comprobante, con IVA incluido.

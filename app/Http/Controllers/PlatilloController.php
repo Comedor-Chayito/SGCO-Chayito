@@ -15,7 +15,9 @@ use Illuminate\Http\JsonResponse;
  * El listado operativo del POS sigue en ComandaController::platillos (solo disponibles).
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-17
+ *
  * @módulo Administración – RF-ADM-008 / CC-104 / CC-106
  */
 class PlatilloController extends Controller
@@ -24,23 +26,25 @@ class PlatilloController extends Controller
      * Inicializa el controlador con el servicio de platillos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-104
      *
-     * @param  PlatilloService $platilloService Servicio de lógica de negocio de platillos.
+     * @param  PlatilloService  $platilloService  Servicio de lógica de negocio de platillos.
      */
-    public function __construct(private readonly PlatilloService $platilloService)
-    {
-    }
+    public function __construct(private readonly PlatilloService $platilloService) {}
 
     /**
      * Lista el catálogo completo de platillos, con filtros opcionales ?busqueda= y ?disponible=.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-104
      *
-     * @param  ListarPlatillosRequest $request Filtros validados.
+     * @param  ListarPlatillosRequest  $request  Filtros validados.
      * @return JsonResponse Lista de platillos ordenada por nombre.
      */
     public function index(ListarPlatillosRequest $request): JsonResponse
@@ -48,9 +52,9 @@ class PlatilloController extends Controller
         $platillos = $this->platilloService->listar($request->validated());
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Catálogo de platillos obtenido correctamente.',
-            'data'    => $platillos,
+            'data' => $platillos,
         ]);
     }
 
@@ -58,10 +62,12 @@ class PlatilloController extends Controller
      * Registra un nuevo platillo en el catálogo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-104
      *
-     * @param  CrearPlatilloRequest $request Datos validados del platillo.
+     * @param  CrearPlatilloRequest  $request  Datos validados del platillo.
      * @return JsonResponse Platillo creado con código HTTP 201.
      */
     public function store(CrearPlatilloRequest $request): JsonResponse
@@ -69,9 +75,9 @@ class PlatilloController extends Controller
         $platillo = $this->platilloService->crear($request->validated());
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Platillo registrado correctamente.',
-            'data'    => $platillo,
+            'data' => $platillo,
         ], 201);
     }
 
@@ -79,18 +85,20 @@ class PlatilloController extends Controller
      * Devuelve el detalle de un platillo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-104
      *
-     * @param  Platillo $platillo Platillo resuelto por route model binding.
+     * @param  Platillo  $platillo  Platillo resuelto por route model binding.
      * @return JsonResponse Detalle del platillo.
      */
     public function show(Platillo $platillo): JsonResponse
     {
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Detalle del platillo obtenido.',
-            'data'    => $platillo,
+            'data' => $platillo,
         ]);
     }
 
@@ -98,11 +106,13 @@ class PlatilloController extends Controller
      * Actualiza nombre, descripción y precio de un platillo sin alterar el histórico.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-104
      *
-     * @param  ActualizarPlatilloRequest $request  Datos validados a actualizar.
-     * @param  Platillo                  $platillo Platillo a modificar.
+     * @param  ActualizarPlatilloRequest  $request  Datos validados a actualizar.
+     * @param  Platillo  $platillo  Platillo a modificar.
      * @return JsonResponse Platillo actualizado.
      */
     public function update(ActualizarPlatilloRequest $request, Platillo $platillo): JsonResponse
@@ -110,9 +120,9 @@ class PlatilloController extends Controller
         $platilloActualizado = $this->platilloService->actualizar($platillo, $request->validated());
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Platillo actualizado correctamente.',
-            'data'    => $platilloActualizado,
+            'data' => $platilloActualizado,
         ]);
     }
 
@@ -120,10 +130,12 @@ class PlatilloController extends Controller
      * Elimina un platillo sin comandas ni recetas; si tiene historial responde 422.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-104
      *
-     * @param  Platillo $platillo Platillo a eliminar.
+     * @param  Platillo  $platillo  Platillo a eliminar.
      * @return JsonResponse Confirmación de eliminación.
      */
     public function destroy(Platillo $platillo): JsonResponse
@@ -131,9 +143,9 @@ class PlatilloController extends Controller
         $this->platilloService->eliminar($platillo);
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Platillo eliminado correctamente.',
-            'data'    => null,
+            'data' => null,
         ]);
     }
 
@@ -141,11 +153,13 @@ class PlatilloController extends Controller
      * Activa o desactiva un platillo del menú del día.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-106
      *
-     * @param  CambiarDisponibilidadPlatilloRequest $request  Valor validado de disponibilidad.
-     * @param  Platillo                             $platillo Platillo a modificar.
+     * @param  CambiarDisponibilidadPlatilloRequest  $request  Valor validado de disponibilidad.
+     * @param  Platillo  $platillo  Platillo a modificar.
      * @return JsonResponse Platillo con la disponibilidad actualizada.
      */
     public function disponibilidad(CambiarDisponibilidadPlatilloRequest $request, Platillo $platillo): JsonResponse
@@ -160,9 +174,9 @@ class PlatilloController extends Controller
             : 'Platillo desactivado del menú del día.';
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => $mensaje,
-            'data'    => $platilloActualizado,
+            'data' => $platilloActualizado,
         ]);
     }
 }

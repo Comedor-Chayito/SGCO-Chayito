@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -13,7 +14,9 @@ use Spatie\Permission\PermissionRegistrar;
  * Define la matriz de control de acceso basada en roles (RBAC).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-20
+ *
  * @módulo Administración y Seguridad – RF-ADM-008
  */
 class RolePermissionSeeder extends Seeder
@@ -103,9 +106,9 @@ class RolePermissionSeeder extends Seeder
         $admin = User::updateOrCreate(
             ['email' => 'admin@sgco-chayito.local'],
             [
-                'name'     => 'Administrador General',
-                'password' => \Illuminate\Support\Facades\Hash::make('Admin1234!'),
-                'activo'   => true,
+                'name' => 'Administrador General',
+                'password' => Hash::make('Admin1234!'),
+                'activo' => true,
             ]
         );
         $admin->syncRoles(['administrador']);
@@ -114,9 +117,9 @@ class RolePermissionSeeder extends Seeder
         $cajero = User::updateOrCreate(
             ['email' => 'cajero@sgco-chayito.local'],
             [
-                'name'     => 'Marcos Cajero',
-                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
-                'activo'   => true,
+                'name' => 'Marcos Cajero',
+                'password' => Hash::make('Password123!'),
+                'activo' => true,
             ]
         );
         $cajero->syncRoles(['cajero']);
@@ -124,9 +127,9 @@ class RolePermissionSeeder extends Seeder
         $mesero = User::updateOrCreate(
             ['email' => 'mesero@sgco-chayito.local'],
             [
-                'name'     => 'Carlos Mesero',
-                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
-                'activo'   => true,
+                'name' => 'Carlos Mesero',
+                'password' => Hash::make('Password123!'),
+                'activo' => true,
             ]
         );
         $mesero->syncRoles(['mesero']);
@@ -134,9 +137,9 @@ class RolePermissionSeeder extends Seeder
         $cocinero = User::updateOrCreate(
             ['email' => 'cocinero@sgco-chayito.local'],
             [
-                'name'     => 'Roberto Cocinero',
-                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
-                'activo'   => true,
+                'name' => 'Roberto Cocinero',
+                'password' => Hash::make('Password123!'),
+                'activo' => true,
             ]
         );
         $cocinero->syncRoles(['cocinero']);
@@ -144,9 +147,9 @@ class RolePermissionSeeder extends Seeder
         $cocinera = User::updateOrCreate(
             ['email' => 'cocinera@sgco-chayito.local'],
             [
-                'name'     => 'Marta Cocinera',
-                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
-                'activo'   => true,
+                'name' => 'Marta Cocinera',
+                'password' => Hash::make('Password123!'),
+                'activo' => true,
             ]
         );
         $cocinera->syncRoles(['cocinera']);
@@ -154,9 +157,9 @@ class RolePermissionSeeder extends Seeder
         $contadora = User::updateOrCreate(
             ['email' => 'contadora@sgco-chayito.local'],
             [
-                'name'     => 'Elena Contadora',
-                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
-                'activo'   => true,
+                'name' => 'Elena Contadora',
+                'password' => Hash::make('Password123!'),
+                'activo' => true,
             ]
         );
         $contadora->syncRoles(['contadora']);
@@ -164,9 +167,9 @@ class RolePermissionSeeder extends Seeder
         $socio = User::updateOrCreate(
             ['email' => 'socio@sgco-chayito.local'],
             [
-                'name'     => 'Andrea Socia',
-                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
-                'activo'   => true,
+                'name' => 'Andrea Socia',
+                'password' => Hash::make('Password123!'),
+                'activo' => true,
             ]
         );
         $socio->syncRoles(['socio']);

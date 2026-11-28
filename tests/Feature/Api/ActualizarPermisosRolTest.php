@@ -7,7 +7,6 @@ use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -16,7 +15,9 @@ use Tests\TestCase;
  * Valida el cumplimiento del requerimiento funcional RF-ADM-008, historia US-ADM-04 y tarea CC-122.
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-11-18
+ *
  * @módulo Administración y Seguridad – US-ADM-04 / RF-ADM-008 / CC-122
  */
 class ActualizarPermisosRolTest extends TestCase
@@ -39,7 +40,9 @@ class ActualizarPermisosRolTest extends TestCase
      * Prepara el entorno con roles oficiales, usuarios y permisos iniciales de prueba.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – US-ADM-04 / CC-122
      */
     protected function setUp(): void
@@ -196,10 +199,10 @@ class ActualizarPermisosRolTest extends TestCase
         $respuesta->assertStatus(200);
 
         $this->assertDatabaseHas('auditorias', [
-            'usuario_id'   => $this->admin->id,
-            'accion'       => 'permisos_rol_actualizados',
+            'usuario_id' => $this->admin->id,
+            'accion' => 'permisos_rol_actualizados',
             'entidad_type' => $rolContadora->getMorphClass(),
-            'entidad_id'   => $rolContadora->id,
+            'entidad_id' => $rolContadora->id,
         ]);
 
         $auditoria = Auditoria::where('accion', 'permisos_rol_actualizados')

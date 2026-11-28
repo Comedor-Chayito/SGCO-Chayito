@@ -10,7 +10,9 @@ return new class extends Migration
      * Crea el catálogo de subcategorías con que se clasifican los egresos.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005
      *
      * @return void
@@ -29,7 +31,9 @@ return new class extends Migration
      * Elimina el catálogo de subcategorías de egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005
      *
      * @return void

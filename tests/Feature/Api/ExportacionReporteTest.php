@@ -25,7 +25,9 @@ use Tests\TestCase;
  * Pruebas de integración para la exportación de reportes consolidados en CSV y XLSX.
  *
  * @autor  CesarZV23005
+ *
  * @fecha  2026-10-25
+ *
  * @módulo Reportes – US-REP-02 / RF-REP-007 / CC-78 / CC-79 / CC-80 / CC-81 / CC-82
  */
 class ExportacionReporteTest extends TestCase
@@ -50,7 +52,9 @@ class ExportacionReporteTest extends TestCase
      * Prepara el entorno con roles oficiales, permisos y usuarios de prueba.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-82
      */
     protected function setUp(): void
@@ -83,7 +87,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que el administrador puede descargar el reporte consolidado en CSV con BOM y cabeceras.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-82
      */
     public function test_administrador_descarga_reporte_consolidado_en_csv_con_cabeceras_y_bom(): void
@@ -120,7 +126,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que el administrador puede descargar el reporte consolidado en Excel XLSX con formato binario.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-80 / CC-82
      */
     public function test_administrador_descarga_reporte_consolidado_en_xlsx_con_cabeceras_y_hojas(): void
@@ -152,7 +160,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que el CSV consolida KPIs de resumen, egresos con desglose, gastos por subcategoría y compras con totales.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-81 / CC-82
      */
     public function test_reporte_csv_consolida_resumen_financiero_egresos_y_compras_con_totales(): void
@@ -208,7 +218,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que el reporte incluye inventario de bodega con estados legibles y existencias por área operativa.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-81 / CC-82
      */
     public function test_reporte_exporta_inventario_de_bodega_y_existencias_por_area_operativa(): void
@@ -246,7 +258,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que la exportación filtra comprobantes de egreso y compras dentro del rango y excluye los externos.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-81 / CC-82
      */
     public function test_exportacion_filtra_movimientos_exclusivamente_dentro_del_periodo(): void
@@ -294,7 +308,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que un periodo sin movimientos genera un reporte válido con totales en cero sin excepciones.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-82
      */
     public function test_exportacion_con_periodo_vacio_genera_archivo_valido_con_totales_cero(): void
@@ -326,7 +342,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que el rol Socio está autorizado a descargar el reporte consolidado.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-80 / CC-82
      */
     public function test_socio_puede_exportar_reporte_consolidado(): void
@@ -347,7 +365,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que el rol Contadora está autorizado a descargar el reporte consolidado.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-80 / CC-82
      */
     public function test_contadora_puede_exportar_reporte_consolidado(): void
@@ -368,7 +388,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que los roles operativos (cajero, mesero, cocinero, cocinera) reciben 403 Forbidden.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-82
      */
     public function test_roles_operativos_cajero_mesero_cocinero_no_pueden_exportar(): void
@@ -394,7 +416,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que las peticiones no autenticadas son rechazadas con 401 Unauthorized.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-82
      */
     public function test_exportacion_requiere_autenticacion(): void
@@ -407,7 +431,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que se rechaza la exportación si falta la fecha inicial del período.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-82
      */
     public function test_rechaza_exportacion_si_falta_fecha_desde(): void
@@ -424,7 +450,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que se rechaza la exportación si falta la fecha final del período.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-82
      */
     public function test_rechaza_exportacion_si_falta_fecha_hasta(): void
@@ -441,7 +469,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que se rechaza la exportación si falta el formato del archivo.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-80 / CC-82
      */
     public function test_rechaza_exportacion_si_falta_formato(): void
@@ -458,7 +488,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que se rechaza un formato no soportado (ej. pdf o word).
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-80 / CC-82
      */
     public function test_rechaza_exportacion_con_formato_no_disponible(): void
@@ -475,7 +507,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que se rechazan fechas con formato no válido.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-82
      */
     public function test_rechaza_exportacion_con_fechas_con_formato_invalido(): void
@@ -495,7 +529,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que se rechaza un rango donde fecha_desde es posterior a fecha_hasta.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-82
      */
     public function test_rechaza_exportacion_con_rango_invertido(): void
@@ -514,7 +550,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que se rechazan fechas futuras tanto en fecha_desde como en fecha_hasta.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-82
      */
     public function test_rechaza_exportacion_con_fechas_futuras(): void
@@ -537,7 +575,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que el CSV exportado conserva correctamente caracteres UTF-8 como tildes y eñes sin corrupción.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-81 / CC-82
      */
     public function test_exportacion_csv_conserva_caracteres_utf8_con_tildes_y_enes(): void
@@ -573,7 +613,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica que el XLSX generado puede ser leído y contiene exactamente las seis hojas estructuradas.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-80 / CC-81 / CC-82
      */
     public function test_exportacion_xlsx_es_valido_y_contiene_las_seis_hojas_con_datos(): void
@@ -638,7 +680,9 @@ class ExportacionReporteTest extends TestCase
      * Verifica los métodos auxiliares de ExportacionReporteService (nombre de archivo, MIME y estructura de secciones).
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-79 / CC-80 / CC-82
      */
     public function test_servicio_exportacion_metodos_auxiliares_de_soporte(): void
@@ -679,7 +723,9 @@ class ExportacionReporteTest extends TestCase
      * Registra una venta pagada vinculada a una comanda en la fecha requerida.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-82
      */
     private function registrarVenta(User $usuario, float $total, string $fecha): void
@@ -723,7 +769,9 @@ class ExportacionReporteTest extends TestCase
      * Registra un egreso categorizado con su desglose de IVA crédito fiscal.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-82
      */
     private function registrarEgreso(
@@ -757,7 +805,9 @@ class ExportacionReporteTest extends TestCase
      * Registra una compra en la calculadora de IVA.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-82
      */
     private function registrarCompra(User $usuario, float $montoTotal, float $costoNeto, string $fecha): Compra
@@ -775,7 +825,9 @@ class ExportacionReporteTest extends TestCase
      * Crea un insumo en bodega.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-82
      */
     private function crearInsumo(string $nombre, string $unidad, float $stockActual, float $stockMinimo): Insumo
@@ -792,7 +844,9 @@ class ExportacionReporteTest extends TestCase
      * Registra existencias de un insumo dentro de un área operativa.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – US-REP-02 / CC-82
      */
     private function crearExistenciaArea(string $area, Insumo $insumo, float $stock): ExistenciaAreaOperativa
@@ -804,4 +858,3 @@ class ExportacionReporteTest extends TestCase
         ]);
     }
 }
-

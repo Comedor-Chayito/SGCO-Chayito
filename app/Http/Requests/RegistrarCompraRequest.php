@@ -8,7 +8,9 @@ use Illuminate\Foundation\Http\FormRequest;
  * Valida el importe total de una compra antes de calcular su IVA crédito fiscal.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
  */
 class RegistrarCompraRequest extends FormRequest
@@ -17,7 +19,9 @@ class RegistrarCompraRequest extends FormRequest
      * Confirma que el acceso por rol fue aplicado por la ruta protegida.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @return bool True; el middleware restringe a contadora o administrador.
@@ -31,7 +35,9 @@ class RegistrarCompraRequest extends FormRequest
      * Define los datos mínimos de un comprobante para ejecutar el cálculo automático.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @return array<string, mixed> Reglas para fecha y monto total de la compra.
@@ -48,7 +54,9 @@ class RegistrarCompraRequest extends FormRequest
      * Presenta mensajes de validación comprensibles para la persona contadora.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @return array<string, string> Mensajes personalizados de validación.
