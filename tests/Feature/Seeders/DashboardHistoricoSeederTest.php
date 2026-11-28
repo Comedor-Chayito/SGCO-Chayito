@@ -40,9 +40,9 @@ class DashboardHistoricoSeederTest extends TestCase
         $this->assertDatabaseCount('comanda_detalles', 30);
         $this->assertDatabaseCount('egresos', 18);
         $this->assertSame(6, Venta::query()
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") AS periodo')
-            ->groupByRaw('DATE_FORMAT(created_at, "%Y-%m")')
-            ->get()
+            ->pluck('created_at')
+            ->map(fn ($fecha) => $fecha->format('Y-m'))
+            ->unique()
             ->count());
         $this->assertSame(6, Egreso::query()
             ->distinct()
