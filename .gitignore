@@ -29,6 +29,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
-/docs
+/docs/*
+!/docs/pruebas/
 
 /.claude
+/hacer_commits.ps1
