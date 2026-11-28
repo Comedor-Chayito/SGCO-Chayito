@@ -16,10 +16,12 @@ class MovimientoInventarioController extends Controller
      * Inyecta el servicio central de movimientos de bodega.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113
      *
-     * @param MovimientoInventarioService $movimientos Servicio transaccional de inventario.
+     * @param  MovimientoInventarioService  $movimientos  Servicio transaccional de inventario.
      */
     public function __construct(private readonly MovimientoInventarioService $movimientos) {}
 
@@ -27,11 +29,13 @@ class MovimientoInventarioController extends Controller
      * Registra una entrada a bodega con egreso opcional y actor autenticado.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113 / CC-115
      *
-     * @param RegistrarEntradaInsumoRequest $request Datos validados de la entrada.
-     * @param Insumo $insumo Insumo de la ruta.
+     * @param  RegistrarEntradaInsumoRequest  $request  Datos validados de la entrada.
+     * @param  Insumo  $insumo  Insumo de la ruta.
      * @return JsonResponse Insumo actualizado y movimiento creado.
      */
     public function entrada(RegistrarEntradaInsumoRequest $request, Insumo $insumo): JsonResponse
@@ -52,11 +56,13 @@ class MovimientoInventarioController extends Controller
      * Registra un ajuste justificado sin permitir saldo negativo.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113 / CC-116
      *
-     * @param RegistrarAjusteInsumoRequest $request Datos validados del ajuste.
-     * @param Insumo $insumo Insumo de la ruta.
+     * @param  RegistrarAjusteInsumoRequest  $request  Datos validados del ajuste.
+     * @param  Insumo  $insumo  Insumo de la ruta.
      * @return JsonResponse Insumo actualizado y movimiento creado.
      */
     public function ajuste(RegistrarAjusteInsumoRequest $request, Insumo $insumo): JsonResponse
@@ -77,11 +83,13 @@ class MovimientoInventarioController extends Controller
      * Devuelve el paginador del historial de movimientos de un insumo.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113 / CC-117
      *
-     * @param ListarMovimientosInsumoRequest $request Consulta de paginacion validada.
-     * @param Insumo $insumo Insumo de la ruta.
+     * @param  ListarMovimientosInsumoRequest  $request  Consulta de paginacion validada.
+     * @param  Insumo  $insumo  Insumo de la ruta.
      * @return JsonResponse Paginador con movimientos y metadatos.
      */
     public function index(ListarMovimientosInsumoRequest $request, Insumo $insumo): JsonResponse

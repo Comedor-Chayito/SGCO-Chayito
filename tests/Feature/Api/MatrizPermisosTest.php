@@ -7,7 +7,6 @@ use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -15,7 +14,9 @@ use Tests\TestCase;
  * Valida la consistencia de la matriz de acceso, herencia y restricciones por puesto.
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-20
+ *
  * @módulo Administración y Seguridad – RF-ADM-008 (CC-85 / CC-88)
  */
 class MatrizPermisosTest extends TestCase
@@ -23,10 +24,15 @@ class MatrizPermisosTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $cajero;
+
     protected User $mesero;
+
     protected User $cocinero;
+
     protected User $contadora;
+
     protected User $socio;
 
     /**
@@ -47,16 +53,16 @@ class MatrizPermisosTest extends TestCase
 
         // Crear usuario cocinero de prueba
         $this->cocinero = User::factory()->create([
-            'name'   => 'Julia Cocinera',
-            'email'  => 'julia.cocina@sgco-chayito.local',
+            'name' => 'Julia Cocinera',
+            'email' => 'julia.cocina@sgco-chayito.local',
             'activo' => true,
         ]);
         $this->cocinero->assignRole('cocinero');
 
         // Crear usuario contadora de prueba
         $this->contadora = User::factory()->create([
-            'name'   => 'Elena Contadora',
-            'email'  => 'elena.conta@sgco-chayito.local',
+            'name' => 'Elena Contadora',
+            'email' => 'elena.conta@sgco-chayito.local',
             'activo' => true,
         ]);
         $this->contadora->assignRole('contadora');
@@ -132,7 +138,9 @@ class MatrizPermisosTest extends TestCase
      * Verifica que el rol Socio conserve acceso total a los indicadores gerenciales.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-76
      */
     public function test_rol_socio_tiene_acceso_a_todos_los_permisos(): void
@@ -258,12 +266,12 @@ class MatrizPermisosTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Usuario autenticado obtenido.',
-                'data'    => [
-                    'id'    => $this->mesero->id,
+                'data' => [
+                    'id' => $this->mesero->id,
                     'email' => $this->mesero->email,
-                    'rol'   => 'mesero',
+                    'rol' => 'mesero',
                 ],
             ]);
 

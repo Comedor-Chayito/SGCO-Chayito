@@ -18,7 +18,9 @@ use Tests\TestCase;
  * Caja blanca: 3 ejecuciones sobre borrado físico, desactivación por historial y bloqueo por comanda abierta.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Administración – US-ADM-03 / CC-107 / CC-143
  */
 class CatalogoMesaServiceTest extends TestCase
@@ -33,7 +35,9 @@ class CatalogoMesaServiceTest extends TestCase
      * Resuelve el servicio y crea al usuario que registra comandas en las mesas.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-143
      *
      * @return void
@@ -50,7 +54,9 @@ class CatalogoMesaServiceTest extends TestCase
      * Casos de caja negra: número y capacidad de la mesa.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-143
      *
      * @return array<string, array{int, ?int}>
@@ -69,11 +75,13 @@ class CatalogoMesaServiceTest extends TestCase
      * Verifica que toda mesa nueva quede libre y activa con el número y capacidad indicados.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-143
      *
-     * @param  int      $numero    Número de la mesa.
-     * @param  int|null $capacidad Capacidad de comensales.
+     * @param  int  $numero  Número de la mesa.
+     * @param  int|null  $capacidad  Capacidad de comensales.
      * @return void
      */
     #[DataProvider('casosCajaNegra')]
@@ -91,7 +99,9 @@ class CatalogoMesaServiceTest extends TestCase
      * CB-MES-01: rama sin comandas; la mesa se borra físicamente y el servicio devuelve null.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-143
      *
      * @return void
@@ -108,7 +118,9 @@ class CatalogoMesaServiceTest extends TestCase
      * CB-MES-02: rama de historial; una mesa con comandas cerradas se desactiva en lugar de borrarse.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-143
      *
      * @return void
@@ -128,7 +140,9 @@ class CatalogoMesaServiceTest extends TestCase
      * CB-MES-03: rama de comanda abierta; no se puede desactivar una mesa en atención.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-143
      *
      * @return void
@@ -152,10 +166,12 @@ class CatalogoMesaServiceTest extends TestCase
      * Crea una mesa libre y activa.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-143
      *
-     * @param  int $numero Número de la mesa.
+     * @param  int  $numero  Número de la mesa.
      * @return Mesa Mesa creada.
      */
     private function crearMesa(int $numero): Mesa
@@ -167,11 +183,13 @@ class CatalogoMesaServiceTest extends TestCase
      * Registra una comanda de mesa en el estado indicado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – US-ADM-03 / CC-143
      *
-     * @param  Mesa   $mesa   Mesa de la comanda.
-     * @param  string $estado Estado de la comanda.
+     * @param  Mesa  $mesa  Mesa de la comanda.
+     * @param  string  $estado  Estado de la comanda.
      * @return void
      */
     private function crearComanda(Mesa $mesa, string $estado): void

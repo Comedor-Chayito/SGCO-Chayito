@@ -8,7 +8,9 @@ use Illuminate\Foundation\Http\FormRequest;
  * Valida los datos de entrada para crear una subcategoría de egreso desde el panel de configuración.
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-11-17
+ *
  * @módulo Administración – US-ADM-03 / CC-108
  */
 class CrearSubcategoriaEgresoRequest extends FormRequest
@@ -18,7 +20,9 @@ class CrearSubcategoriaEgresoRequest extends FormRequest
      * El control de rol lo hace el middleware de la ruta.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-108
      *
      * @return bool
@@ -32,7 +36,9 @@ class CrearSubcategoriaEgresoRequest extends FormRequest
      * Reglas de validación para crear una subcategoría de egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-108
      *
      * @return array<string, mixed>
@@ -48,7 +54,9 @@ class CrearSubcategoriaEgresoRequest extends FormRequest
      * Mensajes de validación en español.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-108
      *
      * @return array<string, string>
@@ -57,9 +65,9 @@ class CrearSubcategoriaEgresoRequest extends FormRequest
     {
         return [
             'nombre.required' => 'El nombre de la subcategoría es obligatorio.',
-            'nombre.string'   => 'El nombre de la subcategoría debe ser texto.',
-            'nombre.max'      => 'El nombre de la subcategoría no puede superar los 80 caracteres.',
-            'nombre.unique'   => 'Ya existe una subcategoría de egreso con ese nombre.',
+            'nombre.string' => 'El nombre de la subcategoría debe ser texto.',
+            'nombre.max' => 'El nombre de la subcategoría no puede superar los 80 caracteres.',
+            'nombre.unique' => 'Ya existe una subcategoría de egreso con ese nombre.',
         ];
     }
 }

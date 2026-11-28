@@ -23,7 +23,9 @@ class Platillo extends Model
      * Obtiene los detalles de comanda donde se ha vendido este platillo.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return HasMany<ComandaDetalle>
@@ -37,7 +39,9 @@ class Platillo extends Model
      * Obtiene los renglones de receta (insumos y porción base) de este platillo.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-003
      *
      * @return HasMany<Receta>

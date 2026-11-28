@@ -18,12 +18,15 @@ use Illuminate\Support\Facades\DB;
  * Genera datos ficticios e idempotentes para visualizar el dashboard gerencial.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Reportes – RF-REP-007 / US-REP-01
  */
 class DashboardHistoricoSeeder extends Seeder
 {
     private const MARCADOR_DEMO = 'DEMO-DASHBOARD';
+
     private const PROVEEDOR_DEMO = 'Proveedor de demostración';
 
     /**
@@ -33,7 +36,9 @@ class DashboardHistoricoSeeder extends Seeder
      * el marcador de cada comanda y el número de comprobante de cada egreso evitan duplicados.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / US-REP-01
      *
      * @return void
@@ -71,13 +76,15 @@ class DashboardHistoricoSeeder extends Seeder
      * Registra ventas demostrativas variadas por platillo para un mes determinado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / US-REP-01
      *
      * @param  User  $administrador  Usuario técnico responsable de las ventas de demostración.
      * @param  Carbon  $fecha  Fecha histórica asignada a las ventas del mes.
      * @param  int  $indiceMes  Posición del mes dentro de la serie de seis meses.
-     * @return float  Total de ingresos demostrativos del mes.
+     * @return float Total de ingresos demostrativos del mes.
      */
     private function registrarVentasDelMes(User $administrador, Carbon $fecha, int $indiceMes): float
     {
@@ -144,7 +151,9 @@ class DashboardHistoricoSeeder extends Seeder
      * gastos netos, margen bruto y el desglose de gastos del dashboard.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – RF-REP-007 / CC-71
      *
      * @param  User  $administrador  Usuario técnico responsable de los egresos de demostración.
@@ -198,7 +207,9 @@ class DashboardHistoricoSeeder extends Seeder
      * La suma (0.55) mantiene el mismo gasto neto que tenía la demostración original.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – RF-REP-007 / CC-71
      *
      * @return array<string, float> Proporción de las ventas por nombre de subcategoría.
@@ -216,7 +227,9 @@ class DashboardHistoricoSeeder extends Seeder
      * Define los platillos y cantidades ficticias que dan variedad a las gráficas.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / US-REP-01
      *
      * @return array<int, array{nombre: string, cantidad_base: int, crecimiento_mensual: int}> Configuración de ventas ficticias.
@@ -236,7 +249,9 @@ class DashboardHistoricoSeeder extends Seeder
      * Ajusta las marcas de tiempo de un modelo para que pertenezca al periodo histórico.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / US-REP-01
      *
      * @param  object  $modelo  Modelo Eloquent que posee columnas de auditoría.

@@ -12,7 +12,9 @@ abstract class MovimientoInventarioRequest extends FormRequest
      * Autoriza exclusivamente a administracion y socios para gestionar movimientos.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113
      *
      * @return bool Indica si el usuario tiene uno de los roles permitidos.
@@ -26,10 +28,12 @@ abstract class MovimientoInventarioRequest extends FormRequest
      * Devuelve los errores de entrada sin agregar campos al contrato de la API.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113
      *
-     * @param Validator $validator Validacion fallida del formulario.
+     * @param  Validator  $validator  Validacion fallida del formulario.
      * @return void
      */
     protected function failedValidation(Validator $validator): void
@@ -41,7 +45,9 @@ abstract class MovimientoInventarioRequest extends FormRequest
      * Describe en espanol los errores comunes de los formularios de movimientos.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113
      *
      * @return array<string, string> Mensajes de validacion.

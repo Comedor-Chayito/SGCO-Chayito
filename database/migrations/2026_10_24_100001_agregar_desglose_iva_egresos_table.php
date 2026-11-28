@@ -13,7 +13,9 @@ return new class extends Migration
      * y lo calcula para los egresos que ya estaban registrados.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Contabilidad – US-CON-02 / RF-CON-006 (CC-68)
      *
      * @return void
@@ -49,7 +51,9 @@ return new class extends Migration
      * Elimina el desglose de IVA crédito fiscal de los egresos.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Contabilidad – US-CON-02 / RF-CON-006 (CC-68)
      *
      * @return void

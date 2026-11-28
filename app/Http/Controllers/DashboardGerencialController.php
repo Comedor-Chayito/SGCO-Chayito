@@ -10,7 +10,9 @@ use Illuminate\Http\JsonResponse;
  * Expone los indicadores financieros consolidados para socios y administración.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Reportes – RF-REP-007 / CC-75 / CC-76
  */
 class DashboardGerencialController extends Controller
@@ -19,7 +21,9 @@ class DashboardGerencialController extends Controller
      * Inicializa el controlador con el servicio de consolidación de KPIs.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-75 / CC-76
      *
      * @param  DashboardGerencialService  $dashboardGerencialService  Servicio de indicadores financieros.
@@ -30,7 +34,9 @@ class DashboardGerencialController extends Controller
      * Devuelve los KPIs de salud financiera y margen bruto del periodo solicitado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-75 / CC-76
      *
      * @param  ConsultarDashboardGerencialRequest  $request  Filtro temporal ya validado.

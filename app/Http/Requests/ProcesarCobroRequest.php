@@ -15,7 +15,9 @@ class ProcesarCobroRequest extends FormRequest
      * La autorización formal RBAC por rol se implementa en US-ADM-02.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return bool
@@ -29,7 +31,9 @@ class ProcesarCobroRequest extends FormRequest
      * Reglas de validación para el procesamiento del cobro de una comanda.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return array<string, mixed>
@@ -37,7 +41,7 @@ class ProcesarCobroRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'comanda_id'     => [
+            'comanda_id' => [
                 'required',
                 'integer',
                 'exists:comandas,id',
@@ -67,7 +71,7 @@ class ProcesarCobroRequest extends FormRequest
                     }
                 },
             ],
-            'metodo_pago'    => ['nullable', 'string', Rule::in(Venta::METODOS_PAGO)],
+            'metodo_pago' => ['nullable', 'string', Rule::in(Venta::METODOS_PAGO)],
         ];
     }
 
@@ -76,7 +80,9 @@ class ProcesarCobroRequest extends FormRequest
      * Solo el efectivo exige monto recibido, los demás se cobran por el total exacto.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002
      *
      * @return bool
@@ -90,7 +96,9 @@ class ProcesarCobroRequest extends FormRequest
      * Mensajes de error personalizados en español.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return array<string, string>
@@ -98,14 +106,13 @@ class ProcesarCobroRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'comanda_id.required'     => 'El identificador de comanda es obligatorio.',
-            'comanda_id.integer'      => 'El identificador de comanda debe ser un número entero.',
-            'comanda_id.exists'       => 'La comanda seleccionada no existe.',
+            'comanda_id.required' => 'El identificador de comanda es obligatorio.',
+            'comanda_id.integer' => 'El identificador de comanda debe ser un número entero.',
+            'comanda_id.exists' => 'La comanda seleccionada no existe.',
             'monto_recibido.required' => 'El monto recibido es obligatorio.',
-            'monto_recibido.numeric'  => 'El monto recibido debe ser un valor numérico.',
-            'monto_recibido.min'      => 'El monto recibido debe ser mayor a 0.',
-            'metodo_pago.in'          => 'El método de pago debe ser: efectivo, tarjeta o transferencia.',
+            'monto_recibido.numeric' => 'El monto recibido debe ser un valor numérico.',
+            'monto_recibido.min' => 'El monto recibido debe ser mayor a 0.',
+            'metodo_pago.in' => 'El método de pago debe ser: efectivo, tarjeta o transferencia.',
         ];
     }
 }
-

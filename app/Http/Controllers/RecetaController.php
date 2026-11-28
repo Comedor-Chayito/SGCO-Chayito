@@ -14,7 +14,9 @@ use Illuminate\Http\JsonResponse;
  * Los recursos están anidados bajo /platillos/{platillo}/recetas.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-13
+ *
  * @módulo Inventario – RF-INV-003
  */
 class RecetaController extends Controller
@@ -23,23 +25,25 @@ class RecetaController extends Controller
      * Inicializa el controlador con el servicio de recetas.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-13
+     *
      * @módulo Inventario – RF-INV-003
      *
-     * @param  RecetaService $recetaService Servicio de lógica de negocio de recetas.
+     * @param  RecetaService  $recetaService  Servicio de lógica de negocio de recetas.
      */
-    public function __construct(private readonly RecetaService $recetaService)
-    {
-    }
+    public function __construct(private readonly RecetaService $recetaService) {}
 
     /**
      * Lista todos los ingredientes (insumos + porción) de la receta de un platillo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-13
+     *
      * @módulo Inventario – RF-INV-003
      *
-     * @param  Platillo $platillo Platillo cuya receta se consulta.
+     * @param  Platillo  $platillo  Platillo cuya receta se consulta.
      * @return JsonResponse Lista de renglones de receta con sus insumos.
      */
     public function index(Platillo $platillo): JsonResponse
@@ -47,9 +51,9 @@ class RecetaController extends Controller
         $recetas = $this->recetaService->listarPorPlatillo($platillo);
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Receta del platillo obtenida correctamente.',
-            'data'    => $recetas,
+            'data' => $recetas,
         ]);
     }
 
@@ -57,11 +61,13 @@ class RecetaController extends Controller
      * Agrega un insumo con su porción base a la receta estándar de un platillo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-13
+     *
      * @módulo Inventario – RF-INV-003
      *
-     * @param  AgregarIngredienteRequest $request  Datos validados del ingrediente.
-     * @param  Platillo                  $platillo Platillo al que se agrega el ingrediente.
+     * @param  AgregarIngredienteRequest  $request  Datos validados del ingrediente.
+     * @param  Platillo  $platillo  Platillo al que se agrega el ingrediente.
      * @return JsonResponse Renglón de receta creado con código HTTP 201.
      */
     public function store(AgregarIngredienteRequest $request, Platillo $platillo): JsonResponse
@@ -69,9 +75,9 @@ class RecetaController extends Controller
         $receta = $this->recetaService->agregar($platillo, $request->validated());
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Ingrediente agregado a la receta correctamente.',
-            'data'    => $receta,
+            'data' => $receta,
         ], 201);
     }
 
@@ -79,12 +85,14 @@ class RecetaController extends Controller
      * Actualiza la cantidad por porción de un ingrediente en la receta de un platillo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-13
+     *
      * @módulo Inventario – RF-INV-003
      *
-     * @param  ActualizarIngredienteRequest $request  Datos validados a actualizar.
-     * @param  Platillo                     $platillo Platillo propietario de la receta.
-     * @param  Receta                       $receta   Renglón de receta a modificar.
+     * @param  ActualizarIngredienteRequest  $request  Datos validados a actualizar.
+     * @param  Platillo  $platillo  Platillo propietario de la receta.
+     * @param  Receta  $receta  Renglón de receta a modificar.
      * @return JsonResponse Renglón de receta actualizado.
      */
     public function update(
@@ -95,9 +103,9 @@ class RecetaController extends Controller
         $recetaActualizada = $this->recetaService->actualizar($receta, $request->validated());
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Porción del ingrediente actualizada correctamente.',
-            'data'    => $recetaActualizada,
+            'data' => $recetaActualizada,
         ]);
     }
 
@@ -105,11 +113,13 @@ class RecetaController extends Controller
      * Elimina un ingrediente de la receta estándar de un platillo (desvincula el insumo).
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-13
+     *
      * @módulo Inventario – RF-INV-003
      *
-     * @param  Platillo $platillo Platillo propietario de la receta.
-     * @param  Receta   $receta   Renglón de receta a eliminar.
+     * @param  Platillo  $platillo  Platillo propietario de la receta.
+     * @param  Receta  $receta  Renglón de receta a eliminar.
      * @return JsonResponse Confirmación de eliminación.
      */
     public function destroy(Platillo $platillo, Receta $receta): JsonResponse
@@ -117,9 +127,9 @@ class RecetaController extends Controller
         $this->recetaService->eliminar($receta);
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Ingrediente eliminado de la receta correctamente.',
-            'data'    => null,
+            'data' => null,
         ]);
     }
 }

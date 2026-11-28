@@ -15,7 +15,9 @@ use Tests\TestCase;
  * Pruebas del registro y consulta de retiros parciales del turno (US-POS-03 / RF-POS-002 / CC-37).
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-10-14
+ *
  * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
  */
 class RetiroTest extends TestCase
@@ -29,7 +31,9 @@ class RetiroTest extends TestCase
      * Crea los roles necesarios y autentica a un cajero antes de cada prueba.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
      *
      * @return void
@@ -52,7 +56,9 @@ class RetiroTest extends TestCase
      * Valida que el cajero registra un retiro, queda a su nombre y deja registro de auditoría.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
      *
      * @return void
@@ -60,7 +66,7 @@ class RetiroTest extends TestCase
     public function test_cajero_registra_retiro_con_auditoria(): void
     {
         $response = $this->postJson('/api/retiros', [
-            'monto'  => 25.50,
+            'monto' => 25.50,
             'motivo' => 'Pago a proveedor',
         ]);
 
@@ -73,13 +79,13 @@ class RetiroTest extends TestCase
 
         $this->assertDatabaseHas('retiros_parciales', [
             'usuario_id' => $this->cajero->id,
-            'monto'      => 25.50,
-            'motivo'     => 'Pago a proveedor',
+            'monto' => 25.50,
+            'motivo' => 'Pago a proveedor',
         ]);
 
         $this->assertDatabaseHas('auditorias', [
             'usuario_id' => $this->cajero->id,
-            'accion'     => 'retiro_registrado',
+            'accion' => 'retiro_registrado',
             'entidad_id' => $response->json('data.id'),
         ]);
     }
@@ -88,7 +94,9 @@ class RetiroTest extends TestCase
      * Valida que el administrador también puede registrar retiros (CLAUDE.md §9).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-ADM-008 (CC-38)
      *
      * @return void
@@ -100,7 +108,7 @@ class RetiroTest extends TestCase
         Sanctum::actingAs($admin);
 
         $this->postJson('/api/retiros', [
-            'monto'  => 10.00,
+            'monto' => 10.00,
             'motivo' => 'Gastos menores',
         ])->assertStatus(201);
     }
@@ -109,7 +117,9 @@ class RetiroTest extends TestCase
      * Valida que se rechazan montos vacíos, no positivos, con más de 2 decimales o sobre el límite.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
      *
      * @return void
@@ -118,7 +128,7 @@ class RetiroTest extends TestCase
     {
         foreach ([null, 0, -5, 'abc', 10.555, 100000.00] as $montoInvalido) {
             $this->postJson('/api/retiros', [
-                'monto'  => $montoInvalido,
+                'monto' => $montoInvalido,
                 'motivo' => 'Gastos menores',
             ])->assertStatus(422)->assertJsonValidationErrors(['monto']);
         }
@@ -130,7 +140,9 @@ class RetiroTest extends TestCase
      * Valida que el motivo es obligatorio, de al menos 3 y máximo 150 caracteres.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
      *
      * @return void
@@ -139,7 +151,7 @@ class RetiroTest extends TestCase
     {
         foreach ([null, '', 'ab', str_repeat('a', 151)] as $motivoInvalido) {
             $this->postJson('/api/retiros', [
-                'monto'  => 5.00,
+                'monto' => 5.00,
                 'motivo' => $motivoInvalido,
             ])->assertStatus(422)->assertJsonValidationErrors(['motivo']);
         }
@@ -151,7 +163,9 @@ class RetiroTest extends TestCase
      * Valida que no se admiten retiros cuando la caja del día ya fue cerrada.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
      *
      * @return void
@@ -159,15 +173,15 @@ class RetiroTest extends TestCase
     public function test_rechaza_retiro_si_la_caja_del_dia_ya_fue_cerrada(): void
     {
         CierreCaja::create([
-            'usuario_id'    => $this->cajero->id,
-            'fecha'         => today()->toDateString(),
+            'usuario_id' => $this->cajero->id,
+            'fecha' => today()->toDateString(),
             'saldo_inicial' => 50.00,
-            'saldo_final'   => 80.00,
+            'saldo_final' => 80.00,
             'venta_del_dia' => 30.00,
         ]);
 
         $this->postJson('/api/retiros', [
-            'monto'  => 5.00,
+            'monto' => 5.00,
             'motivo' => 'Gastos menores',
         ])->assertStatus(422)
             ->assertJsonValidationErrors(['caja']);
@@ -180,7 +194,9 @@ class RetiroTest extends TestCase
      * nombre, y deja fuera los de días anteriores: son los mismos que resta el cierre.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – US-POS-03 / RF-POS-002 (CC-38)
      *
      * @return void
@@ -191,21 +207,21 @@ class RetiroTest extends TestCase
 
         $mioHoy = RetiroParcial::create([
             'usuario_id' => $this->cajero->id,
-            'monto'      => 12.00,
-            'motivo'     => 'Retiro de hoy',
+            'monto' => 12.00,
+            'motivo' => 'Retiro de hoy',
         ]);
 
         $mioAyer = RetiroParcial::create([
             'usuario_id' => $this->cajero->id,
-            'monto'      => 7.00,
-            'motivo'     => 'Retiro de ayer',
+            'monto' => 7.00,
+            'motivo' => 'Retiro de ayer',
         ]);
         $mioAyer->forceFill(['created_at' => now()->subDay()])->save();
 
         $deOtro = RetiroParcial::create([
             'usuario_id' => $otroCajero->id,
-            'monto'      => 3.00,
-            'motivo'     => 'Retiro de otro cajero',
+            'monto' => 3.00,
+            'motivo' => 'Retiro de otro cajero',
         ]);
 
         $response = $this->getJson('/api/retiros');
@@ -226,7 +242,9 @@ class RetiroTest extends TestCase
      * Valida que sin sesión no se puede registrar ni listar retiros (RF-ADM-008).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-ADM-008 (CC-38)
      *
      * @return void
@@ -236,7 +254,7 @@ class RetiroTest extends TestCase
         $this->app['auth']->forgetGuards();
 
         $this->postJson('/api/retiros', [
-            'monto'  => 5.00,
+            'monto' => 5.00,
             'motivo' => 'Gastos menores',
         ])->assertStatus(401);
 
@@ -247,7 +265,9 @@ class RetiroTest extends TestCase
      * Valida que un mesero no puede registrar retiros: es una operación de caja (CLAUDE.md §9).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-ADM-008 (CC-38)
      *
      * @return void
@@ -259,7 +279,7 @@ class RetiroTest extends TestCase
         Sanctum::actingAs($mesero);
 
         $this->postJson('/api/retiros', [
-            'monto'  => 5.00,
+            'monto' => 5.00,
             'motivo' => 'Gastos menores',
         ])->assertStatus(403);
 

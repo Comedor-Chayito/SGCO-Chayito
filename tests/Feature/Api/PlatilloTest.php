@@ -2,16 +2,16 @@
 
 namespace Tests\Feature\Api;
 
+use App\Http\Requests\RegistrarComandaRequest;
 use App\Models\Comanda;
 use App\Models\Insumo;
 use App\Models\Mesa;
 use App\Models\Platillo;
 use App\Models\Receta;
 use App\Models\User;
-use App\Http\Requests\RegistrarComandaRequest;
 use App\Services\ComandaService;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Spatie\Permission\Models\Role;
@@ -23,7 +23,9 @@ use Tests\TestCase;
  * DECIMAL(10,2) y la integridad del histórico de comandas ante cambios de precio.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-17
+ *
  * @módulo Administración – RF-ADM-008 / CC-112
  */
 class PlatilloTest extends TestCase
@@ -36,7 +38,9 @@ class PlatilloTest extends TestCase
      * Prepara los roles oficiales y autentica a un administrador por defecto.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -57,10 +61,12 @@ class PlatilloTest extends TestCase
      * Crea un usuario con el rol indicado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
-     * @param  string $rol Nombre del rol a asignar.
+     * @param  string  $rol  Nombre del rol a asignar.
      * @return User Usuario creado.
      */
     private function usuarioConRol(string $rol): User
@@ -75,19 +81,21 @@ class PlatilloTest extends TestCase
      * Crea un platillo de prueba.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
-     * @param  array<string, mixed> $atributos Atributos a sobrescribir.
+     * @param  array<string, mixed>  $atributos  Atributos a sobrescribir.
      * @return Platillo Platillo creado.
      */
     private function crearPlatillo(array $atributos = []): Platillo
     {
         return Platillo::create(array_merge([
-            'nombre'          => 'Pollo Asado',
-            'descripcion'     => 'Pollo al carbón',
+            'nombre' => 'Pollo Asado',
+            'descripcion' => 'Pollo al carbón',
             'precio_unitario' => 2.50,
-            'disponible'      => true,
+            'disponible' => true,
         ], $atributos));
     }
 
@@ -95,11 +103,13 @@ class PlatilloTest extends TestCase
      * Registra una comanda de un platillo con el cajero (flujo real del POS).
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
-     * @param  Platillo $platillo Platillo a comandar.
-     * @param  int      $cantidad Unidades pedidas.
+     * @param  Platillo  $platillo  Platillo a comandar.
+     * @param  int  $cantidad  Unidades pedidas.
      * @return Comanda Comanda registrada.
      */
     private function registrarComanda(Platillo $platillo, int $cantidad = 2): Comanda
@@ -108,9 +118,9 @@ class PlatilloTest extends TestCase
         Sanctum::actingAs($this->usuarioConRol('cajero'));
 
         $respuesta = $this->postJson('/api/comandas', [
-            'canal'   => 'mesa',
+            'canal' => 'mesa',
             'mesa_id' => $mesa->id,
-            'items'   => [['platillo_id' => $platillo->id, 'cantidad' => $cantidad]],
+            'items' => [['platillo_id' => $platillo->id, 'cantidad' => $cantidad]],
         ])->assertCreated();
 
         Sanctum::actingAs($this->administrador);
@@ -124,7 +134,9 @@ class PlatilloTest extends TestCase
      * Los roles distintos de administrador y socio reciben 403 en todos los endpoints.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -147,10 +159,10 @@ class PlatilloTest extends TestCase
         }
 
         $this->assertDatabaseHas('platillos', [
-            'id'              => $platillo->id,
-            'nombre'          => 'Pollo Asado',
+            'id' => $platillo->id,
+            'nombre' => 'Pollo Asado',
             'precio_unitario' => 2.50,
-            'disponible'      => true,
+            'disponible' => true,
         ]);
         $this->assertDatabaseCount('platillos', 1);
     }
@@ -159,7 +171,9 @@ class PlatilloTest extends TestCase
      * Sin token no hay acceso al catálogo administrativo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -176,7 +190,9 @@ class PlatilloTest extends TestCase
      * El rol socio tiene el mismo acceso que el administrador.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -198,7 +214,9 @@ class PlatilloTest extends TestCase
      * Crear un platillo devuelve 201 con el contrato { status, message, data }.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -206,8 +224,8 @@ class PlatilloTest extends TestCase
     public function test_administrador_crea_platillo_con_contrato_estandar(): void
     {
         $this->postJson('/api/platillos', [
-            'nombre'          => '  Sopa de Res  ',
-            'descripcion'     => 'Sopa del día',
+            'nombre' => '  Sopa de Res  ',
+            'descripcion' => 'Sopa del día',
             'precio_unitario' => 4.5,
         ])
             ->assertCreated()
@@ -218,9 +236,9 @@ class PlatilloTest extends TestCase
             ->assertJsonPath('data.disponible', true);
 
         $this->assertDatabaseHas('platillos', [
-            'nombre'          => 'Sopa de Res',
+            'nombre' => 'Sopa de Res',
             'precio_unitario' => 4.50,
-            'disponible'      => true,
+            'disponible' => true,
         ]);
     }
 
@@ -228,7 +246,9 @@ class PlatilloTest extends TestCase
      * El catálogo administrativo lista disponibles y no disponibles, y filtra.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -255,7 +275,9 @@ class PlatilloTest extends TestCase
      * Mostrar devuelve el detalle y un id inexistente responde 404.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -275,7 +297,9 @@ class PlatilloTest extends TestCase
      * Actualizar modifica nombre, descripción y precio.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -285,8 +309,8 @@ class PlatilloTest extends TestCase
         $platillo = $this->crearPlatillo();
 
         $this->putJson("/api/platillos/{$platillo->id}", [
-            'nombre'          => 'Pollo Asado Familiar',
-            'descripcion'     => null,
+            'nombre' => 'Pollo Asado Familiar',
+            'descripcion' => null,
             'precio_unitario' => 3.75,
         ])
             ->assertOk()
@@ -294,9 +318,9 @@ class PlatilloTest extends TestCase
             ->assertJsonPath('data.precio_unitario', '3.75');
 
         $this->assertDatabaseHas('platillos', [
-            'id'              => $platillo->id,
-            'nombre'          => 'Pollo Asado Familiar',
-            'descripcion'     => null,
+            'id' => $platillo->id,
+            'nombre' => 'Pollo Asado Familiar',
+            'descripcion' => null,
             'precio_unitario' => 3.75,
         ]);
     }
@@ -305,7 +329,9 @@ class PlatilloTest extends TestCase
      * Actualizar conservando el mismo nombre no dispara la regla de unicidad.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -315,7 +341,7 @@ class PlatilloTest extends TestCase
         $platillo = $this->crearPlatillo();
 
         $this->putJson("/api/platillos/{$platillo->id}", [
-            'nombre'          => 'Pollo Asado',
+            'nombre' => 'Pollo Asado',
             'precio_unitario' => 2.75,
         ])->assertOk();
     }
@@ -324,7 +350,9 @@ class PlatilloTest extends TestCase
      * No se permiten dos platillos con el mismo nombre.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -347,7 +375,9 @@ class PlatilloTest extends TestCase
      * Eliminar un platillo sin historial ni receta lo borra.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -368,7 +398,9 @@ class PlatilloTest extends TestCase
      * Un platillo con comandas no se elimina (422) y su histórico se conserva.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -390,7 +422,9 @@ class PlatilloTest extends TestCase
      * Un platillo con receta vinculada no se elimina (422).
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -399,16 +433,16 @@ class PlatilloTest extends TestCase
     {
         $platillo = $this->crearPlatillo();
         $insumo = Insumo::create([
-            'nombre'        => 'Pollo',
+            'nombre' => 'Pollo',
             'unidad_medida' => 'kg',
-            'stock_actual'  => 0,
-            'stock_minimo'  => 0,
+            'stock_actual' => 0,
+            'stock_minimo' => 0,
         ]);
         Receta::create([
-            'platillo_id'          => $platillo->id,
-            'insumo_id'            => $insumo->id,
+            'platillo_id' => $platillo->id,
+            'insumo_id' => $insumo->id,
             'cantidad_por_porcion' => 0.25,
-            'unidad_consumo'       => 'kg',
+            'unidad_consumo' => 'kg',
         ]);
 
         $this->deleteJson("/api/platillos/{$platillo->id}")
@@ -424,10 +458,12 @@ class PlatilloTest extends TestCase
      * El precio debe ser mayor que cero, numérico, con máximo 2 decimales y dentro de DECIMAL(10,2).
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
-     * @param  mixed $precio Valor inválido a enviar.
+     * @param  mixed  $precio  Valor inválido a enviar.
      * @return void
      */
     #[DataProvider('preciosInvalidos')]
@@ -451,7 +487,9 @@ class PlatilloTest extends TestCase
      * Valores de precio que deben fallar.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return array<string, array<int, mixed>>
@@ -459,13 +497,13 @@ class PlatilloTest extends TestCase
     public static function preciosInvalidos(): array
     {
         return [
-            'cero'                 => [0],
-            'negativo'             => [-1.5],
-            'tres decimales'       => [2.505],
-            'texto'                => ['abc'],
+            'cero' => [0],
+            'negativo' => [-1.5],
+            'tres decimales' => [2.505],
+            'texto' => ['abc'],
             'excede decimal(10,2)' => [100000000],
-            'vacío'                => [''],
-            'nulo'                 => [null],
+            'vacío' => [''],
+            'nulo' => [null],
         ];
     }
 
@@ -473,7 +511,9 @@ class PlatilloTest extends TestCase
      * Un precio mínimo válido (0.01) y el máximo de DECIMAL(10,2) se aceptan.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -493,7 +533,9 @@ class PlatilloTest extends TestCase
      * El nombre es obligatorio y se limita a 100 caracteres.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -515,7 +557,9 @@ class PlatilloTest extends TestCase
      * Desactivar y reactivar un platillo del menú del día.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -540,7 +584,9 @@ class PlatilloTest extends TestCase
      * La disponibilidad es obligatoria y booleana; el PUT no permite cambiarla.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -558,9 +604,9 @@ class PlatilloTest extends TestCase
             ->assertJsonValidationErrors('disponible');
 
         $this->putJson("/api/platillos/{$platillo->id}", [
-            'nombre'          => 'Pollo Asado',
+            'nombre' => 'Pollo Asado',
             'precio_unitario' => 2.50,
-            'disponible'      => false,
+            'disponible' => false,
         ])
             ->assertStatus(422)
             ->assertJsonValidationErrors('disponible');
@@ -572,7 +618,9 @@ class PlatilloTest extends TestCase
      * Un platillo desactivado desaparece del POS y no admite nuevas comandas; reactivarlo lo devuelve.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -591,9 +639,9 @@ class PlatilloTest extends TestCase
             ->assertJsonPath('data.0.id', $activo->id);
 
         $this->postJson('/api/comandas', [
-            'canal'   => 'mesa',
+            'canal' => 'mesa',
             'mesa_id' => $mesa->id,
-            'items'   => [['platillo_id' => $platillo->id, 'cantidad' => 1]],
+            'items' => [['platillo_id' => $platillo->id, 'cantidad' => 1]],
         ])->assertStatus(422)->assertJsonValidationErrors('items.0.platillo_id');
 
         $this->patchJson("/api/platillos/{$platillo->id}/disponibilidad", ['disponible' => true])->assertOk();
@@ -605,7 +653,9 @@ class PlatilloTest extends TestCase
      * Desactivar un platillo conserva sus comandas históricas intactas.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -619,9 +669,9 @@ class PlatilloTest extends TestCase
 
         $this->assertDatabaseHas('platillos', ['id' => $platillo->id, 'disponible' => false]);
         $this->assertDatabaseHas('comanda_detalles', [
-            'comanda_id'      => $comanda->id,
-            'platillo_id'     => $platillo->id,
-            'cantidad'        => 2,
+            'comanda_id' => $comanda->id,
+            'platillo_id' => $platillo->id,
+            'cantidad' => 2,
             'precio_unitario' => 2.50,
         ]);
         $this->assertDatabaseHas('comandas', ['id' => $comanda->id, 'subtotal' => 5.00]);
@@ -633,7 +683,9 @@ class PlatilloTest extends TestCase
      * Un cambio de precio se refleja en el POS pero no altera comandas ya registradas.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -644,8 +696,8 @@ class PlatilloTest extends TestCase
         $comandaAnterior = $this->registrarComanda($platillo, 2);
 
         $this->putJson("/api/platillos/{$platillo->id}", [
-            'nombre'          => 'Pollo Asado',
-            'descripcion'     => 'Pollo al carbón',
+            'nombre' => 'Pollo Asado',
+            'descripcion' => 'Pollo al carbón',
             'precio_unitario' => 4.00,
         ])->assertOk();
 
@@ -656,7 +708,7 @@ class PlatilloTest extends TestCase
 
         // La comanda anterior conserva precio de línea y subtotal.
         $this->assertDatabaseHas('comanda_detalles', [
-            'comanda_id'      => $comandaAnterior->id,
+            'comanda_id' => $comandaAnterior->id,
             'precio_unitario' => 2.50,
         ]);
         $this->assertDatabaseHas('comandas', ['id' => $comandaAnterior->id, 'subtotal' => 5.00]);
@@ -665,7 +717,7 @@ class PlatilloTest extends TestCase
         $comandaNueva = $this->registrarComanda($platillo, 2);
 
         $this->assertDatabaseHas('comanda_detalles', [
-            'comanda_id'      => $comandaNueva->id,
+            'comanda_id' => $comandaNueva->id,
             'precio_unitario' => 4.00,
         ]);
         $this->assertDatabaseHas('comandas', ['id' => $comandaNueva->id, 'subtotal' => 8.00]);
@@ -682,7 +734,9 @@ class PlatilloTest extends TestCase
      * Filtros malformados se rechazan con 422 en lugar de provocar un 500 o ignorarse.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -699,7 +753,7 @@ class PlatilloTest extends TestCase
             ->assertStatus(422)
             ->assertJsonValidationErrors('disponible');
 
-        $this->getJson('/api/platillos/catalogo?busqueda=' . str_repeat('a', 101))
+        $this->getJson('/api/platillos/catalogo?busqueda='.str_repeat('a', 101))
             ->assertStatus(422)
             ->assertJsonValidationErrors('busqueda');
 
@@ -710,7 +764,9 @@ class PlatilloTest extends TestCase
      * Un rol no autorizado recibe 403 también sobre ids inexistentes (no 404).
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -734,7 +790,9 @@ class PlatilloTest extends TestCase
      * Un total que no cabe en comandas.subtotal DECIMAL(10,2) responde 422 y no deja registros.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -746,9 +804,9 @@ class PlatilloTest extends TestCase
         Sanctum::actingAs($this->usuarioConRol('cajero'));
 
         $this->postJson('/api/comandas', [
-            'canal'   => 'mesa',
+            'canal' => 'mesa',
             'mesa_id' => $mesa->id,
-            'items'   => [['platillo_id' => $platillo->id, 'cantidad' => 2]],
+            'items' => [['platillo_id' => $platillo->id, 'cantidad' => 2]],
         ])->assertStatus(422)->assertJsonValidationErrors('items');
 
         $this->assertDatabaseCount('comandas', 0);
@@ -757,9 +815,9 @@ class PlatilloTest extends TestCase
 
         // Una unidad sí cabe.
         $this->postJson('/api/comandas', [
-            'canal'   => 'mesa',
+            'canal' => 'mesa',
             'mesa_id' => $mesa->id,
-            'items'   => [['platillo_id' => $platillo->id, 'cantidad' => 1]],
+            'items' => [['platillo_id' => $platillo->id, 'cantidad' => 1]],
         ])->assertCreated();
     }
 
@@ -767,7 +825,9 @@ class PlatilloTest extends TestCase
      * Si el platillo se desactiva entre la validación y el registro, el servicio lo rechaza.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -799,7 +859,9 @@ class PlatilloTest extends TestCase
      * Si el precio vigente difiere del que el operador confirmó, se rechaza sin crear la comanda.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -810,9 +872,9 @@ class PlatilloTest extends TestCase
         $mesa = Mesa::create(['numero' => 4, 'capacidad' => 4, 'estado' => 'libre']);
         Sanctum::actingAs($this->usuarioConRol('cajero'));
         $payload = fn (float $esperado) => [
-            'canal'   => 'mesa',
+            'canal' => 'mesa',
             'mesa_id' => $mesa->id,
-            'items'   => [['platillo_id' => $platillo->id, 'cantidad' => 1, 'precio_esperado' => $esperado]],
+            'items' => [['platillo_id' => $platillo->id, 'cantidad' => 1, 'precio_esperado' => $esperado]],
         ];
 
         $this->postJson('/api/comandas', $payload(2.50))
@@ -833,7 +895,9 @@ class PlatilloTest extends TestCase
      * El precio puede cambiar entre la validación y el registro: el servicio lo detecta bajo bloqueo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-112
      *
      * @return void
@@ -849,7 +913,7 @@ class PlatilloTest extends TestCase
         $solicitud->validateResolved();
 
         $this->putJson("/api/platillos/{$platillo->id}", [
-            'nombre'          => 'Pollo Asado',
+            'nombre' => 'Pollo Asado',
             'precio_unitario' => 4.75,
         ])->assertOk();
 

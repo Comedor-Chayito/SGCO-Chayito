@@ -11,18 +11,18 @@ use Spatie\Permission\Models\Role;
 
 class AuditarCambiosDeRol
 {
-    public function __construct(private readonly AuditoriaService $auditoriaService)
-    {
-    }
+    public function __construct(private readonly AuditoriaService $auditoriaService) {}
 
     /**
      * Registra en auditoría la asignación de uno o más roles a un usuario.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
-     * @param  RoleAttachedEvent $event Evento emitido por spatie/laravel-permission.
+     * @param  RoleAttachedEvent  $event  Evento emitido por spatie/laravel-permission.
      * @return void
      */
     public function alAsignar(RoleAttachedEvent $event): void
@@ -42,10 +42,12 @@ class AuditarCambiosDeRol
      * Registra en auditoría la remoción de uno o más roles de un usuario.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
-     * @param  RoleDetachedEvent $event Evento emitido por spatie/laravel-permission.
+     * @param  RoleDetachedEvent  $event  Evento emitido por spatie/laravel-permission.
      * @return void
      */
     public function alRemover(RoleDetachedEvent $event): void
@@ -67,10 +69,12 @@ class AuditarCambiosDeRol
      * para que el registro de auditoría sea legible por la administradora.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
-     * @param  mixed $rolesOrIds Roles recibidos del evento de spatie/laravel-permission.
+     * @param  mixed  $rolesOrIds  Roles recibidos del evento de spatie/laravel-permission.
      * @return array Lista de nombres de rol.
      */
     private function normalizarRoles(mixed $rolesOrIds): array

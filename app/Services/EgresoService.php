@@ -13,46 +13,54 @@ use Illuminate\Validation\ValidationException;
  * Servicio de lógica de negocio para el registro de egresos (CC-13 / US-CON-01).
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Contabilidad – RF-CON-005
  */
 class EgresoService
 {
     public const PREFIJO_CORRELATIVO = 'EG-';
+
     public const DIGITOS_CORRELATIVO = 6;
+
     public const EGRESOS_POR_PAGINA = 15;
+
     private const INTENTOS_CORRELATIVO = 3;
 
     /**
      * Inicializa el servicio con el registro de auditoría y el calculador de IVA inyectados.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Contabilidad – RF-CON-005 (CC-63) / RF-CON-006 (CC-68)
      *
-     * @param  AuditoriaService        $auditoriaService        Servicio de bitácora de auditoría.
-     * @param  IvaCreditoFiscalService $ivaCreditoFiscalService Calculador del desglose de IVA crédito fiscal.
+     * @param  AuditoriaService  $auditoriaService  Servicio de bitácora de auditoría.
+     * @param  IvaCreditoFiscalService  $ivaCreditoFiscalService  Calculador del desglose de IVA crédito fiscal.
      */
     public function __construct(
         private readonly AuditoriaService $auditoriaService,
         private readonly IvaCreditoFiscalService $ivaCreditoFiscalService,
-    ) {
-    }
+    ) {}
 
     /**
      * Registra la factura de un proveedor como egreso y le asigna el siguiente correlativo.
      * Si dos registros simultáneos chocan por el mismo correlativo, se reintenta con el siguiente.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005 (CC-63)
      *
-     * @param  array $datos   Datos validados de la factura.
-     * @param  User  $usuario Contadora o administrador que registra el egreso.
+     * @param  array  $datos  Datos validados de la factura.
+     * @param  User  $usuario  Contadora o administrador que registra el egreso.
      * @return Egreso Egreso creado con su subcategoría cargada.
      *
      * @throws ValidationException Si el comprobante ya fue registrado por otra petición simultánea.
-     * @throws \Throwable          Si falla la transacción en base de datos.
+     * @throws \Throwable Si falla la transacción en base de datos.
      */
     public function registrar(array $datos, User $usuario): Egreso
     {
@@ -81,10 +89,12 @@ class EgresoService
      * totales de todo el filtro (no solo de la página) para el reporte mensual.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Contabilidad – RF-CON-006 (CC-69)
      *
-     * @param  array $filtros Filtros validados: 'desde', 'hasta' y 'subcategoria_egreso_id', todos opcionales.
+     * @param  array  $filtros  Filtros validados: 'desde', 'hasta' y 'subcategoria_egreso_id', todos opcionales.
      * @return array Arreglo con 'egresos' (paginado) y 'totales' (cantidad, monto total, costo neto e IVA).
      */
     public function listar(array $filtros): array
@@ -116,9 +126,9 @@ class EgresoService
         return [
             'egresos' => $egresos,
             'totales' => [
-                'cantidad'           => (int) $totales->cantidad,
-                'monto_total'        => round((float) $totales->monto_total, 2),
-                'costo_neto'         => round((float) $totales->costo_neto, 2),
+                'cantidad' => (int) $totales->cantidad,
+                'monto_total' => round((float) $totales->monto_total, 2),
+                'costo_neto' => round((float) $totales->costo_neto, 2),
                 'iva_credito_fiscal' => round((float) $totales->iva_credito_fiscal, 2),
             ],
         ];
@@ -128,10 +138,12 @@ class EgresoService
      * Arma la consulta de egresos con los filtros opcionales del historial.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Contabilidad – RF-CON-006 (CC-69)
      *
-     * @param  array $filtros Filtros validados del historial.
+     * @param  array  $filtros  Filtros validados del historial.
      * @return Builder<Egreso> Consulta sin ordenar ni paginar.
      */
     private function consultaFiltrada(array $filtros): Builder
@@ -156,11 +168,13 @@ class EgresoService
      * Debe ejecutarse dentro de una transacción para que el bloqueo tenga efecto.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Contabilidad – RF-CON-005 (CC-63) / RF-CON-006 (CC-68)
      *
-     * @param  array $datos   Datos validados de la factura.
-     * @param  User  $usuario Usuario que registra el egreso.
+     * @param  array  $datos  Datos validados de la factura.
+     * @param  User  $usuario  Usuario que registra el egreso.
      * @return Egreso Egreso creado.
      */
     private function crear(array $datos, User $usuario): Egreso
@@ -169,16 +183,16 @@ class EgresoService
         $desglose = $this->ivaCreditoFiscalService->calcular($montoTotal);
 
         $egreso = Egreso::create([
-            'correlativo'            => $this->siguienteCorrelativo(),
+            'correlativo' => $this->siguienteCorrelativo(),
             'subcategoria_egreso_id' => $datos['subcategoria_egreso_id'],
-            'usuario_id'             => $usuario->id,
-            'proveedor'              => trim($datos['proveedor']),
-            'numero_comprobante'     => trim($datos['numero_comprobante']),
-            'fecha_comprobante'      => $datos['fecha_comprobante'],
-            'monto_total'            => $montoTotal,
-            'costo_neto'             => $desglose['costo_neto'],
-            'iva_credito_fiscal'     => $desglose['iva_credito_fiscal'],
-            'descripcion'            => $datos['descripcion'] ?? null,
+            'usuario_id' => $usuario->id,
+            'proveedor' => trim($datos['proveedor']),
+            'numero_comprobante' => trim($datos['numero_comprobante']),
+            'fecha_comprobante' => $datos['fecha_comprobante'],
+            'monto_total' => $montoTotal,
+            'costo_neto' => $desglose['costo_neto'],
+            'iva_credito_fiscal' => $desglose['iva_credito_fiscal'],
+            'descripcion' => $datos['descripcion'] ?? null,
         ]);
 
         $this->auditoriaService->registrar('egreso_registrado', $egreso, null, $egreso->toArray());
@@ -190,7 +204,9 @@ class EgresoService
      * Calcula el siguiente correlativo (EG-000001, EG-000002, …) bloqueando el último egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005 (CC-63)
      *
      * @return string Correlativo con prefijo y ceros a la izquierda.
@@ -204,6 +220,6 @@ class EgresoService
 
         $numero = $ultimo ? (int) substr($ultimo, strlen(self::PREFIJO_CORRELATIVO)) + 1 : 1;
 
-        return self::PREFIJO_CORRELATIVO . str_pad((string) $numero, self::DIGITOS_CORRELATIVO, '0', STR_PAD_LEFT);
+        return self::PREFIJO_CORRELATIVO.str_pad((string) $numero, self::DIGITOS_CORRELATIVO, '0', STR_PAD_LEFT);
     }
 }

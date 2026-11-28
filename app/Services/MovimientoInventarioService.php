@@ -15,14 +15,16 @@ class MovimientoInventarioService
      * Aplica un delta bajo bloqueo y registra exactamente un movimiento en la misma transaccion.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113 / CC-115 / CC-116
      *
-     * @param Insumo $insumo Insumo cuyo saldo cambia.
-     * @param float|string $cantidad Delta firmado con precision de seis decimales.
-     * @param string $tipo Tipo definido por MovimientoInventario.
-     * @param int|null $usuarioId Actor real; por defecto el usuario autenticado.
-     * @param array<string, mixed> $referencias Origen del movimiento y motivo.
+     * @param  Insumo  $insumo  Insumo cuyo saldo cambia.
+     * @param  float|string  $cantidad  Delta firmado con precision de seis decimales.
+     * @param  string  $tipo  Tipo definido por MovimientoInventario.
+     * @param  int|null  $usuarioId  Actor real; por defecto el usuario autenticado.
+     * @param  array<string, mixed>  $referencias  Origen del movimiento y motivo.
      * @return array{insumo: Insumo, movimiento: MovimientoInventario} Saldo e historial confirmados.
      */
     public function aplicar(
@@ -99,11 +101,13 @@ class MovimientoInventarioService
      * Lista el historial paginado con responsables y comprobantes sin exponer otros datos del usuario.
      *
      * @autor  Equipo de desarrollo
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Inventario RF-INV-003 / CC-113 / CC-117
      *
-     * @param Insumo $insumo Insumo consultado.
-     * @param int $pagina Pagina validada del historial.
+     * @param  Insumo  $insumo  Insumo consultado.
+     * @param  int  $pagina  Pagina validada del historial.
      * @return LengthAwarePaginator Movimientos mas recientes primero, veinte por pagina.
      */
     public function listar(Insumo $insumo, int $pagina = 1): LengthAwarePaginator

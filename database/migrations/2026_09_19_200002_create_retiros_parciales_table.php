@@ -10,7 +10,9 @@ return new class extends Migration
      * Crea la tabla de retiros parciales de caja realizados por el cajero durante su turno.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return void
@@ -32,7 +34,9 @@ return new class extends Migration
      * Elimina la tabla de retiros parciales.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return void

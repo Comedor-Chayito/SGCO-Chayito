@@ -12,7 +12,9 @@ use Illuminate\Http\JsonResponse;
  * Controlador API del catálogo de subcategorías de egreso (CC-13 / US-CON-01).
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Contabilidad – RF-CON-005
  */
 class SubcategoriaEgresoController extends Controller
@@ -21,20 +23,22 @@ class SubcategoriaEgresoController extends Controller
      * Inicializa el controlador con el servicio de subcategorías de egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005
      *
-     * @param  SubcategoriaEgresoService $subcategoriaEgresoService Servicio del catálogo.
+     * @param  SubcategoriaEgresoService  $subcategoriaEgresoService  Servicio del catálogo.
      */
-    public function __construct(private readonly SubcategoriaEgresoService $subcategoriaEgresoService)
-    {
-    }
+    public function __construct(private readonly SubcategoriaEgresoService $subcategoriaEgresoService) {}
 
     /**
      * Lista las subcategorías activas para el formulario de registro de facturas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005 / CC-62
      *
      * @return JsonResponse Subcategorías activas ordenadas por nombre.
@@ -42,9 +46,9 @@ class SubcategoriaEgresoController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Subcategorías de egreso obtenidas correctamente.',
-            'data'    => $this->subcategoriaEgresoService->listarActivas(),
+            'data' => $this->subcategoriaEgresoService->listarActivas(),
         ]);
     }
 
@@ -52,7 +56,9 @@ class SubcategoriaEgresoController extends Controller
      * Lista todas las subcategorías, incluidas las inactivas, para el panel de configuración.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-108
      *
      * @return JsonResponse Subcategorías ordenadas por nombre con su estado.
@@ -60,9 +66,9 @@ class SubcategoriaEgresoController extends Controller
     public function todas(): JsonResponse
     {
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Catálogo completo de subcategorías de egreso obtenido.',
-            'data'    => $this->subcategoriaEgresoService->listarTodas(),
+            'data' => $this->subcategoriaEgresoService->listarTodas(),
         ]);
     }
 
@@ -70,10 +76,12 @@ class SubcategoriaEgresoController extends Controller
      * Registra una subcategoría de egreso nueva.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-108
      *
-     * @param  CrearSubcategoriaEgresoRequest $request Datos validados.
+     * @param  CrearSubcategoriaEgresoRequest  $request  Datos validados.
      * @return JsonResponse Subcategoría creada, con código 201.
      */
     public function store(CrearSubcategoriaEgresoRequest $request): JsonResponse
@@ -81,9 +89,9 @@ class SubcategoriaEgresoController extends Controller
         $subcategoria = $this->subcategoriaEgresoService->crear($request->validated());
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Subcategoría de egreso creada correctamente.',
-            'data'    => $subcategoria,
+            'data' => $subcategoria,
         ], 201);
     }
 
@@ -91,11 +99,13 @@ class SubcategoriaEgresoController extends Controller
      * Cambia el nombre de una subcategoría de egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-108
      *
-     * @param  RenombrarSubcategoriaEgresoRequest $request            Nombre nuevo validado.
-     * @param  SubcategoriaEgreso                 $subcategoriaEgreso Subcategoría a renombrar.
+     * @param  RenombrarSubcategoriaEgresoRequest  $request  Nombre nuevo validado.
+     * @param  SubcategoriaEgreso  $subcategoriaEgreso  Subcategoría a renombrar.
      * @return JsonResponse Subcategoría renombrada.
      */
     public function update(
@@ -105,9 +115,9 @@ class SubcategoriaEgresoController extends Controller
         $subcategoria = $this->subcategoriaEgresoService->renombrar($subcategoriaEgreso, $request->validated());
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Subcategoría de egreso renombrada correctamente.',
-            'data'    => $subcategoria,
+            'data' => $subcategoria,
         ]);
     }
 
@@ -115,10 +125,12 @@ class SubcategoriaEgresoController extends Controller
      * Activa o desactiva una subcategoría de egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-108
      *
-     * @param  SubcategoriaEgreso $subcategoriaEgreso Subcategoría a alternar.
+     * @param  SubcategoriaEgreso  $subcategoriaEgreso  Subcategoría a alternar.
      * @return JsonResponse Subcategoría con su nuevo estado.
      */
     public function toggleActivo(SubcategoriaEgreso $subcategoriaEgreso): JsonResponse
@@ -130,9 +142,9 @@ class SubcategoriaEgresoController extends Controller
             : 'Subcategoría de egreso desactivada correctamente.';
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => $mensaje,
-            'data'    => $subcategoria,
+            'data' => $subcategoria,
         ]);
     }
 }

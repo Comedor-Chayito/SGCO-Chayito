@@ -10,7 +10,9 @@ return new class extends Migration
      * Crea la tabla de ventas registradas al procesar el cobro en caja.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return void
@@ -36,7 +38,9 @@ return new class extends Migration
      * Elimina la tabla de ventas.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-002
      *
      * @return void
@@ -46,4 +50,3 @@ return new class extends Migration
         Schema::dropIfExists('ventas');
     }
 };
-

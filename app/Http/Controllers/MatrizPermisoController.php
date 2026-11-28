@@ -11,14 +11,14 @@ use Spatie\Permission\Models\Role;
  * Controlador API para consultar y actualizar la matriz rol × permiso (US-ADM-04 / CC-121 / CC-122).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-11-16
+ *
  * @módulo Administración y Seguridad – RF-ADM-008
  */
 class MatrizPermisoController extends Controller
 {
-    public function __construct(private readonly MatrizPermisoService $matrizPermisoService)
-    {
-    }
+    public function __construct(private readonly MatrizPermisoService $matrizPermisoService) {}
 
     /**
      * Retorna la matriz bidimensional de roles × permisos junto con módulos y metadatos.
@@ -30,9 +30,9 @@ class MatrizPermisoController extends Controller
         $matriz = $this->matrizPermisoService->obtenerMatriz();
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Matriz de roles y permisos obtenida correctamente.',
-            'data'    => $matriz,
+            'data' => $matriz,
         ]);
     }
 
@@ -40,11 +40,13 @@ class MatrizPermisoController extends Controller
      * Actualiza los permisos de un rol y registra la bitácora de auditoría (US-ADM-04 / CC-122).
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-122
      *
-     * @param  ActualizarPermisosRolRequest $request Formulario validado.
-     * @param  string                       $rol     Nombre o identificador numérico del rol.
+     * @param  ActualizarPermisosRolRequest  $request  Formulario validado.
+     * @param  string  $rol  Nombre o identificador numérico del rol.
      * @return JsonResponse
      */
     public function actualizarPermisos(ActualizarPermisosRolRequest $request, string $rol): JsonResponse
@@ -55,9 +57,9 @@ class MatrizPermisoController extends Controller
 
         if (! $rolModel) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => "El rol especificado '{$rol}' no existe en el sistema.",
-                'data'    => null,
+                'data' => null,
             ], 404);
         }
 
@@ -67,9 +69,9 @@ class MatrizPermisoController extends Controller
         );
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => "Permisos del rol '{$rolModel->name}' actualizados correctamente.",
-            'data'    => $resultado,
+            'data' => $resultado,
         ], 200);
     }
 }

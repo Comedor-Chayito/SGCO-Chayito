@@ -14,7 +14,9 @@ use Tests\TestCase;
  * Pruebas del seeder histórico destinado a la visualización del dashboard.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Reportes – RF-REP-007 / US-REP-01
  */
 class DashboardHistoricoSeederTest extends TestCase
@@ -25,7 +27,9 @@ class DashboardHistoricoSeederTest extends TestCase
      * Verifica que el seeder crea seis meses de información y no duplica datos al repetirse.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / US-REP-01
      */
     public function test_siembra_datos_historicos_idempotentes_para_el_dashboard(): void
@@ -55,7 +59,9 @@ class DashboardHistoricoSeederTest extends TestCase
      * Verifica que las ventas históricas alimentan ambas gráficas del contrato del dashboard.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / US-REP-01
      */
     public function test_datos_historicos_se_reflejan_en_las_graficas_del_dashboard(): void

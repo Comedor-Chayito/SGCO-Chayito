@@ -23,7 +23,9 @@ use Tests\TestCase;
  * - Control de acceso RBAC estricto: exclusivo para Administrador y Socio (403 para no autorizados, 401 sin sesión).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-11-18
+ *
  * @módulo Administración – US-ADM-03 (CC-108 / CC-112)
  */
 class SubcategoriaEgresoTest extends TestCase
@@ -31,10 +33,15 @@ class SubcategoriaEgresoTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $socio;
+
     protected User $cajero;
+
     protected User $mesero;
+
     protected User $cocinero;
+
     protected User $contadora;
 
     /**
@@ -221,7 +228,7 @@ class SubcategoriaEgresoTest extends TestCase
             ->assertJsonPath('data.nombre', 'Suministros de Oficina y Papelería');
 
         $this->assertDatabaseHas('subcategorias_egreso', [
-            'id'     => $subcategoria->id,
+            'id' => $subcategoria->id,
             'nombre' => 'Suministros de Oficina y Papelería',
         ]);
     }
@@ -277,7 +284,7 @@ class SubcategoriaEgresoTest extends TestCase
             ->assertJsonPath('data.activo', false);
 
         $this->assertDatabaseHas('subcategorias_egreso', [
-            'id'     => $subcategoria->id,
+            'id' => $subcategoria->id,
             'activo' => 0,
         ]);
 
@@ -288,7 +295,7 @@ class SubcategoriaEgresoTest extends TestCase
             ->assertJsonPath('data.activo', true);
 
         $this->assertDatabaseHas('subcategorias_egreso', [
-            'id'     => $subcategoria->id,
+            'id' => $subcategoria->id,
             'activo' => 1,
         ]);
     }
@@ -325,10 +332,10 @@ class SubcategoriaEgresoTest extends TestCase
         Sanctum::actingAs($this->contadora);
         $response = $this->postJson('/api/egresos', [
             'subcategoria_egreso_id' => $subcategoria->id,
-            'proveedor'              => 'Proveedor Prueba',
-            'numero_comprobante'     => 'FAC-8899',
-            'fecha_comprobante'      => now()->toDateString(),
-            'monto_total'            => 113.00,
+            'proveedor' => 'Proveedor Prueba',
+            'numero_comprobante' => 'FAC-8899',
+            'fecha_comprobante' => now()->toDateString(),
+            'monto_total' => 113.00,
         ]);
 
         $response->assertStatus(422)
@@ -348,14 +355,14 @@ class SubcategoriaEgresoTest extends TestCase
         // Registrar egreso previo
         $egreso = Egreso::create([
             'subcategoria_egreso_id' => $subcategoria->id,
-            'usuario_id'             => $this->contadora->id,
-            'proveedor'              => 'Taller Central S.A.',
-            'numero_comprobante'     => 'FAC-9911',
-            'fecha_comprobante'      => now()->toDateString(),
-            'monto_total'            => 150.00,
-            'costo_neto'             => 132.74,
-            'iva_credito_fiscal'     => 17.26,
-            'correlativo'            => 'EG-000999',
+            'usuario_id' => $this->contadora->id,
+            'proveedor' => 'Taller Central S.A.',
+            'numero_comprobante' => 'FAC-9911',
+            'fecha_comprobante' => now()->toDateString(),
+            'monto_total' => 150.00,
+            'costo_neto' => 132.74,
+            'iva_credito_fiscal' => 17.26,
+            'correlativo' => 'EG-000999',
         ]);
 
         // Desactivar la subcategoría desde el panel de configuración
@@ -365,9 +372,9 @@ class SubcategoriaEgresoTest extends TestCase
 
         // El registro histórico del egreso continúa intacto y vinculado a la subcategoría
         $this->assertDatabaseHas('egresos', [
-            'id'                     => $egreso->id,
+            'id' => $egreso->id,
             'subcategoria_egreso_id' => $subcategoria->id,
-            'monto_total'            => '150.00',
+            'monto_total' => '150.00',
         ]);
 
         $this->assertEquals($subcategoria->nombre, $egreso->fresh()->subcategoria->nombre);

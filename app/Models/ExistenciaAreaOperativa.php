@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Representa la existencia disponible de un insumo dentro de un área operativa.
  *
  * @autor  Alexis
+ *
  * @fecha  2026-10-22
+ *
  * @módulo Inventario – RF-INV-004 / CC-54
  */
 class ExistenciaAreaOperativa extends Model
@@ -45,7 +47,9 @@ class ExistenciaAreaOperativa extends Model
      * Obtiene el insumo cuyo stock se encuentra en esta área.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-54
      *
      * @return BelongsTo<Insumo, ExistenciaAreaOperativa>

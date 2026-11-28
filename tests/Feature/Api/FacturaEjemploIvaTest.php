@@ -2,8 +2,6 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\Compra;
-use App\Models\Egreso;
 use App\Models\SubcategoriaEgreso;
 use App\Models\User;
 use App\Services\IvaCreditoFiscalService;
@@ -17,7 +15,9 @@ use Tests\TestCase;
  * Pruebas con facturas de ejemplo para certificar el desglose automatizado de IVA crédito fiscal.
  *
  * @autor  Cesar
+ *
  * @fecha  2026-10-25
+ *
  * @módulo Contabilidad – US-CON-02 / RF-CON-006 / CC-66 / CC-67 / CC-68 / CC-69 / CC-70
  */
 class FacturaEjemploIvaTest extends TestCase
@@ -40,7 +40,9 @@ class FacturaEjemploIvaTest extends TestCase
      * Prepara el entorno con roles oficiales, subcategorías y servicio de IVA inyectado.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-02 / CC-70
      */
     protected function setUp(): void
@@ -68,7 +70,9 @@ class FacturaEjemploIvaTest extends TestCase
      * Verifica facturas de ejemplo con montos exactos ($113.00, $56.50, $226.00, $1,130.00).
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-02 / CC-66 / CC-67 / CC-70
      */
     public function test_facturas_ejemplo_con_montos_exactos(): void
@@ -81,12 +85,12 @@ class FacturaEjemploIvaTest extends TestCase
         ];
 
         foreach ($facturas as $index => $factura) {
-            $folio = 'FAC-EX-' . ($index + 1);
+            $folio = 'FAC-EX-'.($index + 1);
 
             // Registro en compras
             $respCompra = $this->postJson('/api/compras', [
                 'fecha_compra' => '2026-10-24',
-                'monto_total'  => $factura['total'],
+                'monto_total' => $factura['total'],
             ]);
 
             $respCompra
@@ -98,10 +102,10 @@ class FacturaEjemploIvaTest extends TestCase
             // Registro en egresos (facturas de proveedores)
             $respEgreso = $this->postJson('/api/egresos', [
                 'subcategoria_egreso_id' => $this->subcategoriaCarnes->id,
-                'proveedor'              => 'Distribuidora Avícola S.A.',
-                'numero_comprobante'     => $folio,
-                'fecha_comprobante'      => '2026-10-24',
-                'monto_total'            => $factura['total'],
+                'proveedor' => 'Distribuidora Avícola S.A.',
+                'numero_comprobante' => $folio,
+                'fecha_comprobante' => '2026-10-24',
+                'monto_total' => $factura['total'],
             ]);
 
             $respEgreso
@@ -119,7 +123,9 @@ class FacturaEjemploIvaTest extends TestCase
      * Verifica facturas de ejemplo reales con montos fraccionarios habituales en compras del comedor.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-02 / CC-68 / CC-70
      */
     public function test_facturas_ejemplo_reales_con_montos_fraccionarios(): void
@@ -127,58 +133,58 @@ class FacturaEjemploIvaTest extends TestCase
         $facturasReales = [
             // Factura carnicería: $45.00 -> Neto: 45 / 1.13 = 39.82; IVA: 39.82 * 0.13 = 5.18
             [
-                'proveedor'   => 'Carnes San Martín',
+                'proveedor' => 'Carnes San Martín',
                 'comprobante' => 'CCF-4501',
-                'subcat'      => $this->subcategoriaCarnes->id,
-                'total'       => 45.00,
-                'neto'        => 39.82,
-                'iva'         => 5.18,
+                'subcat' => $this->subcategoriaCarnes->id,
+                'total' => 45.00,
+                'neto' => 39.82,
+                'iva' => 5.18,
             ],
             // Factura lácteos: $84.75 -> Neto: 84.75 / 1.13 = 75.00; IVA: 75 * 0.13 = 9.75
             [
-                'proveedor'   => 'Quesería La Bendición',
+                'proveedor' => 'Quesería La Bendición',
                 'comprobante' => 'FAC-8475',
-                'subcat'      => $this->subcategoriaLacteos->id,
-                'total'       => 84.75,
-                'neto'        => 75.00,
-                'iva'         => 9.75,
+                'subcat' => $this->subcategoriaLacteos->id,
+                'total' => 84.75,
+                'neto' => 75.00,
+                'iva' => 9.75,
             ],
             // Factura verduras: $15.25 -> Neto: 15.25 / 1.13 = 13.50; IVA: 13.50 * 0.13 = 1.75
             [
-                'proveedor'   => 'Mercado Central Puesto #4',
+                'proveedor' => 'Mercado Central Puesto #4',
                 'comprobante' => 'FAC-1525',
-                'subcat'      => $this->subcategoriaVerduras->id,
-                'total'       => 15.25,
-                'neto'        => 13.50,
-                'iva'         => 1.75,
+                'subcat' => $this->subcategoriaVerduras->id,
+                'total' => 15.25,
+                'neto' => 13.50,
+                'iva' => 1.75,
             ],
             // Factura abarrotes con 99 centavos: $199.99 -> Neto: 199.99 / 1.13 = 176.98; IVA: 23.01
             [
-                'proveedor'   => 'Super Selectos Mayorista',
+                'proveedor' => 'Super Selectos Mayorista',
                 'comprobante' => 'CCF-19999',
-                'subcat'      => $this->subcategoriaCarnes->id,
-                'total'       => 199.99,
-                'neto'        => 176.98,
-                'iva'         => 23.01,
+                'subcat' => $this->subcategoriaCarnes->id,
+                'total' => 199.99,
+                'neto' => 176.98,
+                'iva' => 23.01,
             ],
             // Factura mínima gravada: $1.13 -> Neto: 1.00; IVA: 0.13
             [
-                'proveedor'   => 'Librería y Suministros El Centro',
+                'proveedor' => 'Librería y Suministros El Centro',
                 'comprobante' => 'FAC-00113',
-                'subcat'      => $this->subcategoriaLacteos->id,
-                'total'       => 1.13,
-                'neto'        => 1.00,
-                'iva'         => 0.13,
+                'subcat' => $this->subcategoriaLacteos->id,
+                'total' => 1.13,
+                'neto' => 1.00,
+                'iva' => 0.13,
             ],
         ];
 
         foreach ($facturasReales as $factura) {
             $respuesta = $this->postJson('/api/egresos', [
                 'subcategoria_egreso_id' => $factura['subcat'],
-                'proveedor'              => $factura['proveedor'],
-                'numero_comprobante'     => $factura['comprobante'],
-                'fecha_comprobante'      => '2026-10-24',
-                'monto_total'            => $factura['total'],
+                'proveedor' => $factura['proveedor'],
+                'numero_comprobante' => $factura['comprobante'],
+                'fecha_comprobante' => '2026-10-24',
+                'monto_total' => $factura['total'],
             ]);
 
             $respuesta
@@ -189,8 +195,8 @@ class FacturaEjemploIvaTest extends TestCase
 
             $this->assertDatabaseHas('egresos', [
                 'numero_comprobante' => $factura['comprobante'],
-                'monto_total'        => $factura['total'],
-                'costo_neto'         => $factura['neto'],
+                'monto_total' => $factura['total'],
+                'costo_neto' => $factura['neto'],
                 'iva_credito_fiscal' => $factura['iva'],
             ]);
 
@@ -203,16 +209,18 @@ class FacturaEjemploIvaTest extends TestCase
      * Verifica que el desglose de IVA ignora cualquier valor alterado o inyectado desde el cliente.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-02 / CC-67 / CC-70
      */
     public function test_ignora_valores_de_iva_y_neto_manipulados_por_el_cliente(): void
     {
         // En compras
         $respCompra = $this->postJson('/api/compras', [
-            'fecha_compra'       => '2026-10-24',
-            'monto_total'        => 113.00,
-            'costo_neto'         => 50.00,   // Intento de manipulación
+            'fecha_compra' => '2026-10-24',
+            'monto_total' => 113.00,
+            'costo_neto' => 50.00,   // Intento de manipulación
             'iva_credito_fiscal' => 63.00,   // Intento de manipulación
         ]);
 
@@ -224,12 +232,12 @@ class FacturaEjemploIvaTest extends TestCase
         // En egresos
         $respEgreso = $this->postJson('/api/egresos', [
             'subcategoria_egreso_id' => $this->subcategoriaCarnes->id,
-            'proveedor'              => 'Distribuidora Cárnica',
-            'numero_comprobante'     => 'CCF-MANIP-01',
-            'fecha_comprobante'      => '2026-10-24',
-            'monto_total'            => 113.00,
-            'costo_neto'             => 1.00,
-            'iva_credito_fiscal'     => 112.00,
+            'proveedor' => 'Distribuidora Cárnica',
+            'numero_comprobante' => 'CCF-MANIP-01',
+            'fecha_comprobante' => '2026-10-24',
+            'monto_total' => 113.00,
+            'costo_neto' => 1.00,
+            'iva_credito_fiscal' => 112.00,
         ]);
 
         $respEgreso
@@ -242,7 +250,9 @@ class FacturaEjemploIvaTest extends TestCase
      * Verifica que una batería extensa de facturas de ejemplo mantiene la suma sin descuadre en el servicio.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-02 / CC-66 / CC-67 / CC-70
      */
     public function test_bateria_de_facturas_mantiene_invariante_en_servicio(): void
@@ -275,7 +285,9 @@ class FacturaEjemploIvaTest extends TestCase
      * Verifica que la sumatoria mensual en el historial contable acumula exactamente las facturas de ejemplo.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-02 / CC-69 / CC-70
      */
     public function test_facturas_ejemplo_acumulan_totales_sin_descuadre_en_historial(): void
@@ -296,10 +308,10 @@ class FacturaEjemploIvaTest extends TestCase
         foreach ($lote as $item) {
             $this->postJson('/api/egresos', [
                 'subcategoria_egreso_id' => $this->subcategoriaCarnes->id,
-                'proveedor'              => $item['prov'],
-                'numero_comprobante'     => $item['comp'],
-                'fecha_comprobante'      => '2026-10-24',
-                'monto_total'            => $item['total'],
+                'proveedor' => $item['prov'],
+                'numero_comprobante' => $item['comp'],
+                'fecha_comprobante' => '2026-10-24',
+                'monto_total' => $item['total'],
             ])->assertCreated();
         }
 
@@ -319,7 +331,9 @@ class FacturaEjemploIvaTest extends TestCase
      * Verifica que facturas con montos inválidos (0, negativos, decimales excedidos) son rechazadas con 422.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – US-CON-02 / CC-70
      */
     public function test_rechaza_facturas_ejemplo_con_montos_invalidos(): void
@@ -327,20 +341,19 @@ class FacturaEjemploIvaTest extends TestCase
         // Monto 0
         $this->postJson('/api/compras', [
             'fecha_compra' => '2026-10-24',
-            'monto_total'  => 0,
+            'monto_total' => 0,
         ])->assertUnprocessable()->assertJsonValidationErrors('monto_total');
 
         // Monto negativo
         $this->postJson('/api/compras', [
             'fecha_compra' => '2026-10-24',
-            'monto_total'  => -50.00,
+            'monto_total' => -50.00,
         ])->assertUnprocessable()->assertJsonValidationErrors('monto_total');
 
         // Más de 2 decimales
         $this->postJson('/api/compras', [
             'fecha_compra' => '2026-10-24',
-            'monto_total'  => 113.005,
+            'monto_total' => 113.005,
         ])->assertUnprocessable()->assertJsonValidationErrors('monto_total');
     }
 }
-

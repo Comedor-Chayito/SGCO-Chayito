@@ -15,7 +15,9 @@ use Tests\TestCase;
  * Pruebas del registro de comandas (US-POS-01 / RF-POS-001 / CC-25).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-19
+ *
  * @módulo POS – RF-POS-001
  */
 class ComandaTest extends TestCase
@@ -23,16 +25,22 @@ class ComandaTest extends TestCase
     use RefreshDatabase;
 
     protected User $usuario;
+
     protected Mesa $mesa;
+
     protected Platillo $platilloA;
+
     protected Platillo $platilloB;
+
     protected Platillo $platilloNoDisponible;
 
     /**
      * Configuración inicial antes de cada prueba.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -49,30 +57,30 @@ class ComandaTest extends TestCase
         Sanctum::actingAs($this->usuario);
 
         $this->mesa = Mesa::create([
-            'numero'    => 1,
+            'numero' => 1,
             'capacidad' => 4,
-            'estado'    => 'libre',
+            'estado' => 'libre',
         ]);
 
         $this->platilloA = Platillo::create([
-            'nombre'          => 'Pollo Asado',
-            'descripcion'     => 'Pollo al carbón',
+            'nombre' => 'Pollo Asado',
+            'descripcion' => 'Pollo al carbón',
             'precio_unitario' => 2.50,
-            'disponible'      => true,
+            'disponible' => true,
         ]);
 
         $this->platilloB = Platillo::create([
-            'nombre'          => 'Carne Guisada',
-            'descripcion'     => 'Carne de res con papas',
+            'nombre' => 'Carne Guisada',
+            'descripcion' => 'Carne de res con papas',
             'precio_unitario' => 3.00,
-            'disponible'      => true,
+            'disponible' => true,
         ]);
 
         $this->platilloNoDisponible = Platillo::create([
-            'nombre'          => 'Pescado Frito Agotado',
-            'descripcion'     => 'Agotado en cocina',
+            'nombre' => 'Pescado Frito Agotado',
+            'descripcion' => 'Agotado en cocina',
             'precio_unitario' => 4.00,
-            'disponible'      => false,
+            'disponible' => false,
         ]);
     }
 
@@ -80,7 +88,9 @@ class ComandaTest extends TestCase
      * Valida que una comanda puede registrarse exitosamente para consumo en mesa.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -88,13 +98,13 @@ class ComandaTest extends TestCase
     public function test_comanda_puede_ser_registrada_con_datos_validos(): void
     {
         $payload = [
-            'canal'         => 'mesa',
-            'mesa_id'       => $this->mesa->id,
+            'canal' => 'mesa',
+            'mesa_id' => $this->mesa->id,
             'observaciones' => 'Sin cebolla',
-            'items'         => [
+            'items' => [
                 [
-                    'platillo_id'   => $this->platilloA->id,
-                    'cantidad'      => 2,
+                    'platillo_id' => $this->platilloA->id,
+                    'cantidad' => 2,
                     'observaciones' => 'Bien cocido',
                 ],
             ],
@@ -104,30 +114,30 @@ class ComandaTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Comanda registrada correctamente.',
-                'data'    => [
-                    'canal'    => 'mesa',
-                    'mesa_id'  => $this->mesa->id,
-                    'estado'   => 'pendiente',
+                'data' => [
+                    'canal' => 'mesa',
+                    'mesa_id' => $this->mesa->id,
+                    'estado' => 'pendiente',
                     'subtotal' => '5.00',
                 ],
             ]);
 
         // La comanda queda a nombre del usuario autenticado (CC-99)
         $this->assertDatabaseHas('comandas', [
-            'canal'      => 'mesa',
-            'mesa_id'    => $this->mesa->id,
+            'canal' => 'mesa',
+            'mesa_id' => $this->mesa->id,
             'usuario_id' => $this->usuario->id,
-            'estado'     => 'pendiente',
-            'subtotal'   => 5.00,
+            'estado' => 'pendiente',
+            'subtotal' => 5.00,
         ]);
 
         $this->assertDatabaseHas('comanda_detalles', [
-            'platillo_id'    => $this->platilloA->id,
-            'cantidad'       => 2,
+            'platillo_id' => $this->platilloA->id,
+            'cantidad' => 2,
             'precio_unitario' => 2.50,
-            'observaciones'  => 'Bien cocido',
+            'observaciones' => 'Bien cocido',
         ]);
     }
 
@@ -135,7 +145,9 @@ class ComandaTest extends TestCase
      * Valida que una orden para llevar no requiere mesa obligatoria.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -143,13 +155,13 @@ class ComandaTest extends TestCase
     public function test_comanda_puede_registrarse_para_llevar_sin_mesa(): void
     {
         $payload = [
-            'canal'         => 'para_llevar',
-            'mesa_id'       => null,
+            'canal' => 'para_llevar',
+            'mesa_id' => null,
             'observaciones' => 'Empacar para llevar',
-            'items'         => [
+            'items' => [
                 [
                     'platillo_id' => $this->platilloA->id,
-                    'cantidad'    => 1,
+                    'cantidad' => 1,
                 ],
             ],
         ];
@@ -159,15 +171,15 @@ class ComandaTest extends TestCase
         $response->assertStatus(201)
             ->assertJson([
                 'status' => 'ok',
-                'data'   => [
-                    'canal'   => 'para_llevar',
+                'data' => [
+                    'canal' => 'para_llevar',
                     'mesa_id' => null,
-                    'estado'  => 'pendiente',
+                    'estado' => 'pendiente',
                 ],
             ]);
 
         $this->assertDatabaseHas('comandas', [
-            'canal'   => 'para_llevar',
+            'canal' => 'para_llevar',
             'mesa_id' => null,
         ]);
     }
@@ -176,7 +188,9 @@ class ComandaTest extends TestCase
      * Valida que una orden por WhatsApp no requiere mesa obligatoria.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -184,13 +198,13 @@ class ComandaTest extends TestCase
     public function test_comanda_puede_registrarse_por_whatsapp_sin_mesa(): void
     {
         $payload = [
-            'canal'         => 'whatsapp',
-            'mesa_id'       => null,
+            'canal' => 'whatsapp',
+            'mesa_id' => null,
             'observaciones' => 'Pedido recibido por chat',
-            'items'         => [
+            'items' => [
                 [
                     'platillo_id' => $this->platilloB->id,
-                    'cantidad'    => 1,
+                    'cantidad' => 1,
                 ],
             ],
         ];
@@ -200,10 +214,10 @@ class ComandaTest extends TestCase
         $response->assertStatus(201)
             ->assertJson([
                 'status' => 'ok',
-                'data'   => [
-                    'canal'   => 'whatsapp',
+                'data' => [
+                    'canal' => 'whatsapp',
                     'mesa_id' => null,
-                    'estado'  => 'pendiente',
+                    'estado' => 'pendiente',
                 ],
             ]);
     }
@@ -212,7 +226,9 @@ class ComandaTest extends TestCase
      * Valida que se rechaza si el canal es mesa pero no se envía mesa_id.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -220,9 +236,9 @@ class ComandaTest extends TestCase
     public function test_comanda_rechaza_si_canal_mesa_no_especifica_mesa(): void
     {
         $payload = [
-            'canal'   => 'mesa',
+            'canal' => 'mesa',
             'mesa_id' => null,
-            'items'   => [
+            'items' => [
                 ['platillo_id' => $this->platilloA->id, 'cantidad' => 1],
             ],
         ];
@@ -237,7 +253,9 @@ class ComandaTest extends TestCase
      * Valida que se rechaza si la mesa especificada no existe.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -245,9 +263,9 @@ class ComandaTest extends TestCase
     public function test_comanda_rechaza_si_mesa_no_existe(): void
     {
         $payload = [
-            'canal'   => 'mesa',
+            'canal' => 'mesa',
             'mesa_id' => 9999,
-            'items'   => [
+            'items' => [
                 ['platillo_id' => $this->platilloA->id, 'cantidad' => 1],
             ],
         ];
@@ -262,7 +280,9 @@ class ComandaTest extends TestCase
      * Valida que se rechaza si el platillo no existe en la base de datos.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -270,9 +290,9 @@ class ComandaTest extends TestCase
     public function test_comanda_rechaza_si_platillo_no_existe(): void
     {
         $payload = [
-            'canal'   => 'para_llevar',
+            'canal' => 'para_llevar',
             'mesa_id' => null,
-            'items'   => [
+            'items' => [
                 ['platillo_id' => 9999, 'cantidad' => 1],
             ],
         ];
@@ -287,7 +307,9 @@ class ComandaTest extends TestCase
      * Valida que se rechaza si el platillo no está disponible en el menú diario.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -295,9 +317,9 @@ class ComandaTest extends TestCase
     public function test_comanda_rechaza_si_platillo_no_esta_disponible_en_menu_del_dia(): void
     {
         $payload = [
-            'canal'   => 'para_llevar',
+            'canal' => 'para_llevar',
             'mesa_id' => null,
-            'items'   => [
+            'items' => [
                 ['platillo_id' => $this->platilloNoDisponible->id, 'cantidad' => 1],
             ],
         ];
@@ -317,7 +339,9 @@ class ComandaTest extends TestCase
      * Valida que se rechaza si la cantidad es cero o negativa.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -325,9 +349,9 @@ class ComandaTest extends TestCase
     public function test_comanda_rechaza_si_cantidad_es_cero_o_negativa(): void
     {
         $payloadCero = [
-            'canal'   => 'para_llevar',
+            'canal' => 'para_llevar',
             'mesa_id' => null,
-            'items'   => [
+            'items' => [
                 ['platillo_id' => $this->platilloA->id, 'cantidad' => 0],
             ],
         ];
@@ -337,9 +361,9 @@ class ComandaTest extends TestCase
             ->assertJsonValidationErrors(['items.0.cantidad']);
 
         $payloadNegativo = [
-            'canal'   => 'para_llevar',
+            'canal' => 'para_llevar',
             'mesa_id' => null,
-            'items'   => [
+            'items' => [
                 ['platillo_id' => $this->platilloA->id, 'cantidad' => -2],
             ],
         ];
@@ -353,7 +377,9 @@ class ComandaTest extends TestCase
      * Valida que se rechaza si no se incluye ningún platillo.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -361,9 +387,9 @@ class ComandaTest extends TestCase
     public function test_comanda_rechaza_si_no_contiene_items(): void
     {
         $payload = [
-            'canal'   => 'para_llevar',
+            'canal' => 'para_llevar',
             'mesa_id' => null,
-            'items'   => [],
+            'items' => [],
         ];
 
         $response = $this->postJson('/api/comandas', $payload);
@@ -376,7 +402,9 @@ class ComandaTest extends TestCase
      * Valida que el subtotal se calcule sumando cantidad × precio unitario en BD.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -387,9 +415,9 @@ class ComandaTest extends TestCase
         // Platillo B: 3.00 * 3 = 9.00
         // Subtotal esperado = 14.00
         $payload = [
-            'canal'   => 'mesa',
+            'canal' => 'mesa',
             'mesa_id' => $this->mesa->id,
-            'items'   => [
+            'items' => [
                 ['platillo_id' => $this->platilloA->id, 'cantidad' => 2],
                 ['platillo_id' => $this->platilloB->id, 'cantidad' => 3],
             ],
@@ -409,7 +437,9 @@ class ComandaTest extends TestCase
      * Valida que listar comandas devuelve status ok y la estructura esperada para caja y cocina.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -417,18 +447,18 @@ class ComandaTest extends TestCase
     public function test_listar_comandas_devuelve_estado_ok(): void
     {
         $comanda = Comanda::create([
-            'mesa_id'    => $this->mesa->id,
+            'mesa_id' => $this->mesa->id,
             'usuario_id' => $this->usuario->id,
-            'canal'      => 'mesa',
-            'estado'     => 'pendiente',
-            'subtotal'   => 5.00,
+            'canal' => 'mesa',
+            'estado' => 'pendiente',
+            'subtotal' => 5.00,
         ]);
 
         $response = $this->getJson('/api/comandas');
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Comandas obtenidas.',
             ])
             ->assertJsonCount(1, 'data')
@@ -439,7 +469,9 @@ class ComandaTest extends TestCase
      * Valida que listar comandas permite filtrar por estado.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -447,19 +479,19 @@ class ComandaTest extends TestCase
     public function test_listar_comandas_puede_filtrar_por_estado(): void
     {
         Comanda::create([
-            'mesa_id'    => $this->mesa->id,
+            'mesa_id' => $this->mesa->id,
             'usuario_id' => $this->usuario->id,
-            'canal'      => 'mesa',
-            'estado'     => 'pendiente',
-            'subtotal'   => 5.00,
+            'canal' => 'mesa',
+            'estado' => 'pendiente',
+            'subtotal' => 5.00,
         ]);
 
         Comanda::create([
-            'mesa_id'    => $this->mesa->id,
+            'mesa_id' => $this->mesa->id,
             'usuario_id' => $this->usuario->id,
-            'canal'      => 'mesa',
-            'estado'     => 'en_preparacion',
-            'subtotal'   => 8.00,
+            'canal' => 'mesa',
+            'estado' => 'en_preparacion',
+            'subtotal' => 8.00,
         ]);
 
         $responsePendientes = $this->getJson('/api/comandas?estado=pendiente');
@@ -477,7 +509,9 @@ class ComandaTest extends TestCase
      * Valida que registrar una comanda con mesa cambia el estado de la mesa a 'ocupada' (CC-34).
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-10-13
+     *
      * @módulo POS – US-POS-03 / CC-34
      *
      * @return void
@@ -489,12 +523,12 @@ class ComandaTest extends TestCase
         $this->assertSame('libre', $this->mesa->fresh()->estado);
 
         $payload = [
-            'canal'   => 'mesa',
+            'canal' => 'mesa',
             'mesa_id' => $this->mesa->id,
-            'items'   => [
+            'items' => [
                 [
                     'platillo_id' => $this->platilloA->id,
-                    'cantidad'    => 1,
+                    'cantidad' => 1,
                 ],
             ],
         ];
@@ -505,4 +539,3 @@ class ComandaTest extends TestCase
         $this->assertSame('ocupada', $this->mesa->fresh()->estado);
     }
 }
-

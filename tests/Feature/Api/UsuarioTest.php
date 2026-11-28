@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\Comanda;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -15,7 +15,9 @@ use Tests\TestCase;
  * Verifica la gestión completa de usuarios, roles, seguridad de tokens y restricciones.
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-20
+ *
  * @módulo Administración y Seguridad – RF-ADM-008 (CC-88)
  */
 class UsuarioTest extends TestCase
@@ -23,6 +25,7 @@ class UsuarioTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $mesero;
 
     /**
@@ -59,7 +62,7 @@ class UsuarioTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Usuarios obtenidos correctamente.',
             ])
             ->assertJsonStructure([
@@ -83,30 +86,30 @@ class UsuarioTest extends TestCase
         Sanctum::actingAs($this->admin);
 
         $payload = [
-            'name'     => 'Ana Contadora',
-            'email'    => 'ana.contadora@sgco-chayito.local',
+            'name' => 'Ana Contadora',
+            'email' => 'ana.contadora@sgco-chayito.local',
             'password' => 'PasswordSeguro123!',
-            'rol'      => 'contadora',
-            'activo'   => true,
+            'rol' => 'contadora',
+            'activo' => true,
         ];
 
         $response = $this->postJson('/api/usuarios', $payload);
 
         $response->assertStatus(201)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Usuario registrado exitosamente.',
-                'data'    => [
-                    'name'   => 'Ana Contadora',
-                    'email'  => 'ana.contadora@sgco-chayito.local',
+                'data' => [
+                    'name' => 'Ana Contadora',
+                    'email' => 'ana.contadora@sgco-chayito.local',
                     'activo' => true,
-                    'rol'    => 'contadora',
+                    'rol' => 'contadora',
                 ],
             ]);
 
         // Verificar persistencia en base de datos
         $this->assertDatabaseHas('users', [
-            'email'  => 'ana.contadora@sgco-chayito.local',
+            'email' => 'ana.contadora@sgco-chayito.local',
             'activo' => true,
         ]);
 
@@ -119,7 +122,9 @@ class UsuarioTest extends TestCase
      * Verifica que el socio, con los mismos permisos del administrador (§9), cree y edite usuarios.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-26
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-85 / CC-88)
      *
      * @return void
@@ -130,20 +135,20 @@ class UsuarioTest extends TestCase
         Sanctum::actingAs($socio);
 
         $this->postJson('/api/usuarios', [
-            'name'     => 'Luis Mesero',
-            'email'    => 'luis.mesero@sgco-chayito.local',
+            'name' => 'Luis Mesero',
+            'email' => 'luis.mesero@sgco-chayito.local',
             'password' => 'PasswordSeguro123!',
-            'rol'      => 'mesero',
-            'activo'   => true,
+            'rol' => 'mesero',
+            'activo' => true,
         ])
             ->assertStatus(201)
             ->assertJsonPath('status', 'ok')
             ->assertJsonPath('data.rol', 'mesero');
 
         $this->putJson("/api/usuarios/{$this->mesero->id}", [
-            'name'  => 'Mesero Renombrado',
+            'name' => 'Mesero Renombrado',
             'email' => $this->mesero->email,
-            'rol'   => 'mesero',
+            'rol' => 'mesero',
         ])
             ->assertStatus(200)
             ->assertJsonPath('data.name', 'Mesero Renombrado');
@@ -174,10 +179,10 @@ class UsuarioTest extends TestCase
         Sanctum::actingAs($this->admin);
 
         $payload = [
-            'name'     => 'Otro Usuario',
-            'email'    => $this->mesero->email, // Correo existente
+            'name' => 'Otro Usuario',
+            'email' => $this->mesero->email, // Correo existente
             'password' => 'PasswordSeguro123!',
-            'rol'      => 'cajero',
+            'rol' => 'cajero',
         ];
 
         $response = $this->postJson('/api/usuarios', $payload);
@@ -196,10 +201,10 @@ class UsuarioTest extends TestCase
         Sanctum::actingAs($this->admin);
 
         $payload = [
-            'name'     => 'Rol Falso',
-            'email'    => 'falso@sgco-chayito.local',
+            'name' => 'Rol Falso',
+            'email' => 'falso@sgco-chayito.local',
             'password' => 'Password123!',
-            'rol'      => 'superman_rol',
+            'rol' => 'superman_rol',
         ];
 
         $response = $this->postJson('/api/usuarios', $payload);
@@ -221,13 +226,13 @@ class UsuarioTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Detalle del usuario obtenido.',
-                'data'    => [
-                    'id'    => $this->mesero->id,
-                    'name'  => $this->mesero->name,
+                'data' => [
+                    'id' => $this->mesero->id,
+                    'name' => $this->mesero->name,
                     'email' => $this->mesero->email,
-                    'rol'   => 'mesero',
+                    'rol' => 'mesero',
                 ],
             ]);
     }
@@ -242,21 +247,21 @@ class UsuarioTest extends TestCase
         Sanctum::actingAs($this->admin);
 
         $payload = [
-            'name'  => 'Carlos Cajero Promovido',
+            'name' => 'Carlos Cajero Promovido',
             'email' => 'carlos.cajero@sgco-chayito.local',
-            'rol'   => 'cajero',
+            'rol' => 'cajero',
         ];
 
         $response = $this->putJson("/api/usuarios/{$this->mesero->id}", $payload);
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Usuario actualizado correctamente.',
-                'data'    => [
-                    'name'  => 'Carlos Cajero Promovido',
+                'data' => [
+                    'name' => 'Carlos Cajero Promovido',
                     'email' => 'carlos.cajero@sgco-chayito.local',
-                    'rol'   => 'cajero',
+                    'rol' => 'cajero',
                 ],
             ]);
 
@@ -286,17 +291,17 @@ class UsuarioTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Cuenta de usuario desactivada correctamente.',
-                'data'    => [
-                    'id'     => $this->mesero->id,
+                'data' => [
+                    'id' => $this->mesero->id,
                     'activo' => false,
                 ],
             ]);
 
         // 3. Verificar que activo sea false en la base de datos
         $this->assertDatabaseHas('users', [
-            'id'     => $this->mesero->id,
+            'id' => $this->mesero->id,
             'activo' => false,
         ]);
 
@@ -316,7 +321,7 @@ class UsuarioTest extends TestCase
         $this->mesero->update(['activo' => false]);
 
         $response = $this->postJson('/api/auth/login', [
-            'correo'     => $this->mesero->email,
+            'correo' => $this->mesero->email,
             'contrasena' => 'Password123!',
         ]);
 
@@ -342,16 +347,16 @@ class UsuarioTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Cuenta de usuario reactivada correctamente.',
-                'data'    => [
-                    'id'     => $this->mesero->id,
+                'data' => [
+                    'id' => $this->mesero->id,
                     'activo' => true,
                 ],
             ]);
 
         $this->assertDatabaseHas('users', [
-            'id'     => $this->mesero->id,
+            'id' => $this->mesero->id,
             'activo' => true,
         ]);
     }
@@ -381,8 +386,8 @@ class UsuarioTest extends TestCase
         Sanctum::actingAs($this->admin);
 
         $usuarioAEliminar = User::factory()->create([
-            'name'   => 'Usuario Descartable',
-            'email'  => 'descartable@sgco-chayito.local',
+            'name' => 'Usuario Descartable',
+            'email' => 'descartable@sgco-chayito.local',
             'activo' => true,
         ]);
         $usuarioAEliminar->assignRole('mesero');
@@ -391,7 +396,7 @@ class UsuarioTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Usuario eliminado correctamente.',
             ]);
 
@@ -425,13 +430,13 @@ class UsuarioTest extends TestCase
         Sanctum::actingAs($this->admin);
 
         // Crear una comanda asociada al usuario mesero
-        \App\Models\Comanda::create([
+        Comanda::create([
             'usuario_id' => $this->mesero->id,
-            'mesa'       => 'Mesa 1',
-            'canal'      => 'mesa',
-            'estado'     => 'pendiente',
-            'subtotal'   => 15.00,
-            'total'      => 15.00,
+            'mesa' => 'Mesa 1',
+            'canal' => 'mesa',
+            'estado' => 'pendiente',
+            'subtotal' => 15.00,
+            'total' => 15.00,
         ]);
 
         $response = $this->deleteJson("/api/usuarios/{$this->mesero->id}");
@@ -483,7 +488,7 @@ class UsuarioTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Roles disponibles obtenidos correctamente.',
             ]);
 
@@ -495,4 +500,3 @@ class UsuarioTest extends TestCase
         $this->assertContains('contadora', $roles);
     }
 }
-

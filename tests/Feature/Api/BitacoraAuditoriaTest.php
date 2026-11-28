@@ -21,7 +21,9 @@ use Tests\TestCase;
  * marcados como pendientes hasta que exista el endpoint.
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-11-18
+ *
  * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
  */
 class BitacoraAuditoriaTest extends TestCase
@@ -31,17 +33,24 @@ class BitacoraAuditoriaTest extends TestCase
     private const RUTA = '/api/auditorias';
 
     protected User $admin;
+
     protected User $socio;
+
     protected User $cajero;
+
     protected User $mesero;
+
     protected User $cocinero;
+
     protected User $contadora;
 
     /**
      * Siembra roles y permisos oficiales, crea un usuario por rol y deja la bitácora vacía.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -67,11 +76,13 @@ class BitacoraAuditoriaTest extends TestCase
      * Crea un usuario activo con el rol indicado.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
-     * @param  string $rol   Nombre del rol oficial a asignar.
-     * @param  string $email Correo único del usuario de prueba.
+     * @param  string  $rol  Nombre del rol oficial a asignar.
+     * @param  string  $email  Correo único del usuario de prueba.
      * @return User Usuario persistido con el rol asignado.
      */
     private function crearUsuarioConRol(string $rol, string $email): User
@@ -86,10 +97,12 @@ class BitacoraAuditoriaTest extends TestCase
      * Inserta un registro de bitácora directamente en la tabla, con fecha controlada.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
-     * @param  array $datos Campos a sobrescribir (accion, entidad_type, created_at, etc.).
+     * @param  array  $datos  Campos a sobrescribir (accion, entidad_type, created_at, etc.).
      * @return int Identificador del registro insertado.
      */
     private function insertarRegistro(array $datos = []): int
@@ -101,13 +114,13 @@ class BitacoraAuditoriaTest extends TestCase
         }
 
         return DB::table('auditorias')->insertGetId(array_merge([
-            'usuario_id'       => $this->admin->id,
-            'accion'           => 'actualizado',
-            'entidad_type'     => User::class,
-            'entidad_id'       => $this->admin->id,
+            'usuario_id' => $this->admin->id,
+            'accion' => 'actualizado',
+            'entidad_type' => User::class,
+            'entidad_id' => $this->admin->id,
             'datos_anteriores' => null,
-            'datos_nuevos'     => null,
-            'created_at'       => '2026-11-10 12:00:00',
+            'datos_nuevos' => null,
+            'created_at' => '2026-11-10 12:00:00',
         ], $datos));
     }
 
@@ -117,7 +130,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que el administrador pueda consultar la bitácora con la estructura de la API.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -138,7 +153,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que el socio también pueda consultar la bitácora.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -154,7 +171,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que los roles operativos reciban 403 y no vean ningún dato de la bitácora.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -177,7 +196,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que sin token la bitácora responda 401.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -193,7 +214,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica la forma de cada registro: acción, entidad legible, usuario y datos.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -201,9 +224,9 @@ class BitacoraAuditoriaTest extends TestCase
     public function test_cada_registro_expone_accion_entidad_usuario_y_datos(): void
     {
         $this->insertarRegistro([
-            'accion'           => 'actualizado',
+            'accion' => 'actualizado',
             'datos_anteriores' => ['name' => 'Antes'],
-            'datos_nuevos'     => ['name' => 'Después'],
+            'datos_nuevos' => ['name' => 'Después'],
         ]);
         Sanctum::actingAs($this->admin);
 
@@ -224,7 +247,9 @@ class BitacoraAuditoriaTest extends TestCase
      * el de mayor identificador vaya primero.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -246,7 +271,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica la paginación por defecto de 20 registros y el paso a la segunda página.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -263,7 +290,7 @@ class BitacoraAuditoriaTest extends TestCase
         $this->assertSame(25, $primera->json('data.total'));
         $this->assertSame(2, $primera->json('data.last_page'));
 
-        $segunda = $this->getJson(self::RUTA . '?page=2')->assertStatus(200);
+        $segunda = $this->getJson(self::RUTA.'?page=2')->assertStatus(200);
         $this->assertCount(5, $segunda->json('data.data'));
     }
 
@@ -271,7 +298,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que por_pagina se respete dentro del rango permitido.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -283,7 +312,7 @@ class BitacoraAuditoriaTest extends TestCase
         }
         Sanctum::actingAs($this->admin);
 
-        $respuesta = $this->getJson(self::RUTA . '?por_pagina=5')->assertStatus(200);
+        $respuesta = $this->getJson(self::RUTA.'?por_pagina=5')->assertStatus(200);
 
         $this->assertCount(5, $respuesta->json('data.data'));
         $this->assertSame(5, $respuesta->json('data.per_page'));
@@ -294,7 +323,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que una bitácora sin registros responda 200 con lista vacía, no un error.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -315,7 +346,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica el filtro por usuario que realizó el cambio.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -326,7 +359,7 @@ class BitacoraAuditoriaTest extends TestCase
         $this->insertarRegistro(['usuario_id' => $this->socio->id, 'accion' => 'del_socio']);
         Sanctum::actingAs($this->admin);
 
-        $acciones = collect($this->getJson(self::RUTA . '?usuario_id=' . $this->socio->id)->json('data.data'))
+        $acciones = collect($this->getJson(self::RUTA.'?usuario_id='.$this->socio->id)->json('data.data'))
             ->pluck('accion')->all();
 
         $this->assertSame(['del_socio'], $acciones);
@@ -336,7 +369,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica el filtro por tipo de acción.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -348,7 +383,7 @@ class BitacoraAuditoriaTest extends TestCase
         $this->insertarRegistro(['accion' => 'desactivado']);
         Sanctum::actingAs($this->admin);
 
-        $respuesta = $this->getJson(self::RUTA . '?accion=desactivado')->assertStatus(200);
+        $respuesta = $this->getJson(self::RUTA.'?accion=desactivado')->assertStatus(200);
 
         $this->assertSame(2, $respuesta->json('data.total'));
         $this->assertSame(['desactivado'], collect($respuesta->json('data.data'))->pluck('accion')->unique()->all());
@@ -358,7 +393,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que el filtro por entidad use el nombre corto de la clase, no la ruta completa.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -369,7 +406,7 @@ class BitacoraAuditoriaTest extends TestCase
         $this->insertarRegistro(['entidad_type' => 'App\\Models\\Platillo', 'accion' => 'sobre_platillo']);
         Sanctum::actingAs($this->admin);
 
-        $acciones = collect($this->getJson(self::RUTA . '?entidad=Platillo')->json('data.data'))
+        $acciones = collect($this->getJson(self::RUTA.'?entidad=Platillo')->json('data.data'))
             ->pluck('accion')->all();
 
         $this->assertSame(['sobre_platillo'], $acciones);
@@ -379,7 +416,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que el rango de fechas incluya el primer y el último segundo de ambos días límite.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -393,7 +432,7 @@ class BitacoraAuditoriaTest extends TestCase
         $this->insertarRegistro(['accion' => 'despues', 'created_at' => '2026-11-08 00:00:00']);
         Sanctum::actingAs($this->admin);
 
-        $acciones = collect($this->getJson(self::RUTA . '?desde=2026-11-05&hasta=2026-11-07')->json('data.data'))
+        $acciones = collect($this->getJson(self::RUTA.'?desde=2026-11-05&hasta=2026-11-07')->json('data.data'))
             ->pluck('accion')->sort()->values()->all();
 
         $this->assertSame(['fin', 'inicio', 'medio'], $acciones);
@@ -403,7 +442,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que los filtros se combinen entre sí.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -418,12 +459,12 @@ class BitacoraAuditoriaTest extends TestCase
         $this->insertarRegistro(['usuario_id' => $this->socio->id, 'accion' => 'eliminado', 'created_at' => $enRango]);
         $this->insertarRegistro([
             'usuario_id' => $this->socio->id,
-            'accion'     => 'creado',
+            'accion' => 'creado',
             'created_at' => '2026-10-01 10:00:00',
         ]);
         Sanctum::actingAs($this->admin);
 
-        $url = self::RUTA . '?usuario_id=' . $this->socio->id . '&accion=creado&desde=2026-11-01&hasta=2026-11-30';
+        $url = self::RUTA.'?usuario_id='.$this->socio->id.'&accion=creado&desde=2026-11-01&hasta=2026-11-30';
         $respuesta = $this->getJson($url)->assertStatus(200);
 
         $this->assertSame(1, $respuesta->json('data.total'));
@@ -433,7 +474,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que los filtros inválidos se rechacen con 422 y el contrato de error de la API.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -443,19 +486,19 @@ class BitacoraAuditoriaTest extends TestCase
         Sanctum::actingAs($this->admin);
 
         $casos = [
-            'usuario_id=999999'                        => 'usuario_id',
-            'usuario_id=abc'                           => 'usuario_id',
-            'desde=05-11-2026'                         => 'desde',
-            'hasta=2026/11/05'                         => 'hasta',
-            'desde=2026-11-10&hasta=2026-11-01'        => 'hasta',
-            'por_pagina=0'                             => 'por_pagina',
-            'por_pagina=101'                           => 'por_pagina',
-            'por_pagina=abc'                           => 'por_pagina',
-            'accion=' . str_repeat('x', 31)            => 'accion',
+            'usuario_id=999999' => 'usuario_id',
+            'usuario_id=abc' => 'usuario_id',
+            'desde=05-11-2026' => 'desde',
+            'hasta=2026/11/05' => 'hasta',
+            'desde=2026-11-10&hasta=2026-11-01' => 'hasta',
+            'por_pagina=0' => 'por_pagina',
+            'por_pagina=101' => 'por_pagina',
+            'por_pagina=abc' => 'por_pagina',
+            'accion='.str_repeat('x', 31) => 'accion',
         ];
 
         foreach ($casos as $consulta => $campoConError) {
-            $this->getJson(self::RUTA . '?' . $consulta)
+            $this->getJson(self::RUTA.'?'.$consulta)
                 ->assertStatus(422)
                 ->assertJsonPath('status', 'error')
                 ->assertJsonValidationErrors([$campoConError]);
@@ -468,7 +511,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que ningún método de escritura sobre la bitácora funcione ni altere la tabla.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -480,9 +525,9 @@ class BitacoraAuditoriaTest extends TestCase
 
         $intentos = [
             ['postJson', self::RUTA],
-            ['putJson', self::RUTA . '/' . $id],
-            ['patchJson', self::RUTA . '/' . $id],
-            ['deleteJson', self::RUTA . '/' . $id],
+            ['putJson', self::RUTA.'/'.$id],
+            ['patchJson', self::RUTA.'/'.$id],
+            ['deleteJson', self::RUTA.'/'.$id],
             ['deleteJson', self::RUTA],
         ];
 
@@ -500,7 +545,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica a nivel de rutas que lo único registrado bajo /auditorias sean lecturas (GET/HEAD).
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -525,7 +572,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que consultar la matriz o la bitácora no genere registros nuevos en la bitácora.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -548,7 +597,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que la contraseña de un usuario creado nunca salga en la bitácora, ni en base ni en la API.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -558,7 +609,7 @@ class BitacoraAuditoriaTest extends TestCase
         Sanctum::actingAs($this->admin);
         $nuevo = User::factory()->create(['email' => 'nuevo.sensible@sgco-chayito.local']);
 
-        $respuesta = $this->getJson(self::RUTA . '?accion=creado&entidad=User')->assertStatus(200);
+        $respuesta = $this->getJson(self::RUTA.'?accion=creado&entidad=User')->assertStatus(200);
 
         $registro = collect($respuesta->json('data.data'))->firstWhere('entidad_id', $nuevo->id);
         $this->assertNotNull($registro, 'No se auditó la creación del usuario.');
@@ -577,7 +628,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que crear un usuario deje un registro con el actor autenticado como responsable.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -589,10 +642,10 @@ class BitacoraAuditoriaTest extends TestCase
         $nuevo = User::factory()->create(['email' => 'creado.auditado@sgco-chayito.local']);
 
         $this->assertDatabaseHas('auditorias', [
-            'accion'       => 'creado',
+            'accion' => 'creado',
             'entidad_type' => User::class,
-            'entidad_id'   => $nuevo->id,
-            'usuario_id'   => $this->admin->id,
+            'entidad_id' => $nuevo->id,
+            'usuario_id' => $this->admin->id,
         ]);
     }
 
@@ -600,7 +653,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que desactivar un usuario desde la API quede registrado como "desactivado".
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -612,10 +667,10 @@ class BitacoraAuditoriaTest extends TestCase
         $this->patchJson("/api/usuarios/{$this->cajero->id}/toggle-activo")->assertStatus(200);
 
         $this->assertDatabaseHas('auditorias', [
-            'accion'       => 'desactivado',
+            'accion' => 'desactivado',
             'entidad_type' => User::class,
-            'entidad_id'   => $this->cajero->id,
-            'usuario_id'   => $this->admin->id,
+            'entidad_id' => $this->cajero->id,
+            'usuario_id' => $this->admin->id,
         ]);
     }
 
@@ -623,7 +678,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Verifica que asignar y quitar un rol a un usuario queden registrados con el nombre del rol.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-126)
      *
      * @return void
@@ -653,7 +710,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Criterio: solo el administrador modifica la matriz.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-122 / CC-126)
      *
      * @return void
@@ -690,7 +749,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Criterio: todo cambio de la matriz queda en la bitácora de auditoría.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-122 / CC-126)
      *
      * @return void
@@ -705,7 +766,7 @@ class BitacoraAuditoriaTest extends TestCase
 
         $this->assertDatabaseHas('auditorias', [
             'usuario_id' => $this->admin->id,
-            'accion'     => 'permisos_rol_actualizados',
+            'accion' => 'permisos_rol_actualizados',
         ]);
 
         $auditoria = Auditoria::where('accion', 'permisos_rol_actualizados')->latest('id')->first();
@@ -719,7 +780,9 @@ class BitacoraAuditoriaTest extends TestCase
      * Criterio: el administrador no puede quitarse a sí mismo el acceso a la matriz ni a la administración.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 (CC-122 / CC-126)
      *
      * @return void

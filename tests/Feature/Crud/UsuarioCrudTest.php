@@ -11,7 +11,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * Todos los nombres y correos son ficticios.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Administración – RF-ADM-008 / US-ADM-01 / CC-177
  */
 class UsuarioCrudTest extends CrudTestCase
@@ -20,7 +22,9 @@ class UsuarioCrudTest extends CrudTestCase
      * Corridas de captura: nombre, correo y rol del usuario nuevo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-177
      *
      * @return array<string, array{string, string, string}>
@@ -40,7 +44,9 @@ class UsuarioCrudTest extends CrudTestCase
      * Corridas de edición: campos a modificar de un usuario existente.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-177
      *
      * @return array<string, array{array<string, mixed>}>
@@ -60,12 +66,14 @@ class UsuarioCrudTest extends CrudTestCase
      * Captura un usuario y verifica correo normalizado, contraseña cifrada y rol asignado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / US-ADM-02 / CC-177
      *
-     * @param  string $nombre Nombre del usuario.
-     * @param  string $correo Correo de acceso.
-     * @param  string $rol    Rol asignado.
+     * @param  string  $nombre  Nombre del usuario.
+     * @param  string  $correo  Correo de acceso.
+     * @param  string  $rol  Rol asignado.
      * @return void
      */
     #[DataProvider('capturas')]
@@ -89,10 +97,12 @@ class UsuarioCrudTest extends CrudTestCase
      * Edita un usuario existente y verifica que el cambio quede guardado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-177
      *
-     * @param  array<string, mixed> $datos Campos a modificar.
+     * @param  array<string, mixed>  $datos  Campos a modificar.
      * @return void
      */
     #[DataProvider('ediciones')]

@@ -14,7 +14,9 @@ class RegistrarComandaRequest extends FormRequest
      * La autorización por rol se implementa en US-ADM-02 con Sanctum.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-09-18
+     *
      * @módulo POS – RF-POS-001
      *
      * @return bool
@@ -28,7 +30,9 @@ class RegistrarComandaRequest extends FormRequest
      * Reglas de validación para el registro de una comanda.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-09-18
+     *
      * @módulo POS – RF-POS-001
      *
      * @return array<string, mixed>
@@ -36,15 +40,15 @@ class RegistrarComandaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'canal'                     => ['required', 'in:mesa,para_llevar,whatsapp'],
-            'mesa_id'                   => [
+            'canal' => ['required', 'in:mesa,para_llevar,whatsapp'],
+            'mesa_id' => [
                 'nullable',
                 'required_if:canal,mesa',
                 Rule::exists('mesas', 'id')->where('activa', true),
             ],
-            'observaciones'             => ['nullable', 'string', 'max:500'],
-            'items'                     => ['required', 'array', 'min:1'],
-            'items.*.platillo_id'       => [
+            'observaciones' => ['nullable', 'string', 'max:500'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.platillo_id' => [
                 'required',
                 'integer',
                 'exists:platillos,id',
@@ -54,10 +58,10 @@ class RegistrarComandaRequest extends FormRequest
                     }
                 },
             ],
-            'items.*.cantidad'          => ['required', 'integer', 'min:1'],
+            'items.*.cantidad' => ['required', 'integer', 'min:1'],
             // Precio que el operador vio y confirmó; el servidor lo contrasta con el vigente
-            'items.*.precio_esperado'   => ['nullable', 'numeric', 'gt:0'],
-            'items.*.observaciones'     => ['nullable', 'string', 'max:200'],
+            'items.*.precio_esperado' => ['nullable', 'numeric', 'gt:0'],
+            'items.*.observaciones' => ['nullable', 'string', 'max:200'],
         ];
     }
 
@@ -65,7 +69,9 @@ class RegistrarComandaRequest extends FormRequest
      * Mensajes de error personalizados en español.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-09-18
+     *
      * @módulo POS – RF-POS-001
      *
      * @return array<string, string>
@@ -73,16 +79,16 @@ class RegistrarComandaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'canal.required'                 => 'El canal de venta es obligatorio.',
-            'canal.in'                       => 'El canal debe ser: mesa, para_llevar o whatsapp.',
-            'mesa_id.required_if'            => 'Debe seleccionar una mesa cuando el canal es "Mesa".',
-            'mesa_id.exists'                 => 'La mesa seleccionada no existe o está desactivada.',
-            'items.required'                 => 'La comanda debe contener al menos un platillo.',
-            'items.min'                      => 'La comanda debe contener al menos un platillo.',
-            'items.*.platillo_id.required'   => 'Cada ítem debe tener un platillo asignado.',
-            'items.*.platillo_id.exists'     => 'Uno de los platillos seleccionados no existe.',
-            'items.*.cantidad.required'      => 'La cantidad de cada ítem es obligatoria.',
-            'items.*.cantidad.min'           => 'La cantidad mínima por ítem es 1.',
+            'canal.required' => 'El canal de venta es obligatorio.',
+            'canal.in' => 'El canal debe ser: mesa, para_llevar o whatsapp.',
+            'mesa_id.required_if' => 'Debe seleccionar una mesa cuando el canal es "Mesa".',
+            'mesa_id.exists' => 'La mesa seleccionada no existe o está desactivada.',
+            'items.required' => 'La comanda debe contener al menos un platillo.',
+            'items.min' => 'La comanda debe contener al menos un platillo.',
+            'items.*.platillo_id.required' => 'Cada ítem debe tener un platillo asignado.',
+            'items.*.platillo_id.exists' => 'Uno de los platillos seleccionados no existe.',
+            'items.*.cantidad.required' => 'La cantidad de cada ítem es obligatoria.',
+            'items.*.cantidad.min' => 'La cantidad mínima por ítem es 1.',
         ];
     }
 }

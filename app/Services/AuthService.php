@@ -17,10 +17,12 @@ class AuthService
      * para no revelar si el correo existe.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-18
+     *
      * @módulo Administración y Seguridad – CC-91 / US-ADM-02
      *
-     * @param  array $credenciales Datos ya validados: email, password.
+     * @param  array  $credenciales  Datos ya validados: email, password.
      * @return array{usuario: User, token: string} Usuario autenticado y token en texto plano.
      */
     public function iniciarSesion(array $credenciales): array
@@ -53,10 +55,12 @@ class AuthService
      * otros dispositivos, si existen, no se ven afectadas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-18
+     *
      * @módulo Administración y Seguridad – CC-92 / US-ADM-02
      *
-     * @param  User $usuario Usuario autenticado en la petición actual.
+     * @param  User  $usuario  Usuario autenticado en la petición actual.
      * @return void
      */
     public function cerrarSesion(User $usuario): void

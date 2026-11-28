@@ -165,7 +165,9 @@ class CierreCajaService
      * Incluye comandas de días anteriores que quedaron abiertas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @param  Carbon  $finDia  Último instante del día que se cierra.
@@ -195,7 +197,9 @@ class CierreCajaService
      * Deja en el usuario del cierre solo su id y nombre, sin roles ni permisos.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-41)
      *
      * @param  CierreCaja  $cierre  Cierre con la relación de usuario cargada.

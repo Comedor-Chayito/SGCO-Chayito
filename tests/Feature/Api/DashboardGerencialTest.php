@@ -21,7 +21,9 @@ use Tests\TestCase;
  * Pruebas de KPIs financieros, gráficas interactivas y acceso restringido del dashboard gerencial.
  *
  * @autor  CesarZV23005
+ *
  * @fecha  2026-10-25
+ *
  * @módulo Reportes – RF-REP-007 / US-REP-01 / CC-75 / CC-76 / CC-77
  */
 class DashboardGerencialTest extends TestCase
@@ -38,7 +40,9 @@ class DashboardGerencialTest extends TestCase
      * Prepara los roles y usuarios que intervienen en la consulta gerencial.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-75 / CC-76
      */
     protected function setUp(): void
@@ -57,7 +61,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que el dashboard consolida ingresos, gastos netos, utilidad y margen bruto.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-75
      */
     public function test_administrador_obtiene_kpis_de_salud_financiera_y_margen_bruto(): void
@@ -85,7 +91,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que el rango solicitado excluye ventas y egresos fuera del periodo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-75
      */
     public function test_dashboard_filtra_los_kpis_por_rango_de_fechas(): void
@@ -110,7 +118,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que el API entrega las series para las gráficas de ventas y rentabilidad estimada.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / US-REP-01
      */
     public function test_dashboard_incluye_graficas_de_ventas_y_rentabilidad_estimada_por_platillo(): void
@@ -150,7 +160,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que el gasto neto del periodo se agrupa por subcategoría de egreso con su porcentaje.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – RF-REP-007 / CC-71
      */
     public function test_dashboard_agrupa_gastos_netos_por_subcategoria(): void
@@ -179,7 +191,9 @@ class DashboardGerencialTest extends TestCase
      * para no contar dos veces una factura que también se registró como egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – RF-REP-007 / CC-71
      */
     public function test_dashboard_no_suma_compras_como_gastos(): void
@@ -208,7 +222,9 @@ class DashboardGerencialTest extends TestCase
      * inicio por defecto podría quedar posterior al fin solicitado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – RF-REP-007 / CC-72
      */
     public function test_dashboard_exige_ambas_fechas_del_periodo(): void
@@ -229,7 +245,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que el periodo rechaza rangos invertidos y fechas futuras.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – RF-REP-007 / CC-72
      */
     public function test_dashboard_rechaza_rangos_invertidos_y_fechas_futuras(): void
@@ -252,7 +270,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que sin fechas se consulta desde el primer día del mes hasta hoy.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – RF-REP-007 / CC-72
      */
     public function test_dashboard_sin_fechas_usa_el_mes_en_curso(): void
@@ -269,7 +289,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que la serie de ventas mensuales termina en el mes de la fecha final filtrada.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – RF-REP-007 / CC-72
      */
     public function test_ventas_mensuales_terminan_en_el_mes_del_periodo_filtrado(): void
@@ -282,7 +304,7 @@ class DashboardGerencialTest extends TestCase
 
         $this->getJson(
             "/api/reportes/dashboard?fecha_desde={$inicioPeriodo->toDateString()}"
-            . "&fecha_hasta={$finPeriodo->toDateString()}"
+            ."&fecha_hasta={$finPeriodo->toDateString()}"
         )
             ->assertOk()
             ->assertJsonCount(6, 'data.graficos.ventas_mensuales')
@@ -299,7 +321,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que el rol Socio puede consultar los indicadores financieros.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-76
      */
     public function test_socio_puede_consultar_el_dashboard_gerencial(): void
@@ -313,7 +337,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que Contadora no puede acceder al dashboard reservado para Socio y Administrador.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-76
      */
     public function test_contadora_no_puede_consultar_el_dashboard_gerencial(): void
@@ -327,7 +353,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que un periodo sin ventas ni egresos devuelve ceros limpios y evita errores de división.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_en_periodo_vacio_retorna_ceros_y_evita_division_por_cero(): void
@@ -360,7 +388,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que cuando existen ventas pero ningún egreso, el margen bruto es del 100%.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_con_solo_ventas_sin_egresos_calcula_margen_al_cien_por_ciento(): void
@@ -386,7 +416,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que cuando existen egresos pero cero ventas, la utilidad es negativa y margen es 0%.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_con_solo_egresos_sin_ventas_calcula_utilidad_negativa_y_margen_cero(): void
@@ -412,7 +444,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que se refleja correctamente una pérdida operativa cuando los gastos superan los ingresos.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_calcula_perdida_operativa_cuando_gastos_superan_ingresos(): void
@@ -435,7 +469,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica el cálculo del punto de equilibrio exacto (utilidad cero y margen cero).
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_en_punto_de_equilibrio_utilidad_y_margen_cero(): void
@@ -458,7 +494,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que los límites exactos (00:00:00 y 23:59:59) se incluyen y los adyacentes se excluyen.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_limites_temporales_incluyen_inicio_y_fin_exactos_y_excluyen_adyacentes(): void
@@ -503,7 +541,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que un periodo de un solo día (fecha_desde === fecha_hasta) consolida correctamente.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_periodo_de_un_solo_dia_consolida_correctamente(): void
@@ -537,7 +577,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que las comandas pendientes, canceladas o no pagadas se excluyen de la rentabilidad.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_ignora_comandas_no_pagadas_en_rentabilidad_por_platillo(): void
@@ -597,7 +639,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que múltiples ventas del mismo platillo acumulan unidades e ingresos y ordenan por rentabilidad.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_acumula_multiples_ventas_del_mismo_platillo_y_ordena_por_rentabilidad(): void
@@ -655,7 +699,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que los gastos netos se distribuyen por subcategoría en orden descendente y suman el 100%.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_gastos_por_subcategoria_ordena_descendente_y_verifica_participacion_porcentual(): void
@@ -704,7 +750,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que el endpoint rechaza parámetros de fecha con formato inválido con error 422.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_rechaza_formato_de_fechas_invalido(): void
@@ -725,7 +773,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que los roles operativos (cajero, mesero, cocinero, cocinera) reciben 403 Forbidden.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-76 / CC-77
      */
     public function test_dashboard_bloquea_roles_operativos_cajero_mesero_cocinero(): void
@@ -759,7 +809,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que una petición sin autenticación recibe 401 Unauthorized.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-76 / CC-77
      */
     public function test_dashboard_requiere_autenticacion(): void
@@ -771,7 +823,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que las operaciones con importes fraccionarios cotidianos conservan la precisión en centavos.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_con_montos_fraccionarios_conserva_precision_en_centavos(): void
@@ -807,7 +861,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que la consulta al dashboard es de solo lectura y no genera efectos colaterales en la BD.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_es_idempotente_y_de_solo_lectura(): void
@@ -840,7 +896,9 @@ class DashboardGerencialTest extends TestCase
      * Verifica que la serie de 6 meses rellena con cero los meses intermedios que no tienen ventas.
      *
      * @autor  CesarZV23005
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Reportes – RF-REP-007 / CC-77
      */
     public function test_dashboard_serie_mensual_rellena_con_cero_los_meses_sin_ventas(): void
@@ -882,7 +940,9 @@ class DashboardGerencialTest extends TestCase
      * Registra una venta con la fecha requerida para el escenario financiero de prueba.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-75
      *
      * @param  User  $usuario  Persona que aparece como responsable de la venta.
@@ -941,7 +1001,9 @@ class DashboardGerencialTest extends TestCase
      * Registra un egreso ya desglosado para el escenario de consolidación financiera.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – RF-REP-007 / CC-71
      *
      * @param  User  $usuario  Persona responsable del registro del egreso.

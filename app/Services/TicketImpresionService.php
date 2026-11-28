@@ -10,7 +10,9 @@ use App\Models\Comanda;
  * Genera texto plano alineado y comandos binarios ESC/POS en Base64.
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-20
+ *
  * @módulo POS – US-POS-02 / RF-POS-001
  */
 class TicketImpresionService
@@ -19,13 +21,14 @@ class TicketImpresionService
      * Anchos de columna soportados según el ancho del rollo de papel térmico.
      */
     public const COLUMNAS_58MM = 32;
+
     public const COLUMNAS_80MM = 48;
 
     /**
      * Genera el payload estructurado del ticket de cocina para impresión térmica.
      *
-     * @param  Comanda $comanda Instancia de la comanda con detalles, platillos y relaciones cargadas.
-     * @param  int     $anchoMm Ancho en milímetros del papel térmico (58 u 80).
+     * @param  Comanda  $comanda  Instancia de la comanda con detalles, platillos y relaciones cargadas.
+     * @param  int  $anchoMm  Ancho en milímetros del papel térmico (58 u 80).
      * @return array{
      *     comanda_id: int,
      *     ancho_mm: int,
@@ -52,10 +55,10 @@ class TicketImpresionService
 
         // Canal / Mesa
         $canalTexto = match ($comanda->canal) {
-            'mesa'        => $comanda->mesa ? "MESA: {$comanda->mesa->numero}" : 'MESA',
+            'mesa' => $comanda->mesa ? "MESA: {$comanda->mesa->numero}" : 'MESA',
             'para_llevar' => 'CANAL: PARA LLEVAR',
-            'whatsapp'    => 'CANAL: PEDIDO WHATSAPP',
-            default       => 'CANAL: ' . strtoupper($comanda->canal),
+            'whatsapp' => 'CANAL: PEDIDO WHATSAPP',
+            default => 'CANAL: '.strtoupper($comanda->canal),
         };
         $lineas[] = $this->ajustarALinea($canalTexto, $columnas);
 
@@ -111,11 +114,11 @@ class TicketImpresionService
         $escposBinario = $this->generarEscposBinario($comanda, $lineas);
 
         return [
-            'comanda_id'    => $comanda->id,
-            'ancho_mm'      => ($columnas === self::COLUMNAS_80MM) ? 80 : 58,
-            'columnas'      => $columnas,
-            'lineas'        => $lineas,
-            'texto_plano'   => $textoPlano,
+            'comanda_id' => $comanda->id,
+            'ancho_mm' => ($columnas === self::COLUMNAS_80MM) ? 80 : 58,
+            'columnas' => $columnas,
+            'lineas' => $lineas,
+            'texto_plano' => $textoPlano,
             'escpos_base64' => base64_encode($escposBinario),
         ];
     }
@@ -123,8 +126,8 @@ class TicketImpresionService
     /**
      * Genera la secuencia binaria con comandos ESC/POS estándar para impresoras térmicas.
      *
-     * @param  Comanda       $comanda
-     * @param  array<string> $lineasTexto
+     * @param  Comanda  $comanda
+     * @param  array<string>  $lineasTexto
      * @return string
      */
     protected function generarEscposBinario(Comanda $comanda, array $lineasTexto): string
@@ -139,10 +142,10 @@ class TicketImpresionService
             // Si es encabezado o comanda destacada, activar negrita temporalmente
             if (str_contains($linea, 'COMEDOR CHAYITO') || str_contains($linea, 'ORDEN: #')) {
                 $bin .= "\x1B\x45\x01"; // Negrita ON
-                $bin .= $linea . "\n";
+                $bin .= $linea."\n";
                 $bin .= "\x1B\x45\x00"; // Negrita OFF
             } else {
-                $bin .= $linea . "\n";
+                $bin .= $linea."\n";
             }
         }
 
@@ -167,7 +170,7 @@ class TicketImpresionService
 
         $espaciosIzq = (int) floor(($ancho - $longitud) / 2);
 
-        return str_repeat(' ', $espaciosIzq) . $texto;
+        return str_repeat(' ', $espaciosIzq).$texto;
     }
 
     /**
@@ -186,7 +189,7 @@ class TicketImpresionService
 
         $espacios = max(1, $ancho - ($lenIzq + $lenDer));
 
-        return $izquierda . str_repeat(' ', $espacios) . $derecha;
+        return $izquierda.str_repeat(' ', $espacios).$derecha;
     }
 
     /**
@@ -227,8 +230,8 @@ class TicketImpresionService
         foreach ($palabras as $palabra) {
             if ($lineaActual === '') {
                 $lineaActual = $palabra;
-            } elseif (mb_strlen($lineaActual . ' ' . $palabra, 'UTF-8') <= $ancho) {
-                $lineaActual .= ' ' . $palabra;
+            } elseif (mb_strlen($lineaActual.' '.$palabra, 'UTF-8') <= $ancho) {
+                $lineaActual .= ' '.$palabra;
             } else {
                 $lineas[] = $lineaActual;
                 $lineaActual = $palabra;

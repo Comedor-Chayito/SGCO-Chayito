@@ -14,7 +14,9 @@ use Tests\TestCase;
  * pendiente → en_preparacion → lista → pagada (US-POS-02 / CC-28).
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-10-12
+ *
  * @módulo POS – US-POS-02 / RF-POS-001
  */
 class EstadoComandaTest extends TestCase
@@ -27,7 +29,9 @@ class EstadoComandaTest extends TestCase
      * Configuración inicial antes de cada prueba.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-12
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
      * @return void
@@ -49,19 +53,21 @@ class EstadoComandaTest extends TestCase
      * Crea una comanda para llevar con el estado indicado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-12
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
-     * @param  string $estado Estado inicial de la comanda.
+     * @param  string  $estado  Estado inicial de la comanda.
      * @return Comanda
      */
     private function crearComanda(string $estado): Comanda
     {
         return Comanda::create([
             'usuario_id' => $this->usuario->id,
-            'canal'      => 'para_llevar',
-            'estado'     => $estado,
-            'subtotal'   => 5.00,
+            'canal' => 'para_llevar',
+            'estado' => $estado,
+            'subtotal' => 5.00,
         ]);
     }
 
@@ -69,7 +75,9 @@ class EstadoComandaTest extends TestCase
      * Valida que cocina puede marcar una comanda como lista y que el estado persiste en BD.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-12
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
      * @return void
@@ -92,7 +100,9 @@ class EstadoComandaTest extends TestCase
      * de completadas (lista, pagada), de modo que una lista no vuelve a la cola.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-12
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
      * @return void
@@ -122,7 +132,9 @@ class EstadoComandaTest extends TestCase
      * Valida que caja puede consultar solo las comandas listas para cobro.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-12
+     *
      * @módulo POS – US-POS-03 / RF-POS-002
      *
      * @return void
@@ -149,7 +161,9 @@ class EstadoComandaTest extends TestCase
      * Valida que una comanda ya pagada no puede regresar a la cola de cocina.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-12
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
      * @return void

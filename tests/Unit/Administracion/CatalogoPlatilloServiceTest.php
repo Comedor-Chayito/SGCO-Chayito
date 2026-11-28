@@ -21,7 +21,9 @@ use Tests\TestCase;
  * Caja blanca: 3 ejecuciones sobre la comparación de precio para auditoría y los bloqueos al eliminar.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Administración – RF-ADM-008 / US-ADM-03 / CC-143
  */
 class CatalogoPlatilloServiceTest extends TestCase
@@ -36,7 +38,9 @@ class CatalogoPlatilloServiceTest extends TestCase
      * Resuelve el servicio y autentica al administrador, actor de la bitácora.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
      * @return void
@@ -54,7 +58,9 @@ class CatalogoPlatilloServiceTest extends TestCase
      * Casos de caja negra: datos de entrada y [nombre, descripción, precio, disponible] esperados.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
      * @return array<string, array{array<string, mixed>, array{string, ?string, string, bool}}>
@@ -85,11 +91,13 @@ class CatalogoPlatilloServiceTest extends TestCase
      * Verifica que el alta normalice textos, conserve el precio y quede disponible por defecto.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
-     * @param  array<string, mixed>                $datos    Datos validados del platillo.
-     * @param  array{string, ?string, string, bool} $esperado Nombre, descripción, precio y disponibilidad.
+     * @param  array<string, mixed>  $datos  Datos validados del platillo.
+     * @param  array{string, ?string, string, bool}  $esperado  Nombre, descripción, precio y disponibilidad.
      * @return void
      */
     #[DataProvider('casosCajaNegra')]
@@ -107,7 +115,9 @@ class CatalogoPlatilloServiceTest extends TestCase
      * CB-PLA-01: rama de comparación de precio; "4.5" y 4.50 son el mismo precio y no se audita cambio.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-109 / CC-143
      *
      * @return void
@@ -125,7 +135,9 @@ class CatalogoPlatilloServiceTest extends TestCase
      * CB-PLA-02: rama de historial de ventas; un platillo con comandas no se elimina.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
      * @return void
@@ -148,7 +160,9 @@ class CatalogoPlatilloServiceTest extends TestCase
      * CB-PLA-03: rama de receta vinculada; un platillo con receta no se elimina.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
      * @return void
@@ -171,10 +185,12 @@ class CatalogoPlatilloServiceTest extends TestCase
      * Afirma que eliminar el platillo lanza ValidationException y el registro se conserva.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
-     * @param  Platillo $platillo Platillo que no debe eliminarse.
+     * @param  Platillo  $platillo  Platillo que no debe eliminarse.
      * @return void
      */
     private function assertEliminarFalla(Platillo $platillo): void

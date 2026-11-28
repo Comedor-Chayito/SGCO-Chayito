@@ -8,7 +8,9 @@ use Illuminate\Foundation\Http\FormRequest;
  * Valida el rango opcional de fechas con el que se consultan los KPIs gerenciales.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Reportes – RF-REP-007 / CC-75 / CC-76
  */
 class ConsultarDashboardGerencialRequest extends FormRequest
@@ -17,7 +19,9 @@ class ConsultarDashboardGerencialRequest extends FormRequest
      * Confirma que la autorización fue resuelta por la ruta protegida por roles.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-75 / CC-76
      *
      * @return bool True; el middleware admite únicamente socio o administrador.
@@ -32,7 +36,9 @@ class ConsultarDashboardGerencialRequest extends FormRequest
      * ninguna: con una sola, el periodo por defecto podría quedar invertido.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-75 / CC-72
      *
      * @return array<string, mixed> Reglas del rango de fechas.
@@ -55,7 +61,9 @@ class ConsultarDashboardGerencialRequest extends FormRequest
      * Devuelve mensajes de error claros para el filtro temporal del dashboard.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-75 / CC-72
      *
      * @return array<string, string> Mensajes personalizados de validación.

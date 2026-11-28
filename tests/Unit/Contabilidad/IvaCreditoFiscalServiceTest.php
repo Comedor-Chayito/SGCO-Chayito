@@ -13,7 +13,9 @@ use PHPUnit\Framework\TestCase;
  * Caja blanca: 3 ejecuciones que recorren el orden de redondeo, la coherencia neto + IVA y la constante.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Contabilidad – RF-CON-006 / US-CON-02 / CC-139
  */
 class IvaCreditoFiscalServiceTest extends TestCase
@@ -24,7 +26,9 @@ class IvaCreditoFiscalServiceTest extends TestCase
      * Crea el servicio sin dependencias: el cálculo es puro y no toca la base de datos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-139
      *
      * @return void
@@ -40,7 +44,9 @@ class IvaCreditoFiscalServiceTest extends TestCase
      * Casos de caja negra: monto total con IVA incluido y desglose esperado a dos decimales.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-139
      *
      * @return array<string, array{float, float, float}> [monto total, costo neto, IVA crédito].
@@ -59,12 +65,14 @@ class IvaCreditoFiscalServiceTest extends TestCase
      * Verifica que el desglose cumpla Costo Neto = Total / 1.13 e IVA = Neto × 0.13.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-139
      *
-     * @param  float $montoTotal        Monto del comprobante con IVA incluido.
-     * @param  float $costoNetoEsperado Costo neto esperado.
-     * @param  float $ivaEsperado       IVA crédito fiscal esperado.
+     * @param  float  $montoTotal  Monto del comprobante con IVA incluido.
+     * @param  float  $costoNetoEsperado  Costo neto esperado.
+     * @param  float  $ivaEsperado  IVA crédito fiscal esperado.
      * @return void
      */
     #[DataProvider('casosCajaNegra')]
@@ -85,7 +93,9 @@ class IvaCreditoFiscalServiceTest extends TestCase
      * Con 0.13 el neto exacto es 0.115044…; redondear primero daría IVA 0.02 y la suma 0.14.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-139
      *
      * @return void
@@ -102,7 +112,9 @@ class IvaCreditoFiscalServiceTest extends TestCase
      * CB-IVA-02: para todo monto entre 0.01 y 1000.00, costo neto + IVA reconstruye el total.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-139
      *
      * @return void
@@ -122,7 +134,9 @@ class IvaCreditoFiscalServiceTest extends TestCase
      * CB-IVA-03: la tasa vive en la constante TASA_IVA (13 % El Salvador) y no hay IVA sobre cero.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-139
      *
      * @return void

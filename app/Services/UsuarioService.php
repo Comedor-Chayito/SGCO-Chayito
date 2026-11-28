@@ -13,7 +13,9 @@ use Spatie\Permission\Models\Role;
  * Servicio de lógica de negocio para la gestión de usuarios y roles RBAC (US-ADM-01 / CC-84).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-20
+ *
  * @módulo Administración y Seguridad – RF-ADM-008
  */
 class UsuarioService
@@ -21,7 +23,7 @@ class UsuarioService
     /**
      * Lista los usuarios del sistema aplicando filtros opcionales de búsqueda, rol y estado.
      *
-     * @param  array<string, mixed> $filtros Filtros opcionales: busqueda, rol, activo.
+     * @param  array<string, mixed>  $filtros  Filtros opcionales: busqueda, rol, activo.
      * @return Collection<int, User>
      */
     public function listar(array $filtros = []): Collection
@@ -30,10 +32,10 @@ class UsuarioService
             ->orderBy('id', 'asc');
 
         if (! empty($filtros['busqueda'])) {
-            $busqueda = '%' . trim($filtros['busqueda']) . '%';
+            $busqueda = '%'.trim($filtros['busqueda']).'%';
             $query->where(function ($q) use ($busqueda) {
                 $q->where('name', 'like', $busqueda)
-                  ->orWhere('email', 'like', $busqueda);
+                    ->orWhere('email', 'like', $busqueda);
             });
         }
 
@@ -51,17 +53,17 @@ class UsuarioService
     /**
      * Registra un nuevo usuario en el sistema, cifra su contraseña con Bcrypt y le asigna su rol.
      *
-     * @param  array<string, mixed> $datos Datos validados del usuario.
+     * @param  array<string, mixed>  $datos  Datos validados del usuario.
      * @return User
      */
     public function crear(array $datos): User
     {
         return DB::transaction(function () use ($datos) {
             $usuario = User::create([
-                'name'     => trim($datos['name']),
-                'email'    => strtolower(trim($datos['email'])),
+                'name' => trim($datos['name']),
+                'email' => strtolower(trim($datos['email'])),
                 'password' => Hash::make($datos['password']),
-                'activo'   => $datos['activo'] ?? true,
+                'activo' => $datos['activo'] ?? true,
             ]);
 
             if (! empty($datos['rol'])) {
@@ -75,8 +77,8 @@ class UsuarioService
     /**
      * Actualiza la información de un usuario, reasigna su rol y cifra su nueva contraseña si se envía.
      *
-     * @param  User                 $usuario Instancia del usuario a modificar.
-     * @param  array<string, mixed> $datos   Datos validados a actualizar.
+     * @param  User  $usuario  Instancia del usuario a modificar.
+     * @param  array<string, mixed>  $datos  Datos validados a actualizar.
      * @return User
      */
     public function actualizar(User $usuario, array $datos): User
@@ -122,9 +124,10 @@ class UsuarioService
      * Desactiva la cuenta de un usuario impidiendo inicios de sesión y revocando sus tokens activos.
      * Regla de negocio: Un administrador no puede desactivarse a sí mismo si es el único activo.
      *
-     * @param  User      $usuario     Usuario que será desactivado.
-     * @param  User|null $solicitante Usuario administrador que ejecuta la acción.
+     * @param  User  $usuario  Usuario que será desactivado.
+     * @param  User|null  $solicitante  Usuario administrador que ejecuta la acción.
      * @return User
+     *
      * @throws ValidationException
      */
     public function desactivar(User $usuario, ?User $solicitante = null): User
@@ -156,7 +159,7 @@ class UsuarioService
     /**
      * Activa una cuenta de usuario previamente inhabilitada.
      *
-     * @param  User $usuario Usuario a reactivar.
+     * @param  User  $usuario  Usuario a reactivar.
      * @return User
      */
     public function activar(User $usuario): User
@@ -169,8 +172,8 @@ class UsuarioService
     /**
      * Alterna el estado activo de un usuario (activar o desactivar según corresponda).
      *
-     * @param  User      $usuario
-     * @param  User|null $solicitante
+     * @param  User  $usuario
+     * @param  User|null  $solicitante
      * @return User
      */
     public function toggleActivo(User $usuario, ?User $solicitante = null): User
@@ -189,9 +192,10 @@ class UsuarioService
      * 2. No se puede eliminar al único administrador del sistema.
      * 3. No se puede eliminar si posee registros operativos vinculados (comandas, ventas o retiros).
      *
-     * @param  User      $usuario     Usuario a eliminar.
-     * @param  User|null $solicitante Usuario administrador que ejecuta la acción.
+     * @param  User  $usuario  Usuario a eliminar.
+     * @param  User|null  $solicitante  Usuario administrador que ejecuta la acción.
      * @return bool
+     *
      * @throws ValidationException
      */
     public function eliminar(User $usuario, ?User $solicitante = null): bool
@@ -213,9 +217,9 @@ class UsuarioService
         }
 
         // Verificar integridad referencial: comandas, ventas, retiros o auditoría
-        $tieneComandas   = DB::table('comandas')->where('usuario_id', $usuario->id)->exists();
-        $tieneVentas     = DB::table('ventas')->where('usuario_id', $usuario->id)->exists();
-        $tieneRetiros    = DB::table('retiros_parciales')->where('usuario_id', $usuario->id)->exists();
+        $tieneComandas = DB::table('comandas')->where('usuario_id', $usuario->id)->exists();
+        $tieneVentas = DB::table('ventas')->where('usuario_id', $usuario->id)->exists();
+        $tieneRetiros = DB::table('retiros_parciales')->where('usuario_id', $usuario->id)->exists();
         $tieneAuditorias = DB::table('auditorias')->where('usuario_id', $usuario->id)->exists();
 
         if ($tieneComandas || $tieneVentas || $tieneRetiros) {
@@ -249,4 +253,3 @@ class UsuarioService
         return Role::pluck('name')->toArray();
     }
 }
-

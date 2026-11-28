@@ -11,7 +11,9 @@ return new class extends Migration
      * y vuelve único el nombre del insumo para evitar duplicados en bodega.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo Inventario – RF-INV-003 (CC-46)
      */
     public function up(): void
@@ -27,7 +29,9 @@ return new class extends Migration
      * Regresa el stock de insumos a 2 decimales y quita la restricción de nombre único.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo Inventario – RF-INV-003 (CC-46)
      */
     public function down(): void

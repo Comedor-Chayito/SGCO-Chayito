@@ -12,7 +12,9 @@ use Tests\TestCase;
  * Pruebas del desglose automático de costo neto e IVA crédito fiscal de compras.
  *
  * @autor  Jeferson De La Cruz / Cesar
+ *
  * @fecha  2026-10-25
+ *
  * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67 / CC-70
  */
 class CompraIvaTest extends TestCase
@@ -25,7 +27,9 @@ class CompraIvaTest extends TestCase
      * Prepara una persona contadora autenticada para registrar comprobantes de compra.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      */
     protected function setUp(): void
@@ -42,7 +46,9 @@ class CompraIvaTest extends TestCase
      * Verifica el costo neto de una compra cuyo monto total equivale exactamente a $113.00.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66
      */
     public function test_calcula_y_persiste_costo_neto_a_partir_del_monto_total(): void
@@ -72,7 +78,9 @@ class CompraIvaTest extends TestCase
      * Verifica que el IVA se calcula desde el costo neto exacto y se guarda automáticamente.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-67
      */
     public function test_calcula_iva_credito_fiscal_sin_aceptar_valores_enviados_por_el_cliente(): void
@@ -100,7 +108,9 @@ class CompraIvaTest extends TestCase
      * Verifica que el listado entrega los datos persistidos de compra con su responsable.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      */
     public function test_lista_compras_con_su_desglose_tributario_y_responsable(): void
@@ -123,7 +133,9 @@ class CompraIvaTest extends TestCase
      * Verifica que el monto y fecha de la compra cumplen las reglas contables de entrada.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      */
     public function test_rechaza_compra_con_monto_invalido_o_fecha_futura(): void
@@ -138,7 +150,9 @@ class CompraIvaTest extends TestCase
      * Verifica que solo contadora o administrador pueden consultar y registrar compras.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      */
     public function test_rol_sin_permiso_no_puede_gestionar_compras(): void
@@ -159,7 +173,9 @@ class CompraIvaTest extends TestCase
      * Verifica el cálculo con facturas de ejemplo reales (fraccionarias y de montos cotidianos).
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-70
      */
     public function test_desglose_iva_con_facturas_de_ejemplo_reales_de_compras(): void
@@ -175,7 +191,7 @@ class CompraIvaTest extends TestCase
         foreach ($facturasEjemplo as $factura) {
             $resp = $this->postJson('/api/compras', [
                 'fecha_compra' => '2026-10-25',
-                'monto_total'  => $factura['total'],
+                'monto_total' => $factura['total'],
             ]);
 
             $resp
@@ -190,7 +206,9 @@ class CompraIvaTest extends TestCase
      * Verifica que en todas las compras registradas la suma de neto e IVA coincide con el monto total.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-25
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-70
      */
     public function test_invariante_suma_costo_neto_e_iva_credito_fiscal_en_compras(): void
@@ -200,13 +218,13 @@ class CompraIvaTest extends TestCase
         foreach ($montos as $monto) {
             $resp = $this->postJson('/api/compras', [
                 'fecha_compra' => '2026-10-25',
-                'monto_total'  => $monto,
+                'monto_total' => $monto,
             ]);
 
             $resp->assertCreated();
 
             $neto = (float) $resp->json('data.costo_neto');
-            $iva  = (float) $resp->json('data.iva_credito_fiscal');
+            $iva = (float) $resp->json('data.iva_credito_fiscal');
 
             $this->assertEquals($monto, round($neto + $iva, 2));
         }

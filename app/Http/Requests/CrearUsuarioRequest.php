@@ -8,7 +8,9 @@ use Illuminate\Foundation\Http\FormRequest;
  * Validación de creación de usuario en el panel administrativo (US-ADM-01 / CC-84).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-20
+ *
  * @módulo Administración y Seguridad – RF-ADM-008
  */
 class CrearUsuarioRequest extends FormRequest
@@ -31,11 +33,11 @@ class CrearUsuarioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            'rol'      => ['required', 'string', 'exists:roles,name'],
-            'activo'   => ['nullable', 'boolean'],
+            'rol' => ['required', 'string', 'exists:roles,name'],
+            'activo' => ['nullable', 'boolean'],
         ];
     }
 
@@ -47,16 +49,15 @@ class CrearUsuarioRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'     => 'El nombre completo es obligatorio.',
-            'name.max'          => 'El nombre no puede exceder 255 caracteres.',
-            'email.required'    => 'El correo electrónico es obligatorio.',
-            'email.email'       => 'El formato del correo electrónico no es válido.',
-            'email.unique'      => 'Este correo electrónico ya está registrado en el sistema.',
+            'name.required' => 'El nombre completo es obligatorio.',
+            'name.max' => 'El nombre no puede exceder 255 caracteres.',
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'El formato del correo electrónico no es válido.',
+            'email.unique' => 'Este correo electrónico ya está registrado en el sistema.',
             'password.required' => 'La contraseña es obligatoria.',
-            'password.min'      => 'La contraseña debe contener al menos 8 caracteres.',
-            'rol.required'      => 'Debe asignar un rol al usuario.',
-            'rol.exists'        => 'El rol seleccionado no es válido en el sistema.',
+            'password.min' => 'La contraseña debe contener al menos 8 caracteres.',
+            'rol.required' => 'Debe asignar un rol al usuario.',
+            'rol.exists' => 'El rol seleccionado no es válido en el sistema.',
         ];
     }
 }
-

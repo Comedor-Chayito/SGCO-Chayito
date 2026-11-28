@@ -11,7 +11,9 @@ return new class extends Migration
      * Agrega "tarjeta" a los métodos de pago permitidos en ventas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002
      *
      * @return void
@@ -26,17 +28,19 @@ return new class extends Migration
      * porque reescribirlas alteraría el histórico contable.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002
      *
      * @return void
      *
-     * @throws \RuntimeException Si hay ventas registradas con tarjeta.
+     * @throws RuntimeException Si hay ventas registradas con tarjeta.
      */
     public function down(): void
     {
         if (DB::table('ventas')->where('metodo_pago', 'tarjeta')->exists()) {
-            throw new \RuntimeException('Existen ventas pagadas con tarjeta; no se puede revertir.');
+            throw new RuntimeException('Existen ventas pagadas con tarjeta; no se puede revertir.');
         }
 
         $this->cambiarEnum(['efectivo', 'transferencia']);
@@ -46,10 +50,12 @@ return new class extends Migration
      * Redefine los valores permitidos de la columna metodo_pago de ventas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-14
+     *
      * @módulo POS – US-POS-03 / RF-POS-002
      *
-     * @param  array<int, string> $metodos Valores permitidos del enum.
+     * @param  array<int, string>  $metodos  Valores permitidos del enum.
      * @return void
      */
     private function cambiarEnum(array $metodos): void

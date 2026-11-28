@@ -130,7 +130,9 @@ class CierreCajaTest extends TestCase
      * Registra la apertura de caja de una fecha con el saldo inicial indicado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @param  string  $fecha  Fecha en formato Y-m-d.
@@ -140,14 +142,14 @@ class CierreCajaTest extends TestCase
     private function abrirCaja(string $fecha, float $saldoInicial = 100.00): void
     {
         AperturaCaja::create([
-            'usuario_id'     => $this->cajero->id,
-            'fecha'          => $fecha,
-            'saldo_inicial'  => $saldoInicial,
+            'usuario_id' => $this->cajero->id,
+            'fecha' => $fecha,
+            'saldo_inicial' => $saldoInicial,
             'denominaciones' => [[
                 'denominacion' => $saldoInicial,
-                'tipo'         => 'billete',
-                'cantidad'     => 1,
-                'subtotal'     => $saldoInicial,
+                'tipo' => 'billete',
+                'cantidad' => 1,
+                'subtotal' => $saldoInicial,
             ]],
         ]);
     }
@@ -516,7 +518,9 @@ class CierreCajaTest extends TestCase
      * Valida que sin sesión no se puede cerrar ni consultar la caja.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -526,8 +530,8 @@ class CierreCajaTest extends TestCase
         $this->app['auth']->forgetGuards();
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => '2026-09-21',
-            'saldo_final'   => 100.00,
+            'fecha' => '2026-09-21',
+            'saldo_final' => 100.00,
         ])->assertStatus(401)->assertJsonPath('status', 'error');
 
         $this->getJson('/api/cierres-caja')->assertStatus(401);
@@ -540,7 +544,9 @@ class CierreCajaTest extends TestCase
      * Roles que según la matriz RBAC no pueden cerrar la caja (CLAUDE.md §9).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return array<string, array{string}>
@@ -548,8 +554,8 @@ class CierreCajaTest extends TestCase
     public static function rolesSinAccesoACaja(): array
     {
         return [
-            'mesero'    => ['mesero'],
-            'cocinero'  => ['cocinero'],
+            'mesero' => ['mesero'],
+            'cocinero' => ['cocinero'],
             'contadora' => ['contadora'],
         ];
     }
@@ -558,7 +564,9 @@ class CierreCajaTest extends TestCase
      * Valida que mesero, cocinero y contadora no pueden cerrar ni consultar cierres.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @param  string  $rol  Rol sin acceso a la caja.
@@ -572,8 +580,8 @@ class CierreCajaTest extends TestCase
         Sanctum::actingAs($usuario);
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => '2026-09-21',
-            'saldo_final'   => 100.00,
+            'fecha' => '2026-09-21',
+            'saldo_final' => 100.00,
         ])->assertStatus(403)->assertJsonPath('status', 'error');
 
         $this->getJson('/api/cierres-caja')->assertStatus(403);
@@ -585,7 +593,9 @@ class CierreCajaTest extends TestCase
      * Valida que el administrador también puede realizar el cierre diario.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -598,8 +608,8 @@ class CierreCajaTest extends TestCase
         $this->abrirCaja('2026-09-21');
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => '2026-09-21',
-            'saldo_final'   => 100.00,
+            'fecha' => '2026-09-21',
+            'saldo_final' => 100.00,
         ])->assertStatus(201)
             ->assertJsonPath('data.usuario.id', $admin->id);
     }
@@ -608,7 +618,9 @@ class CierreCajaTest extends TestCase
      * Valida que el cierre y su auditoría quedan a nombre del usuario autenticado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -619,8 +631,8 @@ class CierreCajaTest extends TestCase
         $this->abrirCaja('2026-09-21');
 
         $response = $this->postJson('/api/cierres-caja', [
-            'fecha'         => '2026-09-21',
-            'saldo_final'   => 100.00,
+            'fecha' => '2026-09-21',
+            'saldo_final' => 100.00,
         ]);
 
         $response->assertStatus(201)
@@ -631,7 +643,7 @@ class CierreCajaTest extends TestCase
 
         $this->assertDatabaseHas('auditorias', [
             'usuario_id' => $this->cajero->id,
-            'accion'     => 'cierre_caja',
+            'accion' => 'cierre_caja',
             'entidad_id' => $response->json('data.id'),
         ]);
     }
@@ -641,7 +653,9 @@ class CierreCajaTest extends TestCase
      * incluyendo los registrados al primer y último segundo del día.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -656,8 +670,8 @@ class CierreCajaTest extends TestCase
 
         // Venta del día = (10 + 115) − 100 = 25; diferencia = 25 − 25 = 0
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => '2026-09-21',
-            'saldo_final'   => 115.00,
+            'fecha' => '2026-09-21',
+            'saldo_final' => 115.00,
         ])->assertStatus(201)
             ->assertJsonPath('data.total_ventas_efectivo', '25.00')
             ->assertJsonPath('data.total_retiros', '10.00')
@@ -670,7 +684,9 @@ class CierreCajaTest extends TestCase
      * el efectivo entra al cuadre de caja.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -689,7 +705,7 @@ class CierreCajaTest extends TestCase
 
         // Solo los $50 en efectivo entran a la gaveta: esperado 150, contado 150
         $this->postJson('/api/cierres-caja', [
-            'fecha'       => $fecha,
+            'fecha' => $fecha,
             'saldo_final' => 150.00,
         ])->assertStatus(201)
             ->assertJsonPath('data.total_ventas_efectivo', '50.00')
@@ -699,7 +715,7 @@ class CierreCajaTest extends TestCase
             ->assertJsonPath('data.diferencia', '0.00');
 
         $this->assertDatabaseHas('cierres_caja', [
-            'fecha'                => $fecha,
+            'fecha' => $fecha,
             'total_ventas_tarjeta' => 42.50,
         ]);
     }
@@ -708,7 +724,9 @@ class CierreCajaTest extends TestCase
      * Valida que montos con centavos se suman sin errores de punto flotante.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -726,8 +744,8 @@ class CierreCajaTest extends TestCase
 
         // Venta del día = (0.30 + 130.70) − 100.00 = 31.00
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => $fecha,
-            'saldo_final'   => 130.70,
+            'fecha' => $fecha,
+            'saldo_final' => 130.70,
         ])->assertStatus(201)
             ->assertJsonPath('data.total_ventas_efectivo', '31.00')
             ->assertJsonPath('data.total_retiros', '0.30')
@@ -739,7 +757,9 @@ class CierreCajaTest extends TestCase
      * Valida que el cierre rechaza datos faltantes, negativos o no numéricos.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -752,20 +772,20 @@ class CierreCajaTest extends TestCase
             ->assertJsonValidationErrors(['fecha', 'saldo_final']);
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => '2026-09-21',
-            'saldo_final'   => 'cien',
+            'fecha' => '2026-09-21',
+            'saldo_final' => 'cien',
         ])->assertStatus(422)
             ->assertJsonValidationErrors(['saldo_final']);
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'       => '2026-09-21',
+            'fecha' => '2026-09-21',
             'saldo_final' => -1,
         ])->assertStatus(422)
             ->assertJsonValidationErrors(['saldo_final']);
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => '2026-09-21',
-            'saldo_final'   => 100.00,
+            'fecha' => '2026-09-21',
+            'saldo_final' => 100.00,
             'observaciones' => str_repeat('a', 501),
         ])->assertStatus(422)
             ->assertJsonValidationErrors(['observaciones']);
@@ -777,7 +797,9 @@ class CierreCajaTest extends TestCase
      * Valida que la bitácora de cierre no expone forma de modificarla ni eliminarla.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -788,8 +810,8 @@ class CierreCajaTest extends TestCase
         $this->abrirCaja($fecha);
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => $fecha,
-            'saldo_final'   => 100.00,
+            'fecha' => $fecha,
+            'saldo_final' => 100.00,
         ])->assertStatus(201);
 
         $cambios = ['saldo_final' => 999.00];
@@ -799,7 +821,7 @@ class CierreCajaTest extends TestCase
         $this->deleteJson('/api/cierres-caja/'.$fecha)->assertStatus(405);
 
         $this->assertDatabaseHas('cierres_caja', [
-            'fecha'       => $fecha,
+            'fecha' => $fecha,
             'saldo_final' => 100.00,
         ]);
     }
@@ -808,7 +830,9 @@ class CierreCajaTest extends TestCase
      * Valida que consultar una fecha sin cierre responde 404 con el contrato de la API.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -826,7 +850,9 @@ class CierreCajaTest extends TestCase
      * a las 7:30 p. m. del 19 se puede cerrar el 19 y el 20 sigue siendo fecha futura.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -839,14 +865,14 @@ class CierreCajaTest extends TestCase
         $this->abrirCaja('2026-10-19', 100.00);
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => '2026-10-20',
-            'saldo_final'   => 112.00,
+            'fecha' => '2026-10-20',
+            'saldo_final' => 112.00,
         ])->assertStatus(422)
             ->assertJsonValidationErrors(['fecha']);
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => '2026-10-19',
-            'saldo_final'   => 112.00,
+            'fecha' => '2026-10-19',
+            'saldo_final' => 112.00,
         ])->assertStatus(201)
             ->assertJsonPath('data.total_ventas_efectivo', '12.00')
             ->assertJsonPath('data.diferencia', '0.00');
@@ -858,7 +884,9 @@ class CierreCajaTest extends TestCase
      * Valida que el saldo inicial del cierre es el de la apertura, aunque se envíe otro.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -872,9 +900,9 @@ class CierreCajaTest extends TestCase
 
         // Un saldo inicial enviado desde el cliente se ignora: no puede maquillar el cuadre
         $this->postJson('/api/cierres-caja', [
-            'fecha'         => $fecha,
+            'fecha' => $fecha,
             'saldo_inicial' => 999.00,
-            'saldo_final'   => 100.00,
+            'saldo_final' => 100.00,
         ])->assertStatus(201)
             ->assertJsonPath('data.saldo_inicial', '80.00')
             ->assertJsonPath('data.venta_del_dia', '20.00')
@@ -885,7 +913,9 @@ class CierreCajaTest extends TestCase
      * Valida que no se puede cerrar la caja de un día que no tuvo apertura.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-43)
      *
      * @return void
@@ -893,7 +923,7 @@ class CierreCajaTest extends TestCase
     public function test_cierre_sin_apertura_es_rechazado(): void
     {
         $this->postJson('/api/cierres-caja', [
-            'fecha'       => '2026-09-21',
+            'fecha' => '2026-09-21',
             'saldo_final' => 100.00,
         ])->assertStatus(422)
             ->assertJsonPath('status', 'error')

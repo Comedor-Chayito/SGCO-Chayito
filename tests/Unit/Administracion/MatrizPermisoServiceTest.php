@@ -20,7 +20,9 @@ use Tests\TestCase;
  * Caja blanca: 3 ejecuciones sobre permisos críticos del administrador, bitácora y armado de la matriz.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Administración – RF-ADM-008 / US-ADM-04 / CC-122 / CC-143
  */
 class MatrizPermisoServiceTest extends TestCase
@@ -33,7 +35,9 @@ class MatrizPermisoServiceTest extends TestCase
      * Siembra roles y permisos oficiales y autentica al administrador, actor de la bitácora.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
      * @return void
@@ -51,7 +55,9 @@ class MatrizPermisoServiceTest extends TestCase
      * Casos de caja negra: rol, permisos enviados y permisos resultantes (ordenados, sin duplicados).
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
      * @return array<string, array{string, list<string>, list<string>}>
@@ -78,12 +84,14 @@ class MatrizPermisoServiceTest extends TestCase
      * Verifica que el rol quede exactamente con los permisos enviados y el total coincida.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
-     * @param  string       $nombreRol Rol a modificar.
-     * @param  list<string> $permisos  Permisos enviados.
-     * @param  list<string> $esperados Permisos resultantes esperados.
+     * @param  string  $nombreRol  Rol a modificar.
+     * @param  list<string>  $permisos  Permisos enviados.
+     * @param  list<string>  $esperados  Permisos resultantes esperados.
      * @return void
      */
     #[DataProvider('casosCajaNegra')]
@@ -105,7 +113,9 @@ class MatrizPermisoServiceTest extends TestCase
      * CB-MAT-01: rama de permisos críticos; al administrador no se le puede quitar usuarios.editar.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-126 / CC-143
      *
      * @return void
@@ -129,7 +139,9 @@ class MatrizPermisoServiceTest extends TestCase
      * CB-MAT-02: rama de bitácora; la auditoría guarda permisos anteriores, agregados y removidos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
      * @return void
@@ -152,7 +164,9 @@ class MatrizPermisoServiceTest extends TestCase
      * y un permiso fuera del catálogo usa la descripción y etiqueta genéricas.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-143
      *
      * @return void

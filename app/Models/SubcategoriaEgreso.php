@@ -22,7 +22,9 @@ class SubcategoriaEgreso extends Model
      * Obtiene los egresos clasificados en esta subcategoría.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005
      *
      * @return HasMany<Egreso>

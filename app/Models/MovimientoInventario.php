@@ -38,7 +38,9 @@ class MovimientoInventario extends Model
      * Obtiene el insumo cuyo stock cambió con este movimiento.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-16
+     *
      * @módulo Inventario – US-INV-04 (CC-114)
      *
      * @return BelongsTo<Insumo, MovimientoInventario>
@@ -52,7 +54,9 @@ class MovimientoInventario extends Model
      * Obtiene el usuario que provocó el movimiento.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-16
+     *
      * @módulo Inventario – US-INV-04 (CC-114)
      *
      * @return BelongsTo<User, MovimientoInventario>
@@ -66,7 +70,9 @@ class MovimientoInventario extends Model
      * Obtiene el egreso (factura del proveedor) al que se vincula una entrada a bodega.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-16
+     *
      * @módulo Inventario – US-INV-04 (CC-114)
      *
      * @return BelongsTo<Egreso, MovimientoInventario>
@@ -80,7 +86,9 @@ class MovimientoInventario extends Model
      * Obtiene la comanda pagada que originó un movimiento de venta.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-16
+     *
      * @módulo Inventario – US-INV-04 (CC-114)
      *
      * @return BelongsTo<Comanda, MovimientoInventario>
@@ -94,7 +102,9 @@ class MovimientoInventario extends Model
      * Obtiene la requisición transferida que originó un movimiento de requisición.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-16
+     *
      * @módulo Inventario – US-INV-04 (CC-114)
      *
      * @return BelongsTo<Requisicion, MovimientoInventario>

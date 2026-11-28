@@ -12,7 +12,9 @@ use Illuminate\Http\JsonResponse;
  * Controlador API del catálogo de mesas para el panel de configuración (US-ADM-03 / CC-107).
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-11-17
+ *
  * @módulo Administración – US-ADM-03 / CC-107
  */
 class MesaController extends Controller
@@ -21,20 +23,22 @@ class MesaController extends Controller
      * Inicializa el controlador con el servicio de mesas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
-     * @param  MesaService $mesaService Servicio del catálogo de mesas.
+     * @param  MesaService  $mesaService  Servicio del catálogo de mesas.
      */
-    public function __construct(private readonly MesaService $mesaService)
-    {
-    }
+    public function __construct(private readonly MesaService $mesaService) {}
 
     /**
      * Lista todas las mesas, incluidas las inactivas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
      * @return JsonResponse Mesas ordenadas por número.
@@ -42,9 +46,9 @@ class MesaController extends Controller
     public function todas(): JsonResponse
     {
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Catálogo completo de mesas obtenido.',
-            'data'    => $this->mesaService->listarTodas(),
+            'data' => $this->mesaService->listarTodas(),
         ]);
     }
 
@@ -52,10 +56,12 @@ class MesaController extends Controller
      * Registra una mesa nueva.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
-     * @param  CrearMesaRequest $request Datos validados.
+     * @param  CrearMesaRequest  $request  Datos validados.
      * @return JsonResponse Mesa creada, con código 201.
      */
     public function store(CrearMesaRequest $request): JsonResponse
@@ -63,9 +69,9 @@ class MesaController extends Controller
         $mesa = $this->mesaService->crear($request->validated());
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Mesa registrada correctamente.',
-            'data'    => $mesa,
+            'data' => $mesa,
         ], 201);
     }
 
@@ -73,11 +79,13 @@ class MesaController extends Controller
      * Edita el número o la capacidad de una mesa.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
-     * @param  ActualizarMesaRequest $request Datos validados.
-     * @param  Mesa                  $mesa    Mesa a editar.
+     * @param  ActualizarMesaRequest  $request  Datos validados.
+     * @param  Mesa  $mesa  Mesa a editar.
      * @return JsonResponse Mesa actualizada.
      */
     public function update(ActualizarMesaRequest $request, Mesa $mesa): JsonResponse
@@ -85,9 +93,9 @@ class MesaController extends Controller
         $mesaActualizada = $this->mesaService->actualizar($mesa, $request->validated());
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => 'Mesa actualizada correctamente.',
-            'data'    => $mesaActualizada,
+            'data' => $mesaActualizada,
         ]);
     }
 
@@ -95,10 +103,12 @@ class MesaController extends Controller
      * Borra una mesa sin comandas o la desactiva si tiene comandas históricas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
-     * @param  Mesa $mesa Mesa a retirar.
+     * @param  Mesa  $mesa  Mesa a retirar.
      * @return JsonResponse null si se borró, o la mesa desactivada.
      */
     public function destroy(Mesa $mesa): JsonResponse
@@ -110,9 +120,9 @@ class MesaController extends Controller
             : 'La mesa tiene comandas registradas; se desactivó en lugar de eliminarse.';
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => $mensaje,
-            'data'    => $mesaDesactivada,
+            'data' => $mesaDesactivada,
         ]);
     }
 
@@ -120,10 +130,12 @@ class MesaController extends Controller
      * Activa o desactiva una mesa.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
-     * @param  Mesa $mesa Mesa a alternar.
+     * @param  Mesa  $mesa  Mesa a alternar.
      * @return JsonResponse Mesa con su nuevo estado.
      */
     public function toggleActivo(Mesa $mesa): JsonResponse
@@ -135,9 +147,9 @@ class MesaController extends Controller
             : 'Mesa desactivada correctamente.';
 
         return response()->json([
-            'status'  => 'ok',
+            'status' => 'ok',
             'message' => $mensaje,
-            'data'    => $mesaActualizada,
+            'data' => $mesaActualizada,
         ]);
     }
 }

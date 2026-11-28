@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\DB;
  * Registra compras y persiste su desglose automático de IVA crédito fiscal.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
  */
 class CompraService
@@ -19,7 +21,9 @@ class CompraService
      * Inicializa el servicio con el calculador centralizado de IVA crédito fiscal.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @param  IvaCreditoFiscalService  $ivaCreditoFiscalService  Servicio de fórmulas tributarias.
@@ -30,7 +34,9 @@ class CompraService
      * Calcula y guarda el desglose tributario de una compra en una sola transacción.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @param  array{fecha_compra: string, monto_total: float|int|string}  $datos  Compra ya validada.
@@ -59,7 +65,9 @@ class CompraService
      * Lista las compras más recientes con la persona que las registró.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @return Collection<int, Compra> Compras ordenadas para consulta contable.

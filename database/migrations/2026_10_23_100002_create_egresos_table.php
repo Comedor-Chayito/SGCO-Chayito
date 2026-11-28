@@ -11,7 +11,9 @@ return new class extends Migration
      * irrepetible por proveedor.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005
      *
      * @return void
@@ -40,7 +42,9 @@ return new class extends Migration
      * Elimina la tabla de egresos.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-005
      *
      * @return void

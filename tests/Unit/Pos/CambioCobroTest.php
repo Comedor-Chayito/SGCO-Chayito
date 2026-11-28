@@ -22,7 +22,9 @@ use Tests\TestCase;
  * Caja blanca: 3 ejecuciones sobre caja sin abrir, comanda ya pagada y pago con tarjeta.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo POS – RF-POS-002 / US-POS-03 / CC-142
  */
 class CambioCobroTest extends TestCase
@@ -38,7 +40,9 @@ class CambioCobroTest extends TestCase
      * Resuelve el servicio y crea al cajero que procesa los cobros.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-142
      *
      * @return void
@@ -55,7 +59,9 @@ class CambioCobroTest extends TestCase
      * Casos de caja negra: total de la comanda, monto recibido en efectivo y cambio esperado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-142
      *
      * @return array<string, array{float, float, string}>
@@ -74,12 +80,14 @@ class CambioCobroTest extends TestCase
      * Verifica que el cobro en efectivo registre la venta con el cambio exacto y marque la comanda pagada.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-142
      *
-     * @param  float  $total          Subtotal de la comanda.
+     * @param  float  $total  Subtotal de la comanda.
      * @param  float  $montoRecibido  Efectivo entregado por el cliente.
-     * @param  string $cambioEsperado Cambio esperado con dos decimales.
+     * @param  string  $cambioEsperado  Cambio esperado con dos decimales.
      * @return void
      */
     #[DataProvider('casosCajaNegra')]
@@ -105,7 +113,9 @@ class CambioCobroTest extends TestCase
      * CB-CAM-01: rama de caja sin abrir; el cobro se rechaza antes de tocar la comanda.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / US-POS-04 / CC-142
      *
      * @return void
@@ -122,7 +132,9 @@ class CambioCobroTest extends TestCase
      * CB-CAM-02: rama de comanda pagada o cancelada; no se puede cobrar dos veces.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-142
      *
      * @return void
@@ -140,7 +152,9 @@ class CambioCobroTest extends TestCase
      * y se libera la mesa al no quedar otras comandas activas.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-142
      *
      * @return void
@@ -165,12 +179,14 @@ class CambioCobroTest extends TestCase
      * Crea una comanda para llevar (o de mesa) con el subtotal y estado indicados.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-142
      *
-     * @param  float    $subtotal Total a cobrar.
-     * @param  string   $estado   Estado inicial de la comanda.
-     * @param  int|null $mesaId   Mesa asociada, si la hay.
+     * @param  float  $subtotal  Total a cobrar.
+     * @param  string  $estado  Estado inicial de la comanda.
+     * @param  int|null  $mesaId  Mesa asociada, si la hay.
      * @return Comanda Comanda creada.
      */
     private function crearComanda(float $subtotal, string $estado = 'pendiente', ?int $mesaId = null): Comanda
@@ -188,12 +204,14 @@ class CambioCobroTest extends TestCase
      * Construye una solicitud de cobro cuyos datos validados son los indicados.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-142
      *
-     * @param  int    $comandaId     Comanda a cobrar.
-     * @param  string $metodoPago    efectivo, tarjeta o transferencia.
-     * @param  float  $montoRecibido Monto entregado.
+     * @param  int  $comandaId  Comanda a cobrar.
+     * @param  string  $metodoPago  efectivo, tarjeta o transferencia.
+     * @param  float  $montoRecibido  Monto entregado.
      * @return ProcesarCobroRequest Solicitud simulada.
      */
     private function solicitud(int $comandaId, string $metodoPago, float $montoRecibido): ProcesarCobroRequest
@@ -212,11 +230,13 @@ class CambioCobroTest extends TestCase
      * Afirma que cobrar la comanda lanza ValidationException en el campo indicado y no crea venta.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-002 / CC-142
      *
-     * @param  Comanda $comanda Comanda a cobrar.
-     * @param  string  $campo   Campo que debe reportar el error.
+     * @param  Comanda  $comanda  Comanda a cobrar.
+     * @param  string  $campo  Campo que debe reportar el error.
      * @return void
      */
     private function assertCobroFalla(Comanda $comanda, string $campo): void

@@ -174,7 +174,9 @@ class RequisicionTest extends TestCase
      * Verifica que bodega puede aprobar cantidades parciales y registra al responsable.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53
      */
     public function test_administrador_aprueba_cantidades_parciales_de_requisicion_pendiente(): void
@@ -212,7 +214,9 @@ class RequisicionTest extends TestCase
      * Verifica que no se puede aprobar una cantidad superior a la solicitada.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53
      */
     public function test_administrador_no_puede_aprobar_cantidad_mayor_a_la_solicitada(): void
@@ -235,7 +239,9 @@ class RequisicionTest extends TestCase
      * Verifica que bodega puede rechazar y que un solicitante no puede resolver.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53
      */
     public function test_solo_administrador_resuelve_y_puede_rechazar_requisicion(): void
@@ -266,7 +272,9 @@ class RequisicionTest extends TestCase
      * Verifica que la transferencia descuenta bodega y acredita el área en una transacción.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-54
      */
     public function test_administrador_transfiere_stock_aprobado_al_area_operativa(): void
@@ -303,7 +311,9 @@ class RequisicionTest extends TestCase
      * Verifica que una transferencia sin existencias no altera ningún inventario.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-54
      */
     public function test_transferencia_sin_stock_suficiente_se_revierte_por_completo(): void
@@ -327,7 +337,9 @@ class RequisicionTest extends TestCase
      * Verifica que la solicitud rechaza áreas no autorizadas, listas vacías e insumos inexistentes.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-52 / CC-55
      */
     public function test_crear_requisicion_rechaza_area_invalida_o_sin_detalles(): void
@@ -357,7 +369,9 @@ class RequisicionTest extends TestCase
      * Verifica que un usuario administrador también tiene permiso para emitir requisiciones.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-52 / CC-55
      */
     public function test_administrador_tambien_puede_crear_requisicion(): void
@@ -389,7 +403,9 @@ class RequisicionTest extends TestCase
      * Verifica que cocinera y socio también emiten requisiciones, igual que la ruta lo permite.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-26
+     *
      * @módulo Inventario – RF-INV-004 / CC-85 / CC-55
      */
     public function test_cocinera_y_socio_tambien_pueden_crear_requisicion(): void
@@ -415,7 +431,9 @@ class RequisicionTest extends TestCase
      * Verifica que el socio resuelve requisiciones con las mismas atribuciones del administrador.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-26
+     *
      * @módulo Inventario – RF-INV-004 / CC-85 / CC-55
      */
     public function test_socio_puede_resolver_requisicion(): void
@@ -438,7 +456,9 @@ class RequisicionTest extends TestCase
      * Verifica que bodega lista las requisiciones ordenadas cronológicamente inverso con sus relaciones.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-53 / CC-55
      */
     public function test_administrador_lista_requisiciones_ordenadas_con_relaciones(): void
@@ -490,7 +510,9 @@ class RequisicionTest extends TestCase
      * Verifica que solo usuarios con rol administrador pueden acceder a la lista de requisiciones.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-53 / CC-55
      */
     public function test_usuario_no_administrador_no_puede_listar_requisiciones(): void
@@ -512,7 +534,9 @@ class RequisicionTest extends TestCase
      * Verifica que no se puede resolver una requisición que ya fue aprobada o rechazada.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-53 / CC-55
      */
     public function test_rechaza_resolver_requisicion_que_ya_fue_resuelta(): void
@@ -548,7 +572,9 @@ class RequisicionTest extends TestCase
      * Verifica validación cuando se omiten renglones o se envían identificadores ajenos en la aprobación.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-53 / CC-55
      */
     public function test_rechaza_aprobacion_si_faltan_renglones_o_contiene_renglones_ajenos(): void
@@ -580,7 +606,9 @@ class RequisicionTest extends TestCase
      * Verifica que solo los estados 'aprobada' y 'rechazada' son válidos al resolver.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-53 / CC-55
      */
     public function test_rechaza_resolucion_con_estado_no_permitido(): void
@@ -599,7 +627,9 @@ class RequisicionTest extends TestCase
      * Verifica que no se permite transferir requisiciones en estado pendiente o rechazada.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-54 / CC-55
      */
     public function test_rechaza_transferir_requisicion_que_no_esta_aprobada(): void
@@ -624,7 +654,9 @@ class RequisicionTest extends TestCase
      * Verifica que solo administradores pueden transferir insumos de bodega a áreas operativas.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-54 / CC-55
      */
     public function test_usuario_no_administrador_no_puede_transferir_stock(): void
@@ -644,7 +676,9 @@ class RequisicionTest extends TestCase
      * Verifica que al transferir, si el área operativa ya tiene existencias del insumo, se acumulan.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-54 / CC-55
      */
     public function test_transferencia_acumula_stock_en_area_operativa_si_ya_existe_registro(): void
@@ -677,7 +711,9 @@ class RequisicionTest extends TestCase
      * Verifica que una transferencia con el stock exacto en bodega deja el stock en cero sin errores.
      *
      * @autor  Cesar
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Inventario – RF-INV-004 / CC-54 / CC-55
      */
     public function test_transferencia_con_stock_exacto_en_bodega_deja_inventario_en_cero(): void
@@ -706,7 +742,9 @@ class RequisicionTest extends TestCase
      * Crea una requisición pendiente con dos detalles para probar el flujo de bodega.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53 / CC-54
      *
      * @return Requisicion Requisición con detalles cargados.
@@ -730,7 +768,9 @@ class RequisicionTest extends TestCase
      * Aprueba las dos cantidades del escenario de prueba indicado.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53
      *
      * @param  Requisicion  $requisicion  Requisición pendiente creada para la prueba.

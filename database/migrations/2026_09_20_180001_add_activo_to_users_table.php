@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Schema;
  * Permite la desactivación lógica de cuentas de usuario sin pérdida histórica (US-ADM-01 / CC-84).
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-09-20
+ *
  * @módulo Administración y Seguridad – RF-ADM-008
  */
 return new class extends Migration
@@ -34,4 +36,3 @@ return new class extends Migration
         });
     }
 };
-

@@ -34,7 +34,9 @@ class Requisicion extends Model
      * Obtiene el usuario que solicitó la requisición.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-004
      *
      * @return BelongsTo<User, Requisicion>
@@ -48,7 +50,9 @@ class Requisicion extends Model
      * Obtiene el usuario que aprobó o rechazó la requisición.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-004
      *
      * @return BelongsTo<User, Requisicion>
@@ -62,7 +66,9 @@ class Requisicion extends Model
      * Obtiene el detalle de insumos y cantidades de la requisición.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-004
      *
      * @return HasMany<RequisicionDetalle>

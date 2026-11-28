@@ -20,7 +20,9 @@ use Tests\TestCase;
  * Caja blanca: 3 ejecuciones sobre platillo no disponible, precio cambiado y monto máximo.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo POS – RF-POS-001 / US-POS-01 / CC-142
  */
 class SubtotalComandaTest extends TestCase
@@ -35,7 +37,9 @@ class SubtotalComandaTest extends TestCase
      * Resuelve el servicio y crea al mesero que registra las comandas.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-001 / CC-142
      *
      * @return void
@@ -52,7 +56,9 @@ class SubtotalComandaTest extends TestCase
      * Casos de caja negra: lista de [precio unitario, cantidad] y subtotal esperado.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-001 / CC-142
      *
      * @return array<string, array{array<int, array{float, int}>, string}>
@@ -71,11 +77,13 @@ class SubtotalComandaTest extends TestCase
      * Verifica que el subtotal guardado en la comanda sea la suma de cantidad × precio.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-001 / CC-142
      *
-     * @param  array<int, array{float, int}> $lineas            Precio unitario y cantidad por ítem.
-     * @param  string                         $subtotalEsperado Subtotal esperado con dos decimales.
+     * @param  array<int, array{float, int}>  $lineas  Precio unitario y cantidad por ítem.
+     * @param  string  $subtotalEsperado  Subtotal esperado con dos decimales.
      * @return void
      */
     #[DataProvider('casosCajaNegra')]
@@ -98,7 +106,9 @@ class SubtotalComandaTest extends TestCase
      * CB-SUB-01: rama de platillo no disponible; se rechaza y no se registra la comanda.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-001 / CC-142
      *
      * @return void
@@ -117,7 +127,9 @@ class SubtotalComandaTest extends TestCase
      * CB-SUB-02: rama de precio esperado; si el precio que vio el mesero ya no es el vigente, se rechaza.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-001 / CC-142
      *
      * @return void
@@ -136,7 +148,9 @@ class SubtotalComandaTest extends TestCase
      * CB-SUB-03: rama de monto máximo; un subtotal que no cabe en DECIMAL(10,2) se rechaza.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-001 / CC-142
      *
      * @return void
@@ -152,10 +166,12 @@ class SubtotalComandaTest extends TestCase
      * Construye una solicitud de comanda para llevar cuyos datos validados son los ítems indicados.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-001 / CC-142
      *
-     * @param  array<int, array<string, mixed>> $items Ítems de la comanda.
+     * @param  array<int, array<string, mixed>>  $items  Ítems de la comanda.
      * @return RegistrarComandaRequest Solicitud simulada.
      */
     private function solicitud(array $items): RegistrarComandaRequest
@@ -174,11 +190,13 @@ class SubtotalComandaTest extends TestCase
      * Afirma que registrar los ítems lanza ValidationException en el campo indicado y no crea comanda.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo POS – RF-POS-001 / CC-142
      *
-     * @param  array<int, array<string, mixed>> $items Ítems de la comanda.
-     * @param  string                           $campo Campo que debe reportar el error.
+     * @param  array<int, array<string, mixed>>  $items  Ítems de la comanda.
+     * @param  string  $campo  Campo que debe reportar el error.
      * @return void
      */
     private function assertValidacionFalla(array $items, string $campo): void

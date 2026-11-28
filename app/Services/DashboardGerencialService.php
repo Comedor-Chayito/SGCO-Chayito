@@ -11,7 +11,9 @@ use Illuminate\Support\Carbon;
  * Consolida ingresos, gastos netos y rentabilidad para el dashboard gerencial.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Reportes – RF-REP-007 / CC-75
  */
 class DashboardGerencialService
@@ -24,7 +26,9 @@ class DashboardGerencialService
      * Margen bruto = utilidad / ingresos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / CC-75 / CC-71
      *
      * @param  string|null  $fechaDesde  Inicio inclusivo del periodo; por defecto, primer día del mes.
@@ -93,7 +97,9 @@ class DashboardGerencialService
      * Agrupa el gasto neto del periodo por subcategoría de egreso, de mayor a menor.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – RF-REP-007 / CC-71
      *
      * @param  Carbon  $inicio  Inicio inclusivo del periodo consultado.
@@ -132,7 +138,9 @@ class DashboardGerencialService
      * consultado, incluyendo meses sin movimientos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / US-REP-01 / CC-72
      *
      * @param  Carbon  $finPeriodo  Fin del periodo filtrado; su mes es el último de la serie.
@@ -175,7 +183,9 @@ class DashboardGerencialService
      * como estimación para no presentar un costo inexistente como dato contable exacto.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Reportes – RF-REP-007 / US-REP-01
      *
      * @param  Carbon  $inicio  Inicio inclusivo del periodo consultado.

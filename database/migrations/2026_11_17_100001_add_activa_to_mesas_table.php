@@ -10,7 +10,9 @@ return new class extends Migration
      * Agrega la bandera activa a las mesas para retirarlas del POS sin borrar sus comandas históricas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
      * @return void
@@ -26,7 +28,9 @@ return new class extends Migration
      * Quita la bandera activa de las mesas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
      * @return void

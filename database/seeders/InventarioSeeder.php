@@ -15,7 +15,9 @@ class InventarioSeeder extends Seeder
      * por cada platillo de PosSeeder. No son las recetas reales del comedor.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo Inventario – RF-INV-003 / RF-INV-004
      *
      * @return void
@@ -57,56 +59,56 @@ class InventarioSeeder extends Seeder
         foreach ($insumos as [$nombre, $unidad, $stockActual, $stockMinimo]) {
             Insumo::firstOrCreate(['nombre' => $nombre], [
                 'unidad_medida' => $unidad,
-                'stock_actual'  => $stockActual,
-                'stock_minimo'  => $stockMinimo,
+                'stock_actual' => $stockActual,
+                'stock_minimo' => $stockMinimo,
             ]);
         }
 
         // Platillo => [insumo => cantidad por porción vendida]
         $recetas = [
-            'Pollo Asado'         => ['Pollo en piezas' => 0.300, 'Aceite vegetal' => 0.010],
-            'Carne Guisada'       => [
+            'Pollo Asado' => ['Pollo en piezas' => 0.300, 'Aceite vegetal' => 0.010],
+            'Carne Guisada' => [
                 'Carne de res' => 0.200,
-                'Papa'         => 0.100,
-                'Tomate'       => 0.050,
-                'Cebolla'      => 0.030,
+                'Papa' => 0.100,
+                'Tomate' => 0.050,
+                'Cebolla' => 0.030,
             ],
-            'Pescado Frito'       => ['Mojarra' => 1.000, 'Aceite vegetal' => 0.050],
-            'Tortitas de Carne'   => [
-                'Carne molida'   => 0.150,
-                'Huevo'          => 1.000,
-                'Tomate'         => 0.060,
+            'Pescado Frito' => ['Mojarra' => 1.000, 'Aceite vegetal' => 0.050],
+            'Tortitas de Carne' => [
+                'Carne molida' => 0.150,
+                'Huevo' => 1.000,
+                'Tomate' => 0.060,
                 'Aceite vegetal' => 0.020,
             ],
-            'Pollo Encebollado'   => [
+            'Pollo Encebollado' => [
                 'Pollo en piezas' => 0.250,
-                'Cebolla'         => 0.080,
-                'Aceite vegetal'  => 0.015,
+                'Cebolla' => 0.080,
+                'Aceite vegetal' => 0.015,
             ],
-            'Arroz Blanco'        => ['Arroz' => 0.080, 'Aceite vegetal' => 0.005],
-            'Arroz Negrito'       => ['Arroz' => 0.080, 'Frijol rojo' => 0.030],
-            'Casamiento'          => ['Arroz' => 0.050, 'Frijol rojo' => 0.050, 'Aceite vegetal' => 0.010],
-            'Frijol Molido'       => ['Frijol rojo' => 0.080, 'Aceite vegetal' => 0.010],
+            'Arroz Blanco' => ['Arroz' => 0.080, 'Aceite vegetal' => 0.005],
+            'Arroz Negrito' => ['Arroz' => 0.080, 'Frijol rojo' => 0.030],
+            'Casamiento' => ['Arroz' => 0.050, 'Frijol rojo' => 0.050, 'Aceite vegetal' => 0.010],
+            'Frijol Molido' => ['Frijol rojo' => 0.080, 'Aceite vegetal' => 0.010],
             'Espagueti con Queso' => ['Espagueti' => 0.100, 'Queso duro' => 0.020, 'Tomate' => 0.040],
-            'Ensalada Fresca'     => ['Lechuga' => 0.125, 'Tomate' => 0.050, 'Pepino' => 0.250],
-            'Ensalada de Codos'   => ['Pasta codito' => 0.070, 'Mayonesa' => 0.030],
-            'Verduras Cocidas'    => ['Zanahoria' => 0.060, 'Güisquil' => 0.250],
-            'Cuajada'             => ['Cuajada' => 0.080],
-            'Queso Fresco'        => ['Queso duro' => 0.060],
-            'Aguacate'            => ['Aguacate' => 0.500],
-            'Tortillas (x3)'      => ['Masa de maíz' => 0.120],
-            'Pupusas de queso'    => ['Masa de maíz' => 0.090, 'Quesillo' => 0.040, 'Aceite vegetal' => 0.005],
-            'Pupusas de frijol'   => ['Masa de maíz' => 0.090, 'Frijol rojo' => 0.040, 'Aceite vegetal' => 0.005],
-            'Sopa de res'         => [
+            'Ensalada Fresca' => ['Lechuga' => 0.125, 'Tomate' => 0.050, 'Pepino' => 0.250],
+            'Ensalada de Codos' => ['Pasta codito' => 0.070, 'Mayonesa' => 0.030],
+            'Verduras Cocidas' => ['Zanahoria' => 0.060, 'Güisquil' => 0.250],
+            'Cuajada' => ['Cuajada' => 0.080],
+            'Queso Fresco' => ['Queso duro' => 0.060],
+            'Aguacate' => ['Aguacate' => 0.500],
+            'Tortillas (x3)' => ['Masa de maíz' => 0.120],
+            'Pupusas de queso' => ['Masa de maíz' => 0.090, 'Quesillo' => 0.040, 'Aceite vegetal' => 0.005],
+            'Pupusas de frijol' => ['Masa de maíz' => 0.090, 'Frijol rojo' => 0.040, 'Aceite vegetal' => 0.005],
+            'Sopa de res' => [
                 'Carne de res' => 0.150,
-                'Papa'         => 0.080,
-                'Zanahoria'    => 0.040,
-                'Güisquil'     => 0.250,
+                'Papa' => 0.080,
+                'Zanahoria' => 0.040,
+                'Güisquil' => 0.250,
             ],
-            'Sopa de Gallina'     => ['Gallina india' => 0.250, 'Papa' => 0.080, 'Zanahoria' => 0.040],
-            'Refresco Natural'    => ['Fruta de temporada' => 0.150, 'Azúcar' => 0.030],
-            'Jugo de Naranja'     => ['Naranja' => 3.000],
-            'Soda Lata'           => ['Soda en lata' => 1.000],
+            'Sopa de Gallina' => ['Gallina india' => 0.250, 'Papa' => 0.080, 'Zanahoria' => 0.040],
+            'Refresco Natural' => ['Fruta de temporada' => 0.150, 'Azúcar' => 0.030],
+            'Jugo de Naranja' => ['Naranja' => 3.000],
+            'Soda Lata' => ['Soda en lata' => 1.000],
         ];
 
         $idsInsumo = Insumo::pluck('id', 'nombre');
@@ -129,7 +131,7 @@ class InventarioSeeder extends Seeder
                     ['platillo_id' => $idsPlatillo[$platillo], 'insumo_id' => $insumoId],
                     [
                         'cantidad_por_porcion' => $cantidad,
-                        'unidad_consumo'       => $unidadesInsumo[$insumoId] ?? 'unidad',
+                        'unidad_consumo' => $unidadesInsumo[$insumoId] ?? 'unidad',
                     ]
                 );
             }

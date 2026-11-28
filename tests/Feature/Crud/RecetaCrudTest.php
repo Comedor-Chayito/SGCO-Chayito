@@ -11,7 +11,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * Scripts de captura (5 corridas) y edición (5 corridas) de la pantalla de recetas (CC-177).
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Inventario – RF-INV-003 / US-INV-01 / CC-177
  */
 class RecetaCrudTest extends CrudTestCase
@@ -20,7 +22,9 @@ class RecetaCrudTest extends CrudTestCase
      * Corridas de captura: unidad de bodega del insumo, porción y unidad de consumo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-177
      *
      * @return array<string, array{string, float, string}>
@@ -40,7 +44,9 @@ class RecetaCrudTest extends CrudTestCase
      * Corridas de edición: nueva porción y unidad de consumo para un insumo almacenado en kg.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-177
      *
      * @return array<string, array{float, string}>
@@ -60,12 +66,14 @@ class RecetaCrudTest extends CrudTestCase
      * Captura un renglón de receta y verifica que quede vinculado al platillo con su porción.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-177
      *
-     * @param  string $unidadBodega  Unidad de almacenamiento del insumo.
-     * @param  float  $porcion       Cantidad por platillo.
-     * @param  string $unidadConsumo Unidad de la porción.
+     * @param  string  $unidadBodega  Unidad de almacenamiento del insumo.
+     * @param  float  $porcion  Cantidad por platillo.
+     * @param  string  $unidadConsumo  Unidad de la porción.
      * @return void
      */
     #[DataProvider('capturas')]
@@ -96,11 +104,13 @@ class RecetaCrudTest extends CrudTestCase
      * Edita un renglón de receta existente y verifica la nueva porción y unidad.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Inventario – RF-INV-003 / CC-177
      *
-     * @param  float  $porcion       Nueva cantidad por platillo.
-     * @param  string $unidadConsumo Nueva unidad de la porción.
+     * @param  float  $porcion  Nueva cantidad por platillo.
+     * @param  string  $unidadConsumo  Nueva unidad de la porción.
      * @return void
      */
     #[DataProvider('ediciones')]

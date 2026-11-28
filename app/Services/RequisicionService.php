@@ -59,7 +59,9 @@ class RequisicionService
      * Lista requisiciones junto con usuarios, detalles e insumos para gestión de bodega.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53 / CC-54
      *
      * @return Collection<int, Requisicion> Requisiciones ordenadas desde la más reciente.
@@ -76,12 +78,14 @@ class RequisicionService
      * Aprueba cantidades parciales o rechaza una requisición aún pendiente.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53
      *
-     * @param  Requisicion $requisicion Requisición que se desea resolver.
-     * @param  array<string, mixed> $datos Decisión y cantidades aprobadas ya validadas.
-     * @param  int $usuarioId Identificador del administrador que toma la decisión.
+     * @param  Requisicion  $requisicion  Requisición que se desea resolver.
+     * @param  array<string, mixed>  $datos  Decisión y cantidades aprobadas ya validadas.
+     * @param  int  $usuarioId  Identificador del administrador que toma la decisión.
      * @return Requisicion Requisición resuelta con detalles e insumos cargados.
      *
      * @throws ValidationException Si no está pendiente o las cantidades no corresponden.
@@ -124,11 +128,13 @@ class RequisicionService
      * Transfiere cantidades aprobadas de bodega general al inventario del área solicitante.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-54
      *
-     * @param  Requisicion $requisicion Requisición aprobada que se transferirá.
-     * @param  int|null $usuarioId Actor de la transferencia; por defecto el usuario autenticado.
+     * @param  Requisicion  $requisicion  Requisición aprobada que se transferirá.
+     * @param  int|null  $usuarioId  Actor de la transferencia; por defecto el usuario autenticado.
      * @return Requisicion Requisición transferida con sus relaciones actualizadas.
      *
      * @throws ValidationException Si no está aprobada o bodega no tiene stock suficiente.
@@ -218,11 +224,13 @@ class RequisicionService
      * Verifica que se resuelva cada detalle con una cantidad no mayor a la solicitada.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53
      *
-     * @param  Requisicion $requisicion Requisición bloqueada con sus detalles cargados.
-     * @param  array<int, array{id: int, cantidad_aprobada: float|int|string}> $detalles Datos de aprobación.
+     * @param  Requisicion  $requisicion  Requisición bloqueada con sus detalles cargados.
+     * @param  array<int, array{id: int, cantidad_aprobada: float|int|string}>  $detalles  Datos de aprobación.
      *
      * @throws ValidationException Si falta, sobra o excede una cantidad aprobada.
      */
@@ -247,8 +255,7 @@ class RequisicionService
 
             if ((float) $detalleAprobado['cantidad_aprobada'] > (float) $detalle->cantidad_solicitada) {
                 throw ValidationException::withMessages([
-                    "detalles.{$detalle->id}.cantidad_aprobada" =>
-                        'La cantidad aprobada no puede superar la cantidad solicitada.',
+                    "detalles.{$detalle->id}.cantidad_aprobada" => 'La cantidad aprobada no puede superar la cantidad solicitada.',
                 ]);
             }
         }
@@ -258,10 +265,12 @@ class RequisicionService
      * Recarga las relaciones que requiere la respuesta de la API de requisiciones.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53 / CC-54
      *
-     * @param  Requisicion $requisicion Requisición a cargar.
+     * @param  Requisicion  $requisicion  Requisición a cargar.
      * @return Requisicion Requisición con solicitante, aprobador, detalles e insumos.
      */
     private function cargarRelaciones(Requisicion $requisicion): Requisicion

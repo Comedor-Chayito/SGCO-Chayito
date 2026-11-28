@@ -10,7 +10,9 @@ return new class extends Migration
      * Crea la tabla de mesas del comedor.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void
@@ -30,7 +32,9 @@ return new class extends Migration
      * Elimina la tabla de mesas del comedor.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return void

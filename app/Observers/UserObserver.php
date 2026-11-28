@@ -7,18 +7,18 @@ use App\Services\AuditoriaService;
 
 class UserObserver
 {
-    public function __construct(private readonly AuditoriaService $auditoriaService)
-    {
-    }
+    public function __construct(private readonly AuditoriaService $auditoriaService) {}
 
     /**
      * Registra en auditoría la creación de un usuario.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
-     * @param  User $user Usuario recién creado.
+     * @param  User  $user  Usuario recién creado.
      * @return void
      */
     public function created(User $user): void
@@ -36,10 +36,12 @@ class UserObserver
      * de estado correspondiente.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
-     * @param  User $user Usuario modificado.
+     * @param  User  $user  Usuario modificado.
      * @return void
      */
     public function updated(User $user): void
@@ -62,10 +64,12 @@ class UserObserver
      * Registra en auditoría la eliminación definitiva de un usuario.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
-     * @param  User $user Usuario eliminado.
+     * @param  User  $user  Usuario eliminado.
      * @return void
      */
     public function deleted(User $user): void

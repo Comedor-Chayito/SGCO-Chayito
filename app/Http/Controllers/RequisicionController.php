@@ -63,7 +63,9 @@ class RequisicionController extends Controller
      * Devuelve las requisiciones necesarias para que bodega las gestione.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53 / CC-54
      *
      * @return JsonResponse Requisiciones con detalles, insumos y responsables.
@@ -81,7 +83,9 @@ class RequisicionController extends Controller
      * Aprueba cantidades parciales o rechaza una requisición pendiente.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-53
      *
      * @param  ResolverRequisicionRequest  $request  Resolución validada por un administrador.
@@ -109,11 +113,13 @@ class RequisicionController extends Controller
      * Mueve los insumos aprobados desde bodega general al área solicitante.
      *
      * @autor  Alexis
+     *
      * @fecha  2026-10-22
+     *
      * @módulo Inventario – RF-INV-004 / CC-54
      *
      * @param  Requisicion  $requisicion  Requisición aprobada que se transferirá.
-     * @param  Request $request Solicitud con el usuario que transfiere las existencias.
+     * @param  Request  $request  Solicitud con el usuario que transfiere las existencias.
      * @return JsonResponse Requisición transferida y stock actualizado.
      */
     public function transferir(Requisicion $requisicion, Request $request): JsonResponse

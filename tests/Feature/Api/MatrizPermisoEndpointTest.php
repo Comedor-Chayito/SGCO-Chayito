@@ -14,7 +14,9 @@ use Tests\TestCase;
  * de la matriz y coherencia con los permisos asignados por Spatie.
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-11-16
+ *
  * @módulo Administración y Seguridad – RF-ADM-008 (CC-121)
  */
 class MatrizPermisoEndpointTest extends TestCase
@@ -22,10 +24,15 @@ class MatrizPermisoEndpointTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $socio;
+
     protected User $cajero;
+
     protected User $mesero;
+
     protected User $cocinero;
+
     protected User $contadora;
 
     /**
@@ -43,22 +50,22 @@ class MatrizPermisoEndpointTest extends TestCase
         $this->mesero = User::where('email', 'mesero@sgco-chayito.local')->first();
 
         $this->socio = User::factory()->create([
-            'name'   => 'Socio Auditor',
-            'email'  => 'socio.auditor@sgco-chayito.local',
+            'name' => 'Socio Auditor',
+            'email' => 'socio.auditor@sgco-chayito.local',
             'activo' => true,
         ]);
         $this->socio->assignRole('socio');
 
         $this->cocinero = User::factory()->create([
-            'name'   => 'Cocinero Jefe',
-            'email'  => 'cocinero.jefe@sgco-chayito.local',
+            'name' => 'Cocinero Jefe',
+            'email' => 'cocinero.jefe@sgco-chayito.local',
             'activo' => true,
         ]);
         $this->cocinero->assignRole('cocinero');
 
         $this->contadora = User::factory()->create([
-            'name'   => 'Contadora General',
-            'email'  => 'contadora.general@sgco-chayito.local',
+            'name' => 'Contadora General',
+            'email' => 'contadora.general@sgco-chayito.local',
             'activo' => true,
         ]);
         $this->contadora->assignRole('contadora');
@@ -87,7 +94,7 @@ class MatrizPermisoEndpointTest extends TestCase
                 ],
             ])
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Matriz de roles y permisos obtenida correctamente.',
             ]);
 
@@ -112,7 +119,7 @@ class MatrizPermisoEndpointTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status'  => 'ok',
+                'status' => 'ok',
                 'message' => 'Matriz de roles y permisos obtenida correctamente.',
             ]);
     }

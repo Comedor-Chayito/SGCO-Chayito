@@ -12,7 +12,9 @@ return new class extends Migration
      * para que la cocina persista en BD qué comandas ya terminó.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-12
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
      * @return void
@@ -32,7 +34,9 @@ return new class extends Migration
      * Revierte a los estados originales: "en_preparacion" y "lista" vuelven a "en_cocina".
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-12
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
      * @return void
@@ -52,10 +56,12 @@ return new class extends Migration
      * Redefine los valores permitidos de la columna estado de comandas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-12
+     *
      * @módulo POS – US-POS-02 / RF-POS-001
      *
-     * @param  array<int, string> $estados Valores permitidos del enum.
+     * @param  array<int, string>  $estados  Valores permitidos del enum.
      * @return void
      */
     private function cambiarEnum(array $estados): void

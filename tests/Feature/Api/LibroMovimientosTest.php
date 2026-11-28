@@ -30,7 +30,9 @@ class LibroMovimientosTest extends TestCase
      * Prepara los roles, una contadora autenticada y una subcategoría de egreso.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @return void
@@ -54,11 +56,13 @@ class LibroMovimientosTest extends TestCase
      * Registra una venta cobrada en la fecha indicada.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
-     * @param  float   $total   Total de la venta.
-     * @param  string  $fecha   Fecha y hora del cobro.
+     * @param  float  $total  Total de la venta.
+     * @param  string  $fecha  Fecha y hora del cobro.
      * @param  string  $metodo  Método de pago.
      * @return Venta Venta creada.
      */
@@ -66,18 +70,18 @@ class LibroMovimientosTest extends TestCase
     {
         $comanda = Comanda::create([
             'usuario_id' => $this->contadora->id,
-            'canal'      => 'para_llevar',
-            'estado'     => 'pagada',
-            'subtotal'   => $total,
+            'canal' => 'para_llevar',
+            'estado' => 'pagada',
+            'subtotal' => $total,
         ]);
 
         $venta = Venta::create([
-            'comanda_id'     => $comanda->id,
-            'usuario_id'     => $this->contadora->id,
-            'total'          => $total,
+            'comanda_id' => $comanda->id,
+            'usuario_id' => $this->contadora->id,
+            'total' => $total,
             'monto_recibido' => $total,
-            'cambio'         => 0,
-            'metodo_pago'    => $metodo,
+            'cambio' => 0,
+            'metodo_pago' => $metodo,
         ]);
         $venta->forceFill(['created_at' => $fecha])->save();
 
@@ -88,11 +92,13 @@ class LibroMovimientosTest extends TestCase
      * Registra un egreso ficticio con la fecha de comprobante indicada.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
-     * @param  float   $montoTotal  Monto total con IVA.
-     * @param  string  $fecha       Fecha del comprobante (YYYY-MM-DD).
+     * @param  float  $montoTotal  Monto total con IVA.
+     * @param  string  $fecha  Fecha del comprobante (YYYY-MM-DD).
      * @return Egreso Egreso creado.
      */
     private function crearEgreso(float $montoTotal, string $fecha): Egreso
@@ -101,15 +107,15 @@ class LibroMovimientosTest extends TestCase
         $costoNeto = round($montoTotal / 1.13, 2);
 
         return Egreso::create([
-            'correlativo'            => sprintf('EG-%06d', $numero),
+            'correlativo' => sprintf('EG-%06d', $numero),
             'subcategoria_egreso_id' => $this->subcategoria->id,
-            'usuario_id'             => $this->contadora->id,
-            'proveedor'              => "Proveedor ficticio {$numero}",
-            'numero_comprobante'     => "CCF-{$numero}",
-            'fecha_comprobante'      => $fecha,
-            'monto_total'            => $montoTotal,
-            'costo_neto'             => $costoNeto,
-            'iva_credito_fiscal'     => round($costoNeto * 0.13, 2),
+            'usuario_id' => $this->contadora->id,
+            'proveedor' => "Proveedor ficticio {$numero}",
+            'numero_comprobante' => "CCF-{$numero}",
+            'fecha_comprobante' => $fecha,
+            'monto_total' => $montoTotal,
+            'costo_neto' => $costoNeto,
+            'iva_credito_fiscal' => round($costoNeto * 0.13, 2),
         ]);
     }
 
@@ -118,7 +124,9 @@ class LibroMovimientosTest extends TestCase
      * y flujo neto, y que las compras no se cuentan como egresos.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @return void
@@ -130,10 +138,10 @@ class LibroMovimientosTest extends TestCase
         $egreso = $this->crearEgreso(11.30, '2026-11-11');
 
         Compra::create([
-            'usuario_id'         => $this->contadora->id,
-            'fecha_compra'       => '2026-11-11',
-            'monto_total'        => 500.00,
-            'costo_neto'         => 442.48,
+            'usuario_id' => $this->contadora->id,
+            'fecha_compra' => '2026-11-11',
+            'monto_total' => 500.00,
+            'costo_neto' => 442.48,
             'iva_credito_fiscal' => 57.52,
         ]);
 
@@ -168,7 +176,9 @@ class LibroMovimientosTest extends TestCase
      * Valida el filtro por rango de fechas, incluido el último día completo de ventas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @return void
@@ -193,7 +203,9 @@ class LibroMovimientosTest extends TestCase
      * Valida el filtro por tipo: solo ingresos o solo egresos, con el otro total en cero.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @return void
@@ -220,7 +232,9 @@ class LibroMovimientosTest extends TestCase
      * Valida que el libro pagina y que los totales cubren todo el filtro, no solo la página.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @return void
@@ -243,7 +257,9 @@ class LibroMovimientosTest extends TestCase
      * Valida el rechazo de filtros inválidos con 422.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006
      *
      * @return void
@@ -263,7 +279,9 @@ class LibroMovimientosTest extends TestCase
      * Valida que sin sesión responde 401 y los roles operativos reciben 403 (CLAUDE.md §9).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Contabilidad – RF-CON-006 / RF-ADM-008
      *
      * @return void

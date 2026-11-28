@@ -2,17 +2,16 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\Comanda;
 use App\Models\Egreso;
 use App\Models\Insumo;
 use App\Models\MovimientoInventario;
-use App\Models\Requisicion;
 use App\Models\SubcategoriaEgreso;
 use App\Models\User;
 use App\Services\MovimientoInventarioService;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -21,7 +20,9 @@ use Tests\TestCase;
  * Valida el cumplimiento del requerimiento funcional RF-INV-003, historia US-INV-04 y tareas CC-113 a CC-119.
  *
  * @autor  Equipo SGCO-Chayito
+ *
  * @fecha  2026-11-18
+ *
  * @módulo Inventario – US-INV-04 / RF-INV-003 / CC-113 / CC-114 / CC-115 / CC-116 / CC-117 / CC-119
  */
 class MovimientoInventarioTest extends TestCase
@@ -50,7 +51,9 @@ class MovimientoInventarioTest extends TestCase
      * Prepara el entorno con roles oficiales, usuarios autenticables, insumos de prueba y factura de egreso.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-11-18
+     *
      * @módulo Inventario – US-INV-04 / CC-119
      */
     protected function setUp(): void
@@ -790,7 +793,7 @@ class MovimientoInventarioTest extends TestCase
     /**
      * Valida que una respuesta de error de movimiento cumpla el contrato oficial de 3 campos y contenga el campo fallido.
      *
-     * @param  \Illuminate\Testing\TestResponse  $respuesta
+     * @param  TestResponse  $respuesta
      * @param  string  $campo
      * @return void
      */

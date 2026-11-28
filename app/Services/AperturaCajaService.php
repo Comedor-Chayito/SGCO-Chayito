@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AperturaCaja;
 use App\Models\CierreCaja;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -35,7 +34,7 @@ class AperturaCajaService
      * @módulo POS – RF-POS-002 / US-POS-04 (CC-39)
      *
      * @param  array  $datos  Datos validados: fecha (opcional), denominaciones, observaciones.
-     * @param  int    $usuarioId  ID del cajero o administrador que abre la caja.
+     * @param  int  $usuarioId  ID del cajero o administrador que abre la caja.
      * @return AperturaCaja Registro creado con la relación de usuario cargada.
      *
      * @throws ValidationException Si ya existe apertura o cierre para la fecha.
@@ -70,18 +69,18 @@ class AperturaCajaService
 
                 $denominacionesDetalle[] = [
                     'denominacion' => $denominacion,
-                    'tipo'         => $item['tipo'],
-                    'cantidad'     => $cantidad,
-                    'subtotal'     => $subtotal,
+                    'tipo' => $item['tipo'],
+                    'cantidad' => $cantidad,
+                    'subtotal' => $subtotal,
                 ];
             }
 
             $apertura = AperturaCaja::create([
-                'usuario_id'     => $usuarioId,
-                'fecha'          => $fecha,
-                'saldo_inicial'  => round($totalSaldoInicial, 2),
+                'usuario_id' => $usuarioId,
+                'fecha' => $fecha,
+                'saldo_inicial' => round($totalSaldoInicial, 2),
                 'denominaciones' => $denominacionesDetalle,
-                'observaciones'  => $datos['observaciones'] ?? null,
+                'observaciones' => $datos['observaciones'] ?? null,
             ]);
 
             $this->auditoriaService->registrar(

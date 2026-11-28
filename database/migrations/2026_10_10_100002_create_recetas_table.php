@@ -10,7 +10,9 @@ return new class extends Migration
      * Crea la tabla de recetas: insumos y porción base por platillo.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-003
      *
      * @return void
@@ -32,7 +34,9 @@ return new class extends Migration
      * Elimina la tabla de recetas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-10
+     *
      * @módulo Inventario – RF-INV-003
      *
      * @return void

@@ -23,7 +23,9 @@ class ComandaDetalle extends Model
      * Obtiene la comanda a la que pertenece este detalle.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return BelongsTo<Comanda, ComandaDetalle>
@@ -37,7 +39,9 @@ class ComandaDetalle extends Model
      * Obtiene el platillo vendido en este renglón de la comanda.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-17
+     *
      * @módulo POS – RF-POS-001
      *
      * @return BelongsTo<Platillo, ComandaDetalle>

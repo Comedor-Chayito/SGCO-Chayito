@@ -9,18 +9,18 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    public function __construct(private readonly AuthService $authService)
-    {
-    }
+    public function __construct(private readonly AuthService $authService) {}
 
     /**
      * Inicia sesión con correo y contraseña, y devuelve un token de sesión seguro.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-18
+     *
      * @módulo Administración y Seguridad – CC-91 / US-ADM-02
      *
-     * @param  LoginRequest $request Credenciales ya validadas.
+     * @param  LoginRequest  $request  Credenciales ya validadas.
      * @return JsonResponse
      */
     public function store(LoginRequest $request): JsonResponse
@@ -42,10 +42,12 @@ class AuthController extends Controller
      * autenticó la petición.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-18
+     *
      * @módulo Administración y Seguridad – CC-92 / US-ADM-02
      *
-     * @param  Request $request Petición autenticada vía Sanctum.
+     * @param  Request  $request  Petición autenticada vía Sanctum.
      * @return JsonResponse
      */
     public function destroy(Request $request): JsonResponse
@@ -63,10 +65,12 @@ class AuthController extends Controller
      * Alias de store para compatibilidad con rutas frontend /auth/login.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – US-ADM-02
      *
-     * @param  LoginRequest $request
+     * @param  LoginRequest  $request
      * @return JsonResponse
      */
     public function login(LoginRequest $request): JsonResponse
@@ -78,10 +82,12 @@ class AuthController extends Controller
      * Alias de destroy para compatibilidad con rutas frontend /auth/logout.
      *
      * @autor  Equipo SGCO-Chayito
+     *
      * @fecha  2026-09-19
+     *
      * @módulo Administración y Seguridad – US-ADM-02
      *
-     * @param  Request $request
+     * @param  Request  $request
      * @return JsonResponse
      */
     public function logout(Request $request): JsonResponse

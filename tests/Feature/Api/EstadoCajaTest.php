@@ -30,7 +30,9 @@ class EstadoCajaTest extends TestCase
      * Prepara un cajero autenticado y un platillo disponible.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return void
@@ -48,10 +50,10 @@ class EstadoCajaTest extends TestCase
         Sanctum::actingAs($this->cajero);
 
         $this->platillo = Platillo::create([
-            'nombre'          => 'Pupusa revuelta',
-            'descripcion'     => 'Platillo de prueba',
+            'nombre' => 'Pupusa revuelta',
+            'descripcion' => 'Platillo de prueba',
             'precio_unitario' => 1.00,
-            'disponible'      => true,
+            'disponible' => true,
         ]);
     }
 
@@ -59,7 +61,9 @@ class EstadoCajaTest extends TestCase
      * Crea una comanda para llevar con un platillo en el estado indicado.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-001
      *
      * @param  string  $estado  Estado inicial de la comanda.
@@ -69,9 +73,9 @@ class EstadoCajaTest extends TestCase
     {
         return Comanda::create([
             'usuario_id' => $this->cajero->id,
-            'canal'      => 'para_llevar',
-            'estado'     => $estado,
-            'subtotal'   => 1.00,
+            'canal' => 'para_llevar',
+            'estado' => $estado,
+            'subtotal' => 1.00,
         ]);
     }
 
@@ -79,7 +83,9 @@ class EstadoCajaTest extends TestCase
      * Registra el cierre de caja de hoy directamente en la base.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / CC-41
      *
      * @return void
@@ -87,16 +93,16 @@ class EstadoCajaTest extends TestCase
     private function cerrarCajaDeHoy(): void
     {
         CierreCaja::create([
-            'usuario_id'                 => $this->cajero->id,
-            'fecha'                      => today()->toDateString(),
-            'saldo_inicial'              => 0,
-            'total_ventas_efectivo'      => 0,
-            'total_ventas_tarjeta'       => 0,
+            'usuario_id' => $this->cajero->id,
+            'fecha' => today()->toDateString(),
+            'saldo_inicial' => 0,
+            'total_ventas_efectivo' => 0,
+            'total_ventas_tarjeta' => 0,
             'total_ventas_transferencia' => 0,
-            'total_retiros'              => 0,
-            'saldo_final'                => 0,
-            'venta_del_dia'              => 0,
-            'diferencia'                 => 0,
+            'total_retiros' => 0,
+            'saldo_final' => 0,
+            'venta_del_dia' => 0,
+            'diferencia' => 0,
         ]);
     }
 
@@ -104,7 +110,9 @@ class EstadoCajaTest extends TestCase
      * Valida que no se puede cobrar si la caja de hoy no se ha abierto.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return void
@@ -125,7 +133,9 @@ class EstadoCajaTest extends TestCase
      * Valida que no se puede cobrar después del cierre de caja del día.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return void
@@ -147,7 +157,9 @@ class EstadoCajaTest extends TestCase
      * Valida que con la caja abierta el cobro se registra normalmente.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return void
@@ -167,7 +179,9 @@ class EstadoCajaTest extends TestCase
      * Valida que no se registran retiros si la caja de hoy no se ha abierto.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – US-POS-03 / CC-37
      *
      * @return void
@@ -185,7 +199,9 @@ class EstadoCajaTest extends TestCase
      * Valida que se pueden tomar comandas antes de abrir la caja.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-001 / US-POS-04
      *
      * @return void
@@ -202,7 +218,9 @@ class EstadoCajaTest extends TestCase
      * Valida que no se toman comandas después del cierre de caja del día.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-001 / US-POS-04
      *
      * @return void
@@ -224,7 +242,9 @@ class EstadoCajaTest extends TestCase
      * Valida que el PATCH de estado no acepta "pagada": solo el cobro la registra.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-02
      *
      * @return void
@@ -246,7 +266,9 @@ class EstadoCajaTest extends TestCase
      * Valida que no se cierra la caja con comandas sin cobrar y que el mensaje las enumera.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / CC-41
      *
      * @return void
@@ -258,7 +280,7 @@ class EstadoCajaTest extends TestCase
         $lista = $this->crearComanda('lista');
 
         $respuesta = $this->postJson('/api/cierres-caja', [
-            'fecha'       => today()->toDateString(),
+            'fecha' => today()->toDateString(),
             'saldo_final' => 0,
         ]);
 
@@ -272,7 +294,9 @@ class EstadoCajaTest extends TestCase
      * Valida que una comanda de un día anterior sin cobrar también bloquea el cierre.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / CC-41
      *
      * @return void
@@ -284,7 +308,7 @@ class EstadoCajaTest extends TestCase
         $antigua->forceFill(['created_at' => now()->subDay()])->save();
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'       => today()->toDateString(),
+            'fecha' => today()->toDateString(),
             'saldo_final' => 0,
         ])->assertStatus(422)->assertJsonValidationErrors(['caja']);
     }
@@ -293,7 +317,9 @@ class EstadoCajaTest extends TestCase
      * Valida que el cierre procede cuando todas las comandas están cobradas o canceladas.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / CC-41
      *
      * @return void
@@ -305,7 +331,7 @@ class EstadoCajaTest extends TestCase
         $this->crearComanda('cancelada');
 
         $this->postJson('/api/cierres-caja', [
-            'fecha'       => today()->toDateString(),
+            'fecha' => today()->toDateString(),
             'saldo_final' => 0,
         ])->assertStatus(201);
     }

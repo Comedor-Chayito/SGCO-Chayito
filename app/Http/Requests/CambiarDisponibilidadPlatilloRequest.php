@@ -8,7 +8,9 @@ use Illuminate\Foundation\Http\FormRequest;
  * Valida el cambio de disponibilidad de un platillo en el menú del día.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-17
+ *
  * @módulo Administración – RF-ADM-008 / CC-106 (US-ADM-03)
  */
 class CambiarDisponibilidadPlatilloRequest extends FormRequest
@@ -18,7 +20,9 @@ class CambiarDisponibilidadPlatilloRequest extends FormRequest
      * El acceso por rol (administrador|socio) lo aplica el middleware de la ruta.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-106 (US-ADM-03)
      *
      * @return bool
@@ -32,7 +36,9 @@ class CambiarDisponibilidadPlatilloRequest extends FormRequest
      * Reglas de validación del cambio de disponibilidad.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-106 (US-ADM-03)
      *
      * @return array<string, mixed>
@@ -48,7 +54,9 @@ class CambiarDisponibilidadPlatilloRequest extends FormRequest
      * Mensajes de validación en español.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – RF-ADM-008 / CC-106 (US-ADM-03)
      *
      * @return array<string, string>
@@ -57,7 +65,7 @@ class CambiarDisponibilidadPlatilloRequest extends FormRequest
     {
         return [
             'disponible.required' => 'Debe indicar si el platillo está disponible o no.',
-            'disponible.boolean'  => 'La disponibilidad debe ser verdadero o falso.',
+            'disponible.boolean' => 'La disponibilidad debe ser verdadero o falso.',
         ];
     }
 }

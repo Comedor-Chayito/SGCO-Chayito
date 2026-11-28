@@ -14,7 +14,9 @@ class EstadoCajaService
      * (cobros y retiros).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @param  string|null  $fecha  Día comercial (YYYY-MM-DD); por defecto hoy.
@@ -40,7 +42,9 @@ class EstadoCajaService
      * que pueden registrarse antes de la apertura y cobrarse después.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-001 / US-POS-04
      *
      * @param  string|null  $fecha  Día comercial (YYYY-MM-DD); por defecto hoy.
@@ -63,7 +67,9 @@ class EstadoCajaService
      * Convierte la fecha recibida al día comercial en formato YYYY-MM-DD.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @param  string|null  $fecha  Fecha en cualquier formato reconocible o null para hoy.

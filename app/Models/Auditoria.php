@@ -43,7 +43,9 @@ class Auditoria extends Model
      * originó sin sesión autenticada (por ejemplo, un seeder).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
      * @return BelongsTo<User, Auditoria>
@@ -57,7 +59,9 @@ class Auditoria extends Model
      * Entidad sobre la que se registró el cambio (por ejemplo, un usuario).
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-09-20
+     *
      * @módulo Administración y Seguridad – RF-ADM-008 / CC-87
      *
      * @return MorphTo

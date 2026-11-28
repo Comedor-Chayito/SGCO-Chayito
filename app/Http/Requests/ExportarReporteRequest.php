@@ -8,7 +8,9 @@ use Illuminate\Foundation\Http\FormRequest;
  * Valida el período y el formato con que se exporta el reporte consolidado.
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-10-24
+ *
  * @módulo Reportes – Sec-3.5.1 / CC-79
  */
 class ExportarReporteRequest extends FormRequest
@@ -17,7 +19,9 @@ class ExportarReporteRequest extends FormRequest
      * Confirma que la autorización fue resuelta por la ruta protegida por roles.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79
      *
      * @return bool True; el middleware admite contadora, socio o administrador.
@@ -31,7 +35,9 @@ class ExportarReporteRequest extends FormRequest
      * Define el período obligatorio y los formatos de archivo disponibles.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79 / CC-80
      *
      * @return array<string, mixed> Reglas del período y del formato.
@@ -49,7 +55,9 @@ class ExportarReporteRequest extends FormRequest
      * Devuelve mensajes de error claros para la pantalla de exportación.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-24
+     *
      * @módulo Reportes – Sec-3.5.1 / CC-79
      *
      * @return array<string, string> Mensajes personalizados de validación.

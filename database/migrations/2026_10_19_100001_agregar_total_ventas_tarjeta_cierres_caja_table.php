@@ -11,7 +11,9 @@ return new class extends Migration
      * para que el reporte muestre lo vendido por cada método de pago.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-41)
      */
     public function up(): void
@@ -25,7 +27,9 @@ return new class extends Migration
      * Elimina el total de ventas con tarjeta de la bitácora de cierre.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-10-19
+     *
      * @módulo POS – US-POS-04 / RF-POS-002 (CC-41)
      */
     public function down(): void

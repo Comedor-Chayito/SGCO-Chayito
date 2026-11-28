@@ -9,7 +9,9 @@ use Illuminate\Validation\Rule;
  * Valida el número y la capacidad de una mesa existente.
  *
  * @autor  manuelmv15
+ *
  * @fecha  2026-11-17
+ *
  * @módulo Administración – US-ADM-03 / CC-107
  */
 class ActualizarMesaRequest extends FormRequest
@@ -19,7 +21,9 @@ class ActualizarMesaRequest extends FormRequest
      * El control de rol lo hace el middleware de la ruta.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
      * @return bool
@@ -33,7 +37,9 @@ class ActualizarMesaRequest extends FormRequest
      * Reglas de validación para editar una mesa; la unicidad ignora a la propia mesa.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
      * @return array<string, mixed>
@@ -41,7 +47,7 @@ class ActualizarMesaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'numero'    => [
+            'numero' => [
                 'required',
                 'integer',
                 'min:1',
@@ -55,7 +61,9 @@ class ActualizarMesaRequest extends FormRequest
      * Mensajes de validación en español.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-17
+     *
      * @módulo Administración – US-ADM-03 / CC-107
      *
      * @return array<string, string>
@@ -63,13 +71,13 @@ class ActualizarMesaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'numero.required'   => 'El número de mesa es obligatorio.',
-            'numero.integer'    => 'El número de mesa debe ser un número entero.',
-            'numero.min'        => 'El número de mesa debe ser mayor que cero.',
-            'numero.unique'     => 'Ya existe una mesa con ese número.',
+            'numero.required' => 'El número de mesa es obligatorio.',
+            'numero.integer' => 'El número de mesa debe ser un número entero.',
+            'numero.min' => 'El número de mesa debe ser mayor que cero.',
+            'numero.unique' => 'Ya existe una mesa con ese número.',
             'capacidad.integer' => 'La capacidad debe ser un número entero.',
-            'capacidad.min'     => 'La capacidad debe ser de al menos 1 persona.',
-            'capacidad.max'     => 'La capacidad no puede superar las 255 personas.',
+            'capacidad.min' => 'La capacidad debe ser de al menos 1 persona.',
+            'capacidad.max' => 'La capacidad no puede superar las 255 personas.',
         ];
     }
 }

@@ -9,7 +9,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * Scripts de captura (5 corridas) y edición (5 corridas) de la pantalla de platillos (CC-177).
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-11-27
+ *
  * @módulo Administración – RF-ADM-008 / US-ADM-03 / CC-177
  */
 class PlatilloCrudTest extends CrudTestCase
@@ -18,7 +20,9 @@ class PlatilloCrudTest extends CrudTestCase
      * Corridas de captura: datos del formulario de alta de platillo.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-177
      *
      * @return array<string, array{array<string, mixed>}>
@@ -42,7 +46,9 @@ class PlatilloCrudTest extends CrudTestCase
      * Corridas de edición: nuevos nombre, descripción y precio.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-177
      *
      * @return array<string, array{array<string, mixed>}>
@@ -66,10 +72,12 @@ class PlatilloCrudTest extends CrudTestCase
      * Captura un platillo y verifica que quede en el catálogo con su disponibilidad.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-177
      *
-     * @param  array<string, mixed> $datos Datos del formulario.
+     * @param  array<string, mixed>  $datos  Datos del formulario.
      * @return void
      */
     #[DataProvider('capturas')]
@@ -88,10 +96,12 @@ class PlatilloCrudTest extends CrudTestCase
      * Edita un platillo existente y verifica los datos nuevos.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-11-27
+     *
      * @módulo Administración – RF-ADM-008 / CC-177
      *
-     * @param  array<string, mixed> $datos Datos del formulario de edición.
+     * @param  array<string, mixed>  $datos  Datos del formulario de edición.
      * @return void
      */
     #[DataProvider('ediciones')]

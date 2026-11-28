@@ -11,7 +11,9 @@ class ConsultarMovimientosCajaRequest extends FormRequest
      * El acceso por rol (cajero, administrador o socio) lo controla el middleware de la ruta.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return bool
@@ -25,7 +27,9 @@ class ConsultarMovimientosCajaRequest extends FormRequest
      * Reglas del filtro opcional de fecha: un día que no sea futuro.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return array<string, mixed>
@@ -41,7 +45,9 @@ class ConsultarMovimientosCajaRequest extends FormRequest
      * Mensajes de error en español.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @return array<string, string>
@@ -49,7 +55,7 @@ class ConsultarMovimientosCajaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'fecha.date_format'     => 'La fecha debe tener el formato AAAA-MM-DD.',
+            'fecha.date_format' => 'La fecha debe tener el formato AAAA-MM-DD.',
             'fecha.before_or_equal' => 'No se pueden consultar movimientos de una fecha futura.',
         ];
     }

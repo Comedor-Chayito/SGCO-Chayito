@@ -7,6 +7,7 @@ use App\Models\CierreCaja;
 use App\Models\RetiroParcial;
 use App\Models\Venta;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 class MovimientoCajaService
 {
@@ -16,7 +17,9 @@ class MovimientoCajaService
      * Efectivo esperado = Saldo Inicial + Ventas en Efectivo − Retiros.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @param  string|null  $fecha  Día comercial (YYYY-MM-DD); por defecto hoy.
@@ -52,14 +55,14 @@ class MovimientoCajaService
         );
 
         return [
-            'fecha'  => $dia->toDateString(),
+            'fecha' => $dia->toDateString(),
             'estado' => $cierre ? 'cerrada' : ($apertura ? 'abierta' : 'sin_abrir'),
             'totales' => [
-                'saldo_inicial'     => $saldoInicial,
+                'saldo_inicial' => $saldoInicial,
                 'ventas_por_metodo' => $ventasPorMetodo,
-                'total_ventas'      => round(array_sum($ventasPorMetodo), 2),
-                'cantidad_ventas'   => $ventas->count(),
-                'total_retiros'     => $totalRetiros,
+                'total_ventas' => round(array_sum($ventasPorMetodo), 2),
+                'cantidad_ventas' => $ventas->count(),
+                'total_retiros' => $totalRetiros,
                 'efectivo_esperado' => $efectivoEsperado,
             ],
             'movimientos' => $this->listarMovimientos($apertura, $cierre, $ventas, $retiros),
@@ -70,13 +73,15 @@ class MovimientoCajaService
      * Une apertura, ventas, retiros y cierre en una sola lista ordenada por hora.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @param  AperturaCaja|null  $apertura  Apertura del día, si existe.
      * @param  CierreCaja|null  $cierre  Cierre del día, si existe.
-     * @param  \Illuminate\Support\Collection  $ventas  Ventas del día con su cajero.
-     * @param  \Illuminate\Support\Collection  $retiros  Retiros del día con su usuario.
+     * @param  Collection  $ventas  Ventas del día con su cajero.
+     * @param  Collection  $retiros  Retiros del día con su usuario.
      * @return array<int, array{tipo: string, hora: string, descripcion: string, monto: float, usuario: string|null}>
      */
     private function listarMovimientos(
@@ -101,7 +106,7 @@ class MovimientoCajaService
             $movimientos->push($this->movimiento(
                 'venta',
                 $venta->created_at,
-                "Venta #{$venta->id} · Comanda #{$venta->comanda_id} · " . ucfirst($venta->metodo_pago),
+                "Venta #{$venta->id} · Comanda #{$venta->comanda_id} · ".ucfirst($venta->metodo_pago),
                 (float) $venta->total,
                 $venta->usuario?->name,
                 $venta->metodo_pago,
@@ -135,7 +140,9 @@ class MovimientoCajaService
      * Da forma uniforme a un renglón de la lista de movimientos.
      *
      * @autor  manuelmv15
+     *
      * @fecha  2026-11-18
+     *
      * @módulo POS – RF-POS-002 / US-POS-04
      *
      * @param  string  $tipo  apertura, venta, retiro o cierre.
@@ -155,11 +162,11 @@ class MovimientoCajaService
         ?string $metodoPago = null,
     ): array {
         return [
-            'tipo'        => $tipo,
-            'hora'        => $momento->toIso8601String(),
+            'tipo' => $tipo,
+            'hora' => $momento->toIso8601String(),
             'descripcion' => $descripcion,
-            'monto'       => round($monto, 2),
-            'usuario'     => $usuario,
+            'monto' => round($monto, 2),
+            'usuario' => $usuario,
             'metodo_pago' => $metodoPago,
         ];
     }

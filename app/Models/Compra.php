@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Representa una compra registrada con su costo neto e IVA crédito fiscal.
  *
  * @autor  Jeferson De La Cruz
+ *
  * @fecha  2026-10-23
+ *
  * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
  */
 class Compra extends Model
@@ -38,7 +40,9 @@ class Compra extends Model
      * Convierte fechas y montos a tipos consistentes para la contabilidad.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @return array<string, string>
@@ -57,7 +61,9 @@ class Compra extends Model
      * Obtiene a la persona que registró la compra en el sistema.
      *
      * @autor  Jeferson De La Cruz
+     *
      * @fecha  2026-10-23
+     *
      * @módulo Contabilidad – RF-CON-006 / CC-66 / CC-67
      *
      * @return BelongsTo<User, Compra>
